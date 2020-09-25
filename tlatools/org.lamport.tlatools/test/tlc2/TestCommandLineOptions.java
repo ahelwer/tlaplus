@@ -345,6 +345,36 @@ public class TestCommandLineOptions
 	}
 
 	@Test
+	public void testErrorTraceSpecFilePath()
+	{
+		final String expected = "some/file/path/";
+		String[] args = new String[]{"-specTEDir", expected, "test.tla"};
+		assertTrue(CommandLineOptions.parse(args).map(
+				parseFailure -> false,
+				helpRequest -> false,
+				parseSuccess -> {
+					CommandLineOptions actual = parseSuccess.options;
+					assertTrue(actual.mainSpecFilePath.isPresent());
+					assertTrue(actual.errorTraceSpecDirectory.isPresent());
+					assertEquals(expected, actual.errorTraceSpecDirectory.get());
+					return true;
+				}));
+	}
+
+	@Test
+	public void testInvalidErrorTraceSpecFilePath()
+	{
+		String[] args = new String[]{"test.tla", "-specTEDir"};
+		assertTrue(CommandLineOptions.parse(args).map(
+				parseFailure -> {
+					assertTrue(parseFailure.errorMessage.contains("specTEDir"));
+					return true;
+				},
+				helpRequest -> false,
+				parseSuccess -> false));
+	}
+
+	@Test
 	public void testHelpFlag()
 	{
 		String[] args = new String[]{"-help"};

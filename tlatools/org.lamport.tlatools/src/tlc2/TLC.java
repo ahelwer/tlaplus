@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.Phaser;
@@ -120,6 +121,11 @@ public class TLC {
      * Whether the generated error trace spec should be monolithic.
      */
     private boolean requireMonolithicErrorTraceSpec = false;
+    
+    /**
+     * Directory to which to output the error trace spec.
+     */
+    private Optional<String> errorTraceSpecOutputDirectory = Optional.empty();
 
     /**
      * Whether a seed for the random number generator was provided.
@@ -501,6 +507,8 @@ public class TLC {
 			{
 				this.requireMonolithicErrorTraceSpec = false;
 			}
+			
+			this.errorTraceSpecOutputDirectory = options.errorTraceSpecDirectory;
 		}
 
 		options.configurationFilePath.ifPresent(value -> {
@@ -661,6 +669,11 @@ public class TLC {
 		});
 	}
 	
+	/**
+	 * Initializes various TLC systems and properties as specified by the options.
+	 * @param args The command line parameters.
+	 * @return Whether there were any initialization errors.
+	 */
 	private boolean initialize(String[] args)
 	{
         startTime = System.currentTimeMillis();
@@ -697,6 +710,8 @@ public class TLC {
 			ToolIO.setUserDir(specDir);
 		}
 
+		// By default if the config file is not specified, it is assumed to have the same
+		// name as the spec file (except with a .cfg file type instead of .tla).
 		if (configFile == null) {
 			configFile = mainFile;
 		}
@@ -713,11 +728,8 @@ public class TLC {
 			}
 		}
 
-		if (this.generateErrorTraceSpec & waitingOnGenerationCompletion.getRegisteredParties() <= 1)
+		if (this.generateErrorTraceSpec)
 		{
-			// Don't start the shebang below twice, if a user accidentally passed
-			// '-generateSpecTE' twice.
-			
 			// This reads the output (ToolIO.out) on stdout of all other TLC threads. The
 			// output is parsed to reconstruct the error trace, from which the code below
 			// generates the SpecTE file. It might seem as if it would have been easier to
@@ -767,8 +779,8 @@ public class TLC {
 									TLCState.Empty.getVarsAsStrings(), mcParserResults, mcOutputConsumer.getError());
 							
 							// This rewrites SpecTE.tla in an attempt to create a monolith spec.
-							// See https://github.com/tlaplus/tlaplus/issues/479 and
-							// https://github.com/tlaplus/tlaplus/issues/479 why this is broken.
+							// See https://github.com/tlaplus/tlaplus/issues/479 for why this is broken.
+							/*
 							if (this.requireMonolithicErrorTraceSpec) {
 								final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
 								final TLAMonolithCreator monolithCreator
@@ -780,6 +792,7 @@ public class TLC {
 								// Beware, this internally creates a temp file and re-reads SpecTE.tla from disk again. 
 								monolithCreator.copy();
 							}
+							*/
 							
 							// *Append* TLC's stdout/stderr output to final SpecTE.tla. The content of SpecTE.tla
 							// is now MonolithMC, MonolithSpecTE, stdout/stderr. Most users won't care for

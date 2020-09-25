@@ -164,6 +164,11 @@ public class CommandLineOptions
 	public boolean noMonolithErrorTraceSpecFlag = false;
 	
 	/**
+	 * Directory to which to write the error trace spec file.
+	 */
+	public Optional<String> errorTraceSpecDirectory = Optional.empty();
+	
+	/**
 	 * Whether to perform liveness checking.
 	 */
 	public Optional<String> livenessCheck = Optional.empty();
@@ -350,6 +355,19 @@ public class CommandLineOptions
 						options.noMonolithErrorTraceSpecFlag = true;
 					}
 
+				} else if (args[index].equals("-specTEDir"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						options.errorTraceSpecDirectory = Optional.of(args[index]);
+						index++;
+					} else
+					{
+						throw new ParseException(
+								"Error: expected directory for -specTEDir option.",
+								index);
+					}
 				} else if (args[index].equals("-help") || args[index].equals("-h"))
 				{
 					index++;
