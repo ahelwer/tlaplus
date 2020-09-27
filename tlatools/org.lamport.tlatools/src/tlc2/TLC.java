@@ -36,7 +36,6 @@ import tlc2.input.MCParserResults;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.Messages;
-import tlc2.output.TLAMonolithCreator;
 import tlc2.output.TeeOutputStream;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ITool;
@@ -116,11 +115,6 @@ public class TLC {
      * Whether to generate an error trace spec.
      */
     private boolean generateErrorTraceSpec = false;
-    
-    /**
-     * Whether the generated error trace spec should be monolithic.
-     */
-    private boolean requireMonolithicErrorTraceSpec = false;
     
     /**
      * Directory to which to output the error trace spec.
@@ -503,11 +497,6 @@ public class TLC {
 		{
 			TLCGlobals.tool = true;
 			this.generateErrorTraceSpec = true;
-			if (options.noMonolithErrorTraceSpecFlag)
-			{
-				this.requireMonolithicErrorTraceSpec = false;
-			}
-			
 			this.errorTraceSpecOutputDirectory = options.errorTraceSpecDirectory;
 		}
 
@@ -766,8 +755,15 @@ public class TLC {
 							// *after* tool has been created.
 							final SpecProcessor sp = tool.getSpecProcessor();
 							final ModelConfig mc = tool.getModelConfig();
-							final File sourceDirectory = mcOutputConsumer.getSourceDirectory();
 							final String originalSpecName = mcOutputConsumer.getSpecName();
+
+							// Use provided output directory if present; if path is not valid, fall back to
+							// source directory.
+							final File outputDirectory =
+									this.errorTraceSpecOutputDirectory
+										.map(path -> new File(path))
+										.filter(file -> file.exists() && file.isDirectory())
+										.orElse(mcOutputConsumer.getSourceDirectory());
 							
 							final MCParserResults mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
 
@@ -775,7 +771,7 @@ public class TLC {
 							// At this point SpecTE.cfg contains the content of MC.cfg.
 							// SpecTE.tla contains the newly generated SpecTE and the content of MC.tla.
 							// See https://github.com/tlaplus/tlaplus/issues/475 for why copying MC.tla/MC.cfg is wrong.
-							final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
+							final File[] files = TraceExplorer.writeSpecTEFiles(outputDirectory, originalSpecName,
 									TLCState.Empty.getVarsAsStrings(), mcParserResults, mcOutputConsumer.getError());
 							
 							// This rewrites SpecTE.tla in an attempt to create a monolith spec.
