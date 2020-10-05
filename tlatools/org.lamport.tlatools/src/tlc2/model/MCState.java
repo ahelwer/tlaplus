@@ -75,8 +75,14 @@ public class MCState {
 	 * @param backToState     whether this is a back to state or not
 	 * @param ordinal         number of the state in the trace
 	 */
-	public MCState(final MCVariable[] vars, final String stateName, final String stateLabel,
-			final Location moduleLocation, final boolean stuttering, final boolean backToState, final int ordinal) {
+	public MCState(
+			final MCVariable[] vars,
+			final String stateName,
+			final String stateLabel,
+			final Location moduleLocation,
+			final boolean stuttering,
+			final boolean backToState,
+			final int ordinal) {
 		variables = vars;
 		name = stateName;
 		label = stateLabel;
@@ -87,23 +93,31 @@ public class MCState {
 	}
 
 	public MCVariable[] getVariables() {
-		return variables;
+		return this.variables;
 	}
 	
 	public String getLabel() {
-		 return label;
+		 return this.label;
+	}
+	
+	public String getName() {
+		return this.name;
 	}
 
 	public boolean isStuttering() {
-		return isStuttering;
+		return this.isStuttering;
 	}
 
 	public boolean isBackToState() {
-		return isBackToState;
+		return this.isBackToState;
 	}
 
 	public int getStateNumber() {
-		return stateNumber;
+		return this.stateNumber;
+	}
+	
+	public Location getLocation() {
+		return this.location;
 	}
 	
 	public String asRecord(final boolean includeHeader) {

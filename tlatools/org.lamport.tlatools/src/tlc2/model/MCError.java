@@ -3,7 +3,6 @@ package tlc2.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
 import util.TLAConstants;
 
@@ -20,12 +19,19 @@ public class MCError {
 	/**
 	 * Nested error. It is uncertain whether or how nested errors ever occur.
 	 */
-	private final Optional<MCError> cause;
+	private final MCError cause;
 	
 	/**
 	 * Sequence of states which comprise the error trace.
 	 */
 	private final ArrayList<MCState> states;
+	
+	/**
+	 * Initializes a new instance of the {@link MCError} class.
+	 */
+	public MCError() {
+		this(null);
+	}
 	
 	/**
 	 * Initializes a new instance of the {@link MCError} class.
@@ -37,11 +43,11 @@ public class MCError {
 	
 	/**
 	 * Initializes a new instance of the {@link MCError} class.
-	 * @param errorCause A nested error. Can be null.
+	 * @param errorCause A nested error.
 	 * @param errorMessage Message describing the error.
 	 */
 	public MCError(final MCError errorCause, final String errorMessage) {
-		this.cause = Optional.ofNullable(errorCause);
+		this.cause = errorCause;
 		this.message = errorMessage;
 		this.states = new ArrayList<>();
 	}
@@ -71,10 +77,10 @@ public class MCError {
 	}
 	
 	/**
-	 * Returns the nested error. Likely to be empty.
-	 * @return The nested error.
+	 * Returns the nested error.
+	 * @return The nested error. Likely to be null.
 	 */
-	public Optional<MCError> getCause() {
+	public MCError getCause() {
 		return this.cause;
 	}
 	

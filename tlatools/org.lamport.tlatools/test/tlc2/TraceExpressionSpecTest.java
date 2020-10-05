@@ -43,10 +43,9 @@ public class TraceExpressionSpecTest {
 	@Test
 	public void testCreateSimpleTraceExpressionSpec()
 	{
-		MCError error = new MCError()
-		
+		MCError error = new MCError();
 		final String outputDir = TLAConstants.Directories.TRACE_EXPRESSION_SPEC;
-		ErrorTraceMessagePrinterRecorder recorder = new TestErrorTraceMessagePrinterRecorder();
+		ErrorTraceMessagePrinterRecorder recorder = new TestErrorTraceMessagePrinterRecorder(error);
 		TraceExpressionSpec teSpec = new TraceExpressionSpec(outputDir, recorder);
 	}
 }
