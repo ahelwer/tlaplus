@@ -207,7 +207,7 @@ public class MP
     public static final String NOT_APPLICABLE_VAL = "-1";
 
     private static MP instance = null;
-	private static MPRecorder recorder = new MPRecorder();
+	private static IMessagePrinterRecorder recorder = new NoOpMessagePrinterRecorder();
     private final Set warningHistory;
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$ 
@@ -1757,8 +1757,8 @@ public class MP
         ToolIO.err.flush();
     }
 
-	public static void setRecorder(MPRecorder aRecorder) {
-		recorder = aRecorder;
+	public static void setRecorder(IMessagePrinterRecorder mpRecorder) {
+		recorder = mpRecorder;
 	}
 
     private static String now() {

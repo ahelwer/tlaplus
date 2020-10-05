@@ -583,7 +583,10 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		addPrimer(moduleFilename, extendedModuleName, new HashSet<>());
 	}
 	
-	public void addPrimer(final String moduleFilename, final String extendedModuleName, final Set<String> extraExtendedModules) {
+	public void addPrimer(
+			final String moduleFilename,
+			final String extendedModuleName,
+			final Set<String> extraExtendedModules) {
 		if (extendedModuleName != null) {
 			extraExtendedModules.add(extendedModuleName);
 		}

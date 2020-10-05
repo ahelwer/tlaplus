@@ -77,8 +77,12 @@ public class TraceExplorer {
 	 *         destination TLA file, and the 1-index is that of the CFG file
 	 * @throws IOException
 	 */
-	public static File[] writeSpecTEFiles(final File outputDirectory, final String osn, final String[] vars,
-			final MCParserResults results, final MCError error) throws IOException {
+	public static File[] writeSpecTEFiles(
+			final File outputDirectory,
+			final String osn,
+			final String[] vars,
+			final MCParserResults results,
+			final MCError error) throws IOException {
 		final SpecTraceExpressionWriter writer = new SpecTraceExpressionWriter();
 
 		/**

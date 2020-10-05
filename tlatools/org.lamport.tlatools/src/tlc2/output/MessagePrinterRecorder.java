@@ -24,7 +24,7 @@
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
 
-package tlc2;
+package tlc2.output;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,36 +33,64 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import tlc2.output.EC;
-
-public class TestMPRecorder implements tlc2.output.IMessagePrinterRecorder {
-	private final Map<Integer, List<Object>> records = new HashMap<Integer, List<Object>>();
+/**
+ * Saves all messages that pass through {@link tlc.output.MP}. Includes some methods to ease
+ * reading those messages.
+ */
+public class MessagePrinterRecorder implements tlc2.output.IMessagePrinterRecorder {
+	private final Map<Integer, List<Object[]>> records = new HashMap<Integer, List<Object[]>>();
 	
+	@Override
 	public void record(int code, Object... objects) {
-		if(!records.containsKey(code)) {
-			records.put(code, new ArrayList<Object>());
+		if(!this.records.containsKey(code)) {
+			this.records.put(code, new ArrayList<Object[]>());
 		}
-		records.get(code).add(objects);
+
+		this.records.get(code).add(objects);
 	}
 
-	public boolean recorded(int code) {
-		return records.containsKey(code);
+	/**
+	 * Whether this has recorded a message with the given code.
+	 * @param code The code to check.
+	 * @return Whether a messages with the code exists.
+	 */
+	public boolean recorded(final int code) {
+		return this.records.containsKey(code);
 	}
 
-	public List<Object> getRecords(int code) {
-		return records.get(code);
+	/**
+	 * Retrieves all messages with the given code.
+	 * @param code The code for which to retrieve messages.
+	 * @return Messages associated with the given code.
+	 */
+	public List<Object[]> getRecords(final int code) {
+		return this.records.get(code);
 	}
 	
-	private List<Object> getRecordsOrDefault(final int code, final List<Object> defaultValue) {
+	/**
+	 * Retrieves all messages with the given code, or returns a default value.
+	 * @param code The code for which to retrieve messages.
+	 * @param defaultValue Value to return if no messages exist.
+	 * @return Messages associated with the given code, or a default value.
+	 */
+	private List<Object[]> getRecordsOrDefault(final int code, final List<Object[]> defaultValue) {
 		return records.getOrDefault(code, defaultValue);
 	}
 
+	/**
+	 * Returns a message parsed as an int.
+	 * @param code The code for which to retrieve messages.
+	 * @return Message associated with the given code, as an int.
+	 */
 	public int getRecordAsInt(int code) {
-		return Integer.parseInt(((String[]) records.get(code).get(0))[0]);
+		List<Object[]> codeRecord = this.records.get(code);
+		Object[] record = codeRecord.get(0);
+		String message = (String)record[0];
+		return Integer.parseInt(message);
 	}
 
 	public List<String[]> getRecordAsStringArray(int code) {
-		final List<Object> l = records.get(code);
+		final List<Object[]> l = records.get(code);
 		
 		final List<String[]> strs = new ArrayList<>(l.size());
 		for (Object o : l) {
@@ -131,7 +159,7 @@ public class TestMPRecorder implements tlc2.output.IMessagePrinterRecorder {
 	}
 
 	public String getCoverageRecords() {
-		final List<Object> coverages = getRecords(EC.TLC_COVERAGE_VALUE);
+		final List<Object[]> coverages = getRecords(EC.TLC_COVERAGE_VALUE);
 		String out = "";
 		if (coverages == null) {
 			return out;
@@ -144,10 +172,10 @@ public class TestMPRecorder implements tlc2.output.IMessagePrinterRecorder {
 	}
 
 	public List<Coverage> getActionCoverage() {
-		final List<Object> init = getRecordsOrDefault(EC.TLC_COVERAGE_INIT, new ArrayList<>(0));
-		final List<Object> next = getRecordsOrDefault(EC.TLC_COVERAGE_NEXT, new ArrayList<>(0));
-		final List<Object> prop = getRecordsOrDefault(EC.TLC_COVERAGE_PROPERTY, new ArrayList<>(0));
-		final List<Object> con = getRecordsOrDefault(EC.TLC_COVERAGE_CONSTRAINT, new ArrayList<>(0));
+		final List<Object[]> init = getRecordsOrDefault(EC.TLC_COVERAGE_INIT, new ArrayList<>(0));
+		final List<Object[]> next = getRecordsOrDefault(EC.TLC_COVERAGE_NEXT, new ArrayList<>(0));
+		final List<Object[]> prop = getRecordsOrDefault(EC.TLC_COVERAGE_PROPERTY, new ArrayList<>(0));
+		final List<Object[]> con = getRecordsOrDefault(EC.TLC_COVERAGE_CONSTRAINT, new ArrayList<>(0));
 		init.addAll(next);
 		init.addAll(prop);
 		init.addAll(con);
@@ -169,7 +197,7 @@ public class TestMPRecorder implements tlc2.output.IMessagePrinterRecorder {
 	}
 
 	private List<Coverage> getCoverage(final int code, Predicate<? super Coverage> p) {
-		final List<Object> coverages = getRecordsOrDefault(code, new ArrayList<>(0));
+		final List<Object[]> coverages = getRecordsOrDefault(code, new ArrayList<>(0));
 		return coverages.stream().map(o -> (String[]) o).map(a -> new Coverage(a)).filter(p)
 				.collect(Collectors.toList());
 	}
@@ -271,7 +299,7 @@ public class TestMPRecorder implements tlc2.output.IMessagePrinterRecorder {
 	public String toString() {
 		final StringBuffer buf = new StringBuffer(records.size());
 		for(Integer key : records.keySet()) {
-			final List<Object> list = records.get(key);
+			final List<Object[]> list = records.get(key);
 			for (Object elem : list) {
 				if (elem instanceof String[]) {
 					String[] strs = (String[]) elem;

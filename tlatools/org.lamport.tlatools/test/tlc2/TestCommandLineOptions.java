@@ -313,7 +313,22 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void testGenerateErrorTraceSpecFlag()
+	public void testNoGenerateTraceExpressionSpecFlag()
+	{
+		String[] args = new String[]{"-noGenerateTraceExpressionSpec", "test.tla"};
+		assertTrue(CommandLineOptions.parse(args).map(
+				parseFailure -> false,
+				helpRequest -> false,
+				parseSuccess -> {
+					CommandLineOptions actual = parseSuccess.options;
+					assertTrue(actual.mainSpecFilePath.isPresent());
+					assertTrue(actual.noGenerateTraceExpressionSpecFlag);
+					return true;
+				}));
+	}
+
+	@Test
+	public void testGenerateTraceExpressionSpecFlag()
 	{
 		String[] args = new String[]{"-generateSpecTE", "test.tla"};
 		assertTrue(CommandLineOptions.parse(args).map(
@@ -322,14 +337,14 @@ public class TestCommandLineOptions
 				parseSuccess -> {
 					CommandLineOptions actual = parseSuccess.options;
 					assertTrue(actual.mainSpecFilePath.isPresent());
-					assertTrue(actual.generateErrorTraceSpecFlag);
-					assertFalse(actual.noMonolithErrorTraceSpecFlag);
+					assertTrue(actual.generateTraceExpressionSpecFlag);
+					assertFalse(actual.noMonolithTraceExpressionSpecFlag);
 					return true;
 				}));
 	}
 
 	@Test
-	public void testGenerateErrorTraceSpecFlagWithNoMonolithValue()
+	public void testGenerateTraceExpressionSpecFlagWithNoMonolithValue()
 	{
 		String[] args = new String[]{"-generateSpecTE", "nomonolith", "test.tla"};
 		assertTrue(CommandLineOptions.parse(args).map(
@@ -338,36 +353,36 @@ public class TestCommandLineOptions
 				parseSuccess -> {
 					CommandLineOptions actual = parseSuccess.options;
 					assertTrue(actual.mainSpecFilePath.isPresent());
-					assertTrue(actual.generateErrorTraceSpecFlag);
-					assertTrue(actual.noMonolithErrorTraceSpecFlag);
+					assertTrue(actual.generateTraceExpressionSpecFlag);
+					assertTrue(actual.noMonolithTraceExpressionSpecFlag);
 					return true;
 				}));
 	}
 
 	@Test
-	public void testErrorTraceSpecFilePath()
+	public void testTraceExpressionSpecFilePath()
 	{
 		final String expected = "some/file/path/";
-		String[] args = new String[]{"-specTEDir", expected, "test.tla"};
+		String[] args = new String[]{"-traceExpressionSpecOutDir", expected, "test.tla"};
 		assertTrue(CommandLineOptions.parse(args).map(
 				parseFailure -> false,
 				helpRequest -> false,
 				parseSuccess -> {
 					CommandLineOptions actual = parseSuccess.options;
 					assertTrue(actual.mainSpecFilePath.isPresent());
-					assertTrue(actual.errorTraceSpecDirectory.isPresent());
-					assertEquals(expected, actual.errorTraceSpecDirectory.get());
+					assertTrue(actual.traceExpressionSpecDirectory.isPresent());
+					assertEquals(expected, actual.traceExpressionSpecDirectory.get());
 					return true;
 				}));
 	}
 
 	@Test
-	public void testInvalidErrorTraceSpecFilePath()
+	public void testInvalidTraceExpressionSpecFilePath()
 	{
-		String[] args = new String[]{"test.tla", "-specTEDir"};
+		String[] args = new String[]{"test.tla", "-traceExpressionSpecOutDir"};
 		assertTrue(CommandLineOptions.parse(args).map(
 				parseFailure -> {
-					assertTrue(parseFailure.errorMessage.contains("specTEDir"));
+					assertTrue(parseFailure.errorMessage.contains("traceExpressionSpecOutDir"));
 					return true;
 				},
 				helpRequest -> false,

@@ -5,24 +5,16 @@
 
 package tlc2;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.Phaser;
@@ -30,23 +22,16 @@ import java.util.function.Supplier;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
-import tlc2.input.MCOutputPipeConsumer;
-import tlc2.input.MCParser;
-import tlc2.input.MCParserResults;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.Messages;
-import tlc2.output.TeeOutputStream;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
-import tlc2.tool.TLCState;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.FastTool;
-import tlc2.tool.impl.ModelConfig;
-import tlc2.tool.impl.SpecProcessor;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.DotStateWriter;
@@ -112,14 +97,14 @@ public class TLC {
     private boolean checkDeadlock = true;
 
     /**
-     * Whether to generate an error trace spec.
+     * Whether to generate an trace expression spec.
      */
-    private boolean generateErrorTraceSpec = false;
+    private boolean generateTraceExpressionSpec = true;
     
     /**
-     * Directory to which to output the error trace spec.
+     * Directory to which to output the trace expression spec.
      */
-    private Optional<String> errorTraceSpecOutputDirectory = Optional.empty();
+    private String traceExpressionSpecOutputDirectory = TLAConstants.Directories.TRACE_EXPRESSION_SPEC;
 
     /**
      * Whether a seed for the random number generator was provided.
@@ -493,12 +478,14 @@ public class TLC {
 			this.cleanup = true;
 		}
 		
-		if (options.generateErrorTraceSpecFlag)
+		if (options.noGenerateTraceExpressionSpecFlag)
 		{
-			TLCGlobals.tool = true;
-			this.generateErrorTraceSpec = true;
-			this.errorTraceSpecOutputDirectory = options.errorTraceSpecDirectory;
+			this.generateTraceExpressionSpec = false;
 		}
+
+		options.traceExpressionSpecDirectory.ifPresent(value -> {
+			this.traceExpressionSpecOutputDirectory = value;
+		});
 
 		options.configurationFilePath.ifPresent(value -> {
 			this.configFile = value;
@@ -717,112 +704,12 @@ public class TLC {
 			}
 		}
 
-		if (this.generateErrorTraceSpec)
+		if (this.generateTraceExpressionSpec)
 		{
-			// This reads the output (ToolIO.out) on stdout of all other TLC threads. The
-			// output is parsed to reconstruct the error trace, from which the code below
-			// generates the SpecTE file. It might seem as if it would have been easier to
-			// reuse the MPRecorder to collect the output that's written to ToolIO, but this
-			// would work with two TLC processes where the first runs model-checking and
-			// pipes its output to the second.
-			try {
-				final ByteArrayOutputStream temporaryMCOutputStream = new ByteArrayOutputStream();
-				final BufferedOutputStream bos = new BufferedOutputStream(temporaryMCOutputStream);
-				final PipedInputStream pis = new PipedInputStream();
-				final TeeOutputStream tos1 = new TeeOutputStream(bos, new PipedOutputStream(pis));
-				final TeeOutputStream tos2 = new TeeOutputStream(ToolIO.out, tos1);
-				ToolIO.out = new PrintStream(tos2);
-				final MCOutputPipeConsumer mcOutputConsumer = new MCOutputPipeConsumer(pis, null);
-				
-				// Note, this runnable's thread will not finish consuming output until just
-				// 	before the app exits and we will use the output consumer in the TLC main
-				//	thread while it is still consuming (but at a point where the model checking
-				//	itself has finished and so the consumer is as populated as we need it to be
-				//	- but prior to the output consumer encountering the EC.TLC_FINISHED message.)
-				final Runnable r = () -> {
-					boolean haveClosedOutputStream = false;
-					try {
-						waitingOnGenerationCompletion.register();
-						mcOutputConsumer.consumeOutput();
-						
-						bos.flush();
-						temporaryMCOutputStream.close();
-						haveClosedOutputStream = true;
-						
-						if ((mcOutputConsumer != null) && (mcOutputConsumer.getError() != null)) {
-							// We need not synchronize the access to tool (which might appear racy), because
-							// the consumeOutput above will block until TLC's finish message, which is written
-							// *after* tool has been created.
-							final SpecProcessor sp = tool.getSpecProcessor();
-							final ModelConfig mc = tool.getModelConfig();
-							final String originalSpecName = mcOutputConsumer.getSpecName();
-
-							// Use provided output directory if present; if path is not valid, fall back to
-							// source directory.
-							final File outputDirectory =
-									this.errorTraceSpecOutputDirectory
-										.map(path -> new File(path))
-										.filter(file -> file.exists() && file.isDirectory())
-										.orElse(mcOutputConsumer.getSourceDirectory());
-							
-							final MCParserResults mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
-
-							// Write the files SpecTE.tla and SpecTE.cfg
-							// At this point SpecTE.cfg contains the content of MC.cfg.
-							// SpecTE.tla contains the newly generated SpecTE and the content of MC.tla.
-							// See https://github.com/tlaplus/tlaplus/issues/475 for why copying MC.tla/MC.cfg is wrong.
-							final File[] files = TraceExplorer.writeSpecTEFiles(outputDirectory, originalSpecName,
-									TLCState.Empty.getVarsAsStrings(), mcParserResults, mcOutputConsumer.getError());
-							
-							// This rewrites SpecTE.tla in an attempt to create a monolith spec.
-							// See https://github.com/tlaplus/tlaplus/issues/479 for why this is broken.
-							/*
-							if (this.requireMonolithicErrorTraceSpec) {
-								final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
-								final TLAMonolithCreator monolithCreator
-									= new TLAMonolithCreator(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
-															 mcOutputConsumer.getSourceDirectory(),
-															 extendedModules,
-															 mcParserResults.getAllExtendedModules(),
-															 mcParserResults.getAllInstantiatedModules());
-								// Beware, this internally creates a temp file and re-reads SpecTE.tla from disk again. 
-								monolithCreator.copy();
-							}
-							*/
-							
-							// *Append* TLC's stdout/stderr output to final SpecTE.tla. The content of SpecTE.tla
-							// is now MonolithMC, MonolithSpecTE, stdout/stderr. Most users won't care for
-							// stderr/stdout and want to look at SpecTE. Thus, SpecTE is at the top.
-							final FileOutputStream fos = new FileOutputStream(files[0], true);
-							FileUtil.copyStream(new ByteArrayInputStream(temporaryMCOutputStream.toByteArray()), fos);
-							
-							fos.close();
-						}
-						
-					} catch (final Exception e) {
-						MP.printMessage(EC.GENERAL,
-										"A model checking error occurred while parsing tool output; the execution "
-												+ "ended before the potential "
-												+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
-												+ " generation stage.");
-					} finally {
-						if (!haveClosedOutputStream) {
-							try {
-								bos.flush();
-								temporaryMCOutputStream.close();
-							} catch (final Exception e) { }
-						}
-						// Signal the main method to continue to termination.
-							waitingOnGenerationCompletion.arriveAndDeregister();
-						}
-					};
-					new Thread(r).start();
-
-				} catch (final IOException ioe) {
-					printErrorMsg("Failed to set up piped output consumers; no potential "
-										+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + " will be generated: "
-										+ ioe.getMessage());
-				}
+			ErrorTraceSpec.initialize(
+					this.waitingOnGenerationCompletion,
+					this.tool,
+					msg -> this.printErrorMsg(msg));
 		}
 		
 		if (cleanup && (fromChkpt == null)) {
@@ -1380,8 +1267,12 @@ public class TLC {
     	return this.dumpFile;
     }
     
-    public boolean willGenerateErrorTraceSpec() {
-    	return this.generateErrorTraceSpec;
+    public boolean willGenerateTraceExpressionSpec() {
+    	return this.generateTraceExpressionSpec;
+    }
+    
+    public String getTraceExpressionOutputDirectory() {
+    	return this.traceExpressionSpecOutputDirectory;
     }
     
     public DumpFileOptions getDumpFileOptions() {

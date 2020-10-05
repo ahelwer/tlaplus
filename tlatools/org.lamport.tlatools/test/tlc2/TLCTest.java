@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 
@@ -153,6 +154,29 @@ public class TLCTest {
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
 		final String[] args = new String[] {"-simulate", tlaFile};
+		assertEquals(TLC.RunMode.MODEL_CHECK, tlc.getRunMode());
+		assertTrue(tlc.handleParameters(args, false));
+		assertEquals(TLC.RunMode.SIMULATE, tlc.getRunMode());
+	}
+	
+	@Test
+	public void testModelCheckFlagIsNoOp()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-modelcheck", tlaFile};
+		assertEquals(TLC.RunMode.MODEL_CHECK, tlc.getRunMode());
+		assertTrue(tlc.handleParameters(args, false));
+		assertEquals(TLC.RunMode.MODEL_CHECK, tlc.getRunMode());
+	}
+	
+	@Test
+	public void testSimulateOverridesModelCheckFlag()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-simulate", "-modelcheck", tlaFile};
+		assertEquals(TLC.RunMode.MODEL_CHECK, tlc.getRunMode());
 		assertTrue(tlc.handleParameters(args, false));
 		assertEquals(TLC.RunMode.SIMULATE, tlc.getRunMode());
 	}
@@ -163,7 +187,7 @@ public class TLCTest {
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
 		final long expectedLimit = 1234;
-		final String expectedPath = "/path/to/file";
+		final String expectedPath = Paths.get("some", "file", "path").toString();
 		final String[] args = new String[]{"-simulate", "file=" + expectedPath + ",num=" + expectedLimit, tlaFile};
 		assertTrue(tlc.handleParameters(args, false));
 		assertEquals(TLC.RunMode.SIMULATE, tlc.getRunMode());
@@ -273,14 +297,59 @@ public class TLCTest {
 	}
 	
 	@Test
-	public void testGenerateSpecTeOptionSetsGlobalVariable()
+	public void testGenerateSpecTeOptionIsNoOp()
 	{
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
 		final String[] args = new String[] {"-generateSpecTE", tlaFile};
+		assertTrue(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.handleParameters(args, false));
-		assertTrue(TLCGlobals.tool);
-		assertTrue(tlc.willGenerateErrorTraceSpec());
+		assertTrue(tlc.willGenerateTraceExpressionSpec());
+	}
+	
+	@Test
+	public void testSpecTeNoMonolithOptionIsNoOp()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-generateSpecTE", "nomonolith", tlaFile};
+		assertTrue(tlc.willGenerateTraceExpressionSpec());
+		assertTrue(tlc.handleParameters(args, false));
+		assertTrue(tlc.willGenerateTraceExpressionSpec());
+	}
+
+	@Test
+	public void testNoGenerateTraceExpressionSpecOptionSetsVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-noGenerateTraceExpressionSpec", tlaFile};
+		assertTrue(tlc.willGenerateTraceExpressionSpec());
+		assertTrue(tlc.handleParameters(args, false));
+		assertFalse(tlc.willGenerateTraceExpressionSpec());
+	}
+	
+	@Test
+	public void testNoGenerateTraceExpressionSpecOverridesGenerateTraceExpressionSpec()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-generateSpecTE", "-noGenerateTraceExpressionSpec", tlaFile};
+		assertTrue(tlc.willGenerateTraceExpressionSpec());
+		assertTrue(tlc.handleParameters(args, false));
+		assertFalse(tlc.willGenerateTraceExpressionSpec());
+	}
+	
+	@Test
+	public void testTraceExpressionOutDirSetsVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String expectedPath = Paths.get("some", "file", "path").toString();
+		final String[] args = new String[] {"-traceExpressionSpecOutDir", expectedPath, tlaFile};
+		assertEquals(TLAConstants.Directories.TRACE_EXPRESSION_SPEC, tlc.getTraceExpressionOutputDirectory());
+		assertTrue(tlc.handleParameters(args, false));
+		assertEquals(expectedPath, tlc.getTraceExpressionOutputDirectory());
 	}
 	
 	@Test
@@ -532,7 +601,7 @@ public class TLCTest {
 	@Test
 	public void testRecoverOptionSetsVariable()
 	{
-		final String inputValue = String.format("{0}some{0}file{0}path", FileUtil.separator);
+		final String inputValue = Paths.get("some", "file", "path").toString();
 		final String expectedValue = inputValue + FileUtil.separator;
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
@@ -553,7 +622,7 @@ public class TLCTest {
 	@Test
 	public void testMetadirOptionSetsGlobalVariable()
 	{
-		final String inputValue = String.format("{0}some{0}file{0}path", FileUtil.separator);
+		final String inputValue = Paths.get("some", "file", "path").toString();
 		final String expectedValue = inputValue + FileUtil.separator;
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
