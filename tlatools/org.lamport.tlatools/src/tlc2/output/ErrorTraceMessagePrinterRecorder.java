@@ -30,14 +30,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import tlc2.model.MCError;
 
 /**
  * Saves all messages that pass through {@link tlc.output.MP}. Includes some methods to ease
  * reading those messages.
  */
-public class MessagePrinterRecorder implements tlc2.output.IMessagePrinterRecorder {
+public class ErrorTraceMessagePrinterRecorder implements tlc2.output.IMessagePrinterRecorder {
 	private final Map<Integer, List<Object[]>> records = new HashMap<Integer, List<Object[]>>();
 	
 	@Override
@@ -47,6 +50,14 @@ public class MessagePrinterRecorder implements tlc2.output.IMessagePrinterRecord
 		}
 
 		this.records.get(code).add(objects);
+	}
+	
+	/**
+	 * Returns an error trace reconstructed from recorded messages, if one exists.
+	 */
+	public Optional<MCError> getErrorTrace()
+	{
+		return Optional.empty();
 	}
 
 	/**

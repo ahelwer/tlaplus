@@ -18,7 +18,7 @@ import tlc2.input.MCParserResults;
 import tlc2.output.EC;
 import tlc2.output.IMessagePrinterRecorder;
 import tlc2.output.MP;
-import tlc2.output.MessagePrinterRecorder;
+import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.output.TeeOutputStream;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
@@ -34,7 +34,7 @@ public class ErrorTraceSpec {
 			ITool tool,
 			Consumer<String> printErrorMsg)
 	{
-		MessagePrinterRecorder recorder = new MessagePrinterRecorder();
+		ErrorTraceMessagePrinterRecorder recorder = new ErrorTraceMessagePrinterRecorder();
 		MP.setRecorder(recorder);
 		
 		// This reads the output (ToolIO.out) on stdout of all other TLC threads. The
@@ -81,7 +81,7 @@ public class ErrorTraceSpec {
 			MCOutputPipeConsumer mcOutputConsumer,
 			Phaser waitingOnGenerationCompletion,
 			ITool tool,
-			MessagePrinterRecorder recorder)
+			ErrorTraceMessagePrinterRecorder recorder)
 	{
 		boolean haveClosedOutputStream = false;
 		try {

@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.Phaser;
@@ -95,16 +96,13 @@ public class TLC {
      * Whether to check for deadlock.
      */
     private boolean checkDeadlock = true;
-
-    /**
-     * Whether to generate an trace expression spec.
-     */
-    private boolean generateTraceExpressionSpec = true;
     
     /**
-     * Directory to which to output the trace expression spec.
+     * Options controlling generation of trace expression spec.
      */
-    private String traceExpressionSpecOutputDirectory = TLAConstants.Directories.TRACE_EXPRESSION_SPEC;
+    private Optional<TraceExpressionSpec> traceExpressionSpec =
+    		Optional.of(new TraceExpressionSpec(
+    				TLAConstants.Directories.TRACE_EXPRESSION_SPEC));
 
     /**
      * Whether a seed for the random number generator was provided.
@@ -480,11 +478,11 @@ public class TLC {
 		
 		if (options.noGenerateTraceExpressionSpecFlag)
 		{
-			this.generateTraceExpressionSpec = false;
+			this.traceExpressionSpec = Optional.empty();
 		}
 
 		options.traceExpressionSpecDirectory.ifPresent(value -> {
-			this.traceExpressionSpecOutputDirectory = value;
+			this.traceExpressionSpec.ifPresent(spec -> spec.setOutputDirectory(value));
 		});
 
 		options.configurationFilePath.ifPresent(value -> {
@@ -704,13 +702,12 @@ public class TLC {
 			}
 		}
 
-		if (this.generateTraceExpressionSpec)
-		{
+		this.traceExpressionSpec.ifPresent(spec -> {
 			ErrorTraceSpec.initialize(
 					this.waitingOnGenerationCompletion,
 					this.tool,
 					msg -> this.printErrorMsg(msg));
-		}
+		});
 		
 		if (cleanup && (fromChkpt == null)) {
 			// clean up the states directory only when not recovering
@@ -1268,11 +1265,11 @@ public class TLC {
     }
     
     public boolean willGenerateTraceExpressionSpec() {
-    	return this.generateTraceExpressionSpec;
+    	return this.traceExpressionSpec.isPresent();
     }
     
-    public String getTraceExpressionOutputDirectory() {
-    	return this.traceExpressionSpecOutputDirectory;
+    public Optional<String> getTraceExpressionOutputDirectory() {
+    	return this.traceExpressionSpec.map(spec -> spec.getOutputDirectory());
     }
     
     public DumpFileOptions getDumpFileOptions() {

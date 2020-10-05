@@ -13,7 +13,7 @@ public class MessagePrinterRecorderTest {
 	{
 		final int code = 0;
 		final String expected = "This is a message";
-		final MessagePrinterRecorder recorder = new MessagePrinterRecorder();
+		final ErrorTraceMessagePrinterRecorder recorder = new ErrorTraceMessagePrinterRecorder();
 		recorder.record(code, expected);
 		List<Object[]> actualListOfArrays = recorder.getRecords(code);
 		assertEquals(1, actualListOfArrays.size());
@@ -29,7 +29,7 @@ public class MessagePrinterRecorderTest {
 	{
 		final int code = 0;
 		final Integer expected = 128;
-		final MessagePrinterRecorder recorder = new MessagePrinterRecorder();
+		final ErrorTraceMessagePrinterRecorder recorder = new ErrorTraceMessagePrinterRecorder();
 		recorder.record(code, expected.toString());
 		Integer actual = recorder.getRecordAsInt(code);
 		assertEquals(expected, actual);

@@ -305,6 +305,7 @@ public class TLCTest {
 		assertTrue(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.handleParameters(args, false));
 		assertTrue(tlc.willGenerateTraceExpressionSpec());
+		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
 	}
 	
 	@Test
@@ -316,6 +317,7 @@ public class TLCTest {
 		assertTrue(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.handleParameters(args, false));
 		assertTrue(tlc.willGenerateTraceExpressionSpec());
+		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
 	}
 
 	@Test
@@ -327,6 +329,7 @@ public class TLCTest {
 		assertTrue(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.handleParameters(args, false));
 		assertFalse(tlc.willGenerateTraceExpressionSpec());
+		assertTrue(tlc.getTraceExpressionOutputDirectory().isEmpty());
 	}
 	
 	@Test
@@ -338,6 +341,7 @@ public class TLCTest {
 		assertTrue(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.handleParameters(args, false));
 		assertFalse(tlc.willGenerateTraceExpressionSpec());
+		assertTrue(tlc.getTraceExpressionOutputDirectory().isEmpty());
 	}
 	
 	@Test
@@ -347,9 +351,11 @@ public class TLCTest {
 		final TLC tlc = new TLC();
 		final String expectedPath = Paths.get("some", "file", "path").toString();
 		final String[] args = new String[] {"-traceExpressionSpecOutDir", expectedPath, tlaFile};
-		assertEquals(TLAConstants.Directories.TRACE_EXPRESSION_SPEC, tlc.getTraceExpressionOutputDirectory());
+		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
+		assertEquals(TLAConstants.Directories.TRACE_EXPRESSION_SPEC, tlc.getTraceExpressionOutputDirectory().get());
 		assertTrue(tlc.handleParameters(args, false));
-		assertEquals(expectedPath, tlc.getTraceExpressionOutputDirectory());
+		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
+		assertEquals(expectedPath, tlc.getTraceExpressionOutputDirectory().get());
 	}
 	
 	@Test
