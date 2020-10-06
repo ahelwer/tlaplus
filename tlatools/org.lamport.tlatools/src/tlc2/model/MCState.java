@@ -5,9 +5,61 @@ import java.util.ArrayList;
 import tla2sany.st.Location;
 import util.TLAConstants;
 
+/**
+ * Encapsulates information about a TLC state.
+ */
 public class MCState {
+	
 	private static final String BACK_TO_STATE = " " + TLAConstants.BACK_TO_STATE;
+	
+	/**
+	 * The variables captured by this state.
+	 */
+	private final MCVariable[] variables;
+	
+	/**
+	 * The name of the next-state-relation taken to arrive in this state.
+	 */
+	private final String name;
+	
+	/**
+	 * The state label; takes form of <$name $location>
+	 */
+	private final String label;
+	
+	/**
+	 * The location of the next-state-relation, a parsed representation of (for example):
+	 * line 7, col 9 to line 11, col 23 of module Alias
+	 */
+	private final Location location;
+	
+	/**
+	 * Whether this state was reached by stuttering.
+	 * Found in behaviors witnessing a liveness property violation.
+	 */
+	private final boolean isStuttering;
+	
+	/**
+	 * Whether this state returns to a previous state in the behavior.
+	 * Found in behaviors witnessing a liveness property violation.
+	 */
+	private final boolean isBackToState;
+	
+	/**
+	 * The depth of this state in the behavior, counting from 1.
+	 */
+	private final int stateNumber;
 
+	/**
+	 * Parses a state from the standard TLC command line output format, for example:
+	 * 
+	 * 3: <Next line 7, col 9 to line 11, col 23 of module Alias>
+	 * /\ x = 3
+	 * /\ y = FALSE
+	 * 
+	 * @param stateInputString The unparsed state in TLC command line output format.
+	 * @return A parsed {@link MCState} instance.
+	 */
 	public static MCState parseState(final String stateInputString) {
 		// state number
 		final int index = stateInputString.indexOf(TLAConstants.COLON);
@@ -56,16 +108,7 @@ public class MCState {
 
 		return new MCState(vars, name, label, location, isStuttering, isBackToState, stateNumber);
 	}
-
 	
-	private final MCVariable[] variables;
-	private final String name;
-	private final String label;
-	private final Location location;
-	private final boolean isStuttering;
-	private final boolean isBackToState;
-	private final int stateNumber;
-
 	/**
 	 * @param vars            variables in this state.
 	 * @param stateName       the name for this state

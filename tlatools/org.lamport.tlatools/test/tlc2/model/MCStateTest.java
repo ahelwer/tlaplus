@@ -1,13 +1,12 @@
 package tlc2.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
 
-import tla2sany.st.Location;
 import util.TLAConstants;
 
 public class MCStateTest {
@@ -17,6 +16,37 @@ public class MCStateTest {
 	{
 		testParseRoundTrip(1, "Initial predicate", "", "x = 8", "y = 7");
 		testParseRoundTrip(2, "YIncr", "line 8, col 10 to line 10, col 26 of module Bla", "x = 8", "y = 15");
+		testParseRoundTrip(1, "Initial predicate", "", "x = 1", "y = FALSE");
+		testParseRoundTrip(2, "Next", "line 7, col 9 to line 11, col 23 of module Alias", "x = 2", "y = TRUE");
+		testParseRoundTrip(3, "Next", "line 7, col 9 to line 11, col 23 of module Alias", "x = 3", "y = FALSE");
+		testParseRoundTrip(4, "Next", "line 7, col 9 to line 11, col 23 of module Alias", "x = 4", "y = TRUE");
+	}
+	
+	@Test
+	public void testSimpleRecordPrinter()
+	{
+		final MCState input = Utils.buildState(1, "Initial predicate", "", "x = 8", "y = 7");
+		final String actual = input.asSimpleRecord();
+		final String[] expectedTokens = new String[] {
+				TLAConstants.L_SQUARE_BRACKET,
+				"x", TLAConstants.RECORD_ARROW.trim(), "8",
+				TLAConstants.COMMA,
+				"y", TLAConstants.RECORD_ARROW.trim(), "7",
+				TLAConstants.R_SQUARE_BRACKET
+		};
+
+		String remaining = actual.trim();
+		for (String expectedToken : expectedTokens)
+		{
+			if (remaining.startsWith(expectedToken))
+			{
+				remaining = remaining.substring(expectedToken.length()).trim();
+			}
+			else
+			{
+				fail(String.format("Required token [%s]; received [%s]", expectedToken, remaining));
+			}
+		}
 	}
 	
 	private static void testParseRoundTrip(
@@ -25,53 +55,18 @@ public class MCStateTest {
 			String location,
 			String ...assignments)
 	{
-		final MCState expected = buildState(ordinal, name, location, assignments);
-		final List<String> inputLines = toTlcOutputFormat(expected);
+		final MCState expected = Utils.buildState(ordinal, name, location, assignments);
+		final List<String> inputLines = Utils.toTlcOutputFormat(expected);
 		final String input = String.join(TLAConstants.CR, inputLines);
 		final MCState actual = MCState.parseState(input);
-		compareStates(expected, actual);
-	}
-	
-	private static MCState buildState(
-			final int ordinal,
-			final String name,
-			final String location,
-			final String ...assignments)
-	{
-		MCVariable[] variables = new MCVariable[assignments.length];
-		for (int i = 0; i < assignments.length; i++)
-		{
-			String assignment = assignments[i];
-			String[] split = assignment.split("=");
-			variables[i] = new MCVariable(split[0], split[1]);
-		}
-		
-		String label = String.format("%s %s", name, location).trim();
-		return new MCState(
-				variables,
-				name,
-				String.format("<%s>", label),
-				Location.parseLocation(location),
-				false,
-				false,
-				ordinal);
-	}
-	
-	private static List<String> toTlcOutputFormat(final MCState state)
-	{
-		List<String> inputLines = new ArrayList<String>();
-		inputLines.add(String.format("%d: <%s>", state.getStateNumber(), state.getName()));
-		for (MCVariable variable : state.getVariables())
-		{
-			inputLines.add(String.format("/\\ %s = %s", variable.getName(), variable.getValueAsString()));
-		}
-
-		return inputLines;
+		MCStateTest.compareStates(expected, actual);
 	}
 	
 	private static void compareStates(final MCState expected, final MCState actual)
 	{
 		assertEquals(expected.getName(), actual.getName());
+		// The label is not trimmed in parsing; we are maintaining backward compatibility
+		assertEquals(" " + expected.getLabel(), actual.getLabel());
 		assertEquals(expected.isStuttering(), actual.isStuttering());
 		assertEquals(expected.isBackToState(), actual.isBackToState());
 		assertEquals(expected.getStateNumber(), actual.getStateNumber());
