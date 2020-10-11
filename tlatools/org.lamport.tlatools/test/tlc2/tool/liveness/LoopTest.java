@@ -61,12 +61,12 @@ public class LoopTest extends ModelCheckerTestCase {
 		assertNodeAndPtrSizes(136L, 64L);
 
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(4);
 		expectedTrace.add("x = 0");
 		expectedTrace.add("x = 1");
 		expectedTrace.add("x = 2");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 		
 		// Without any fairness defined, state 4 is stuttering instead of moving
 		// on to state x=3.

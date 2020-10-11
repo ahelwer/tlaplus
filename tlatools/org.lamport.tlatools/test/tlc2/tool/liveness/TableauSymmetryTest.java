@@ -57,7 +57,7 @@ public class TableauSymmetryTest extends ModelCheckerTestCase {
 		assertNodeAndPtrSizes(624L, 224L);
 
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(7);
 		// Trace prefix
 		expectedTrace.add("arr = (a :> \"ready\" @@ b :> \"ready\")");
@@ -66,7 +66,7 @@ public class TableauSymmetryTest extends ModelCheckerTestCase {
 		expectedTrace.add("arr = (a :> \"done\" @@ b :> \"busy\")");
 		expectedTrace.add("arr = (a :> \"done\" @@ b :> \"done\")");
 		expectedTrace.add("arr = (a :> \"done\" @@ b :> \"ready\")");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 		
 		assertBackToState(4, "<Action line 7, col 13 to line 8, col 47 of module TableauSymmetry>");
 	}

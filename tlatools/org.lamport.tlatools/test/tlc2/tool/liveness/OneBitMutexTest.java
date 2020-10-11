@@ -58,7 +58,7 @@ public class OneBitMutexTest extends ModelCheckerTestCase {
 		assertNodeAndPtrSizes(7380L, 2368L);
 
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(17);
 		//1
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
@@ -125,7 +125,7 @@ public class OneBitMutexTest extends ModelCheckerTestCase {
 						+ "/\\ other = (A :> B @@ B :> A)\n"
 						+ "/\\ x = (A :> FALSE @@ B :> FALSE)\n" 
 						+ "/\\ pc = (A :> \"e1\" @@ B :> \"e1\")");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 		assertBackToState(4, "<Action line 60, col 13 to line 64, col 29 of module OneBitMutex>");
 	}

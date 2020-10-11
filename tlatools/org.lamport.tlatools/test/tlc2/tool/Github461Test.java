@@ -50,7 +50,7 @@ public class Github461Test extends ModelCheckerTestCase {
 				"\"Failure of assertion at line 8, column 4.\""));
 
 		// Assert an error trace.
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		
 		// Assert the correct trace.
 		final List<String> expectedTrace = new ArrayList<String>(4);
@@ -59,7 +59,7 @@ public class Github461Test extends ModelCheckerTestCase {
 		expectedTrace.add("x = 2");
 		expectedTrace.add("x = 3");
 		expectedTrace.add("x = 4");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 		// Assert the underlying error message with stack trace.
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_NESTED_EXPRESSION,

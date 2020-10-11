@@ -54,13 +54,13 @@ public class StutteringTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
 		// Assert an error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 
 		// The actual trace differs at each simulation due to its random
 		// selection of the next state.
 
 		// Assert the error trace contains a stuttering step at position 5
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
+		assertTrue(recorder.recorded(EC.TLC_STUTTER_STATE));
 
 		// Assert the error trace does NOT show back to state X
 		assertFalse("Trace shows \"Back to state...\"", recorder.recorded(EC.TLC_BACK_TO_STATE));

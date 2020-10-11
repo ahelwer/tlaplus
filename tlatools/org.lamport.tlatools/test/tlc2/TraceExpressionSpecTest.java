@@ -12,23 +12,6 @@ import tlc2.output.ErrorTraceMessagePrinterRecorder;
 
 public class TraceExpressionSpecTest {
 
-	public class TestErrorTraceMessagePrinterRecorder
-		extends ErrorTraceMessagePrinterRecorder
-	{
-		private MCError error;
-		
-		public TestErrorTraceMessagePrinterRecorder(MCError error)
-		{
-			this.error = error;
-		}
-		
-		@Override
-		public Optional<MCError> getErrorTrace()
-		{
-			return Optional.of(this.error);
-		}
-	}
-
 	@Test
 	public void testSetOutputDirectory()
 	{
@@ -47,5 +30,22 @@ public class TraceExpressionSpecTest {
 		final String outputDir = TLAConstants.Directories.TRACE_EXPRESSION_SPEC;
 		ErrorTraceMessagePrinterRecorder recorder = new TestErrorTraceMessagePrinterRecorder(error);
 		TraceExpressionSpec teSpec = new TraceExpressionSpec(outputDir, recorder);
+	}
+
+	public class TestErrorTraceMessagePrinterRecorder
+		extends ErrorTraceMessagePrinterRecorder
+	{
+		private MCError error;
+		
+		public TestErrorTraceMessagePrinterRecorder(MCError error)
+		{
+			this.error = error;
+		}
+		
+		@Override
+		public Optional<MCError> getErrorTrace()
+		{
+			return Optional.of(this.error);
+		}
 	}
 }

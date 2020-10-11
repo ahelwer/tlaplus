@@ -129,14 +129,32 @@ public class DFIDWorker extends IdThread implements IWorker {
       int idx = 0;
       while (idx < this.curLevel) 
       {
-          StatePrinter.printState(this.stateStack[idx], ++idx);
+    	  // Invariant violation error traces are treated differently from other traces
+    	  if (EC.TLC_INVARIANT_VIOLATED_BEHAVIOR == errorCode)
+    	  {
+    		  TLCStateInfo info = new TLCStateInfo(s1, null);
+    		  StatePrinter.printInvariantViolationStateTraceState(info, null, ++idx);
+    	  }
+    	  else
+    	  {
+			  StatePrinter.printRuntimeErrorStateTraceState(this.stateStack[idx], ++idx);
+    	  }
       }
       // the prefix printed by the while loop should end at s1.
       assert s1.equals(this.stateStack[idx]);
-      StatePrinter.printState(s1, ++idx);
+      StatePrinter.printRuntimeErrorStateTraceState(s1, ++idx);
       if (s2 != null) 
       {
-          StatePrinter.printState(s2, idx+1);
+    	  // Invariant violation error traces are treated differently from other traces
+    	  if (EC.TLC_INVARIANT_VIOLATED_BEHAVIOR == errorCode)
+    	  {
+    		  TLCStateInfo info = new TLCStateInfo(s2, null);
+    		  StatePrinter.printInvariantViolationStateTraceState(info, null, idx+1);
+    	  }
+    	  else
+    	  {
+			  StatePrinter.printRuntimeErrorStateTraceState(s2, idx+1);
+    	  }
       }
   }
 

@@ -49,8 +49,8 @@ public class CheckpointOnViolationTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "252", "54", "11"));
 		
 		// Check the violation
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		assertEquals(7, recorder.getRecords(EC.TLC_STATE_PRINT2).size());
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
+		assertEquals(7, recorder.getRecords(EC.TLC_STATE_TRACE).size());
 		
 		// Check that a checkpoint has been taken.
 		assertTrue(recorder.recorded(EC.TLC_CHECKPOINT_START));

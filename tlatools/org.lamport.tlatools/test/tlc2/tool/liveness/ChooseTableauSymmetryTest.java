@@ -55,7 +55,7 @@ public class ChooseTableauSymmetryTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(7);
 		// Trace prefix
 		expectedTrace.add("arr = (a :> \"ready\" @@ b :> \"ready\")");
@@ -64,7 +64,7 @@ public class ChooseTableauSymmetryTest extends ModelCheckerTestCase {
 		expectedTrace.add("arr = (a :> \"done\" @@ b :> \"busy\")");
 		expectedTrace.add("arr = (a :> \"done\" @@ b :> \"done\")");
 		expectedTrace.add("arr = (a :> \"done\" @@ b :> \"ready\")");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 		
 		assertBackToState(4, "<Action line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
 	}

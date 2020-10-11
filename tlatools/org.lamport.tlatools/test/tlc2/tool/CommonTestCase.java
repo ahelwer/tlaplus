@@ -99,8 +99,8 @@ public abstract class CommonTestCase {
 	 *            The number of the stuttering state
 	 */
 	protected void assertStuttering(int stateNum) {
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
-		List<Object> stutter = recorder.getRecords(EC.TLC_STATE_PRINT3);
+		assertTrue(recorder.recorded(EC.TLC_STUTTER_STATE));
+		List<Object> stutter = recorder.getRecords(EC.TLC_STUTTER_STATE);
 		assertTrue(stutter.size() > 0);
 		Object[] object = (Object[]) stutter.get(0);
 		assertEquals(stateNum, object[1]);

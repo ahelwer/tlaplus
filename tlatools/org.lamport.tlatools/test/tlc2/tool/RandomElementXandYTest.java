@@ -57,7 +57,7 @@ public class RandomElementXandYTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = 0\n/\\ y = 0");
 		expectedTrace.add("/\\ x = 1\n/\\ y = 1");
 		expectedTrace.add("/\\ x = 0\n/\\ y = 1");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 	assertZeroUncovered();
 	}

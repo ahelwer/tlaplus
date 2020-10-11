@@ -60,7 +60,7 @@ public class CodePlexBug08AgentRingTest extends ModelCheckerTestCase {
 		assertNodeAndPtrSizes(8496L, 2880L);
 		
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(4);
 		expectedTrace.add("/\\ Agent = [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0]\n"
 				   + "/\\ CanCreate = TRUE\n"
@@ -106,7 +106,7 @@ public class CodePlexBug08AgentRingTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 0]\n"
 				   + "/\\ CanCreate = FALSE\n"
 				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 		assertBackToState(10);
 

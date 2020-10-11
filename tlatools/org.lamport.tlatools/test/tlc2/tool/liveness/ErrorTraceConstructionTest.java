@@ -57,7 +57,7 @@ public class ErrorTraceConstructionTest extends ModelCheckerTestCase {
 		assertNodeAndPtrSizes(288L, 128L);
 	
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(4);
 		expectedTrace.add("/\\ x = 0\n/\\ y = 0");
 		expectedTrace.add("/\\ x = 0\n/\\ y = 1");
@@ -67,7 +67,7 @@ public class ErrorTraceConstructionTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = 1\n/\\ y = 5");
 		expectedTrace.add("/\\ x = 0\n/\\ y = 6");
 		expectedTrace.add("/\\ x = 0\n/\\ y = 7");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 		
 		assertBackToState(4, "<N7 line 32, col 7 to line 34, col 19 of module ErrorTraceConstruction>");
 

@@ -58,9 +58,9 @@ public class RandomSubsetTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2003", "2003", "2001"));
 		assertEquals(2, recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH));
 
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		
-		final List<Object> actual = recorder.getRecords(EC.TLC_STATE_PRINT2);
+		final List<Object> actual = recorder.getRecords(EC.TLC_STATE_TRACE);
 		assertEquals(2, actual.size());
 		
 		final TLCStateInfo first = (TLCStateInfo) ((Object[]) actual.get(0))[0];

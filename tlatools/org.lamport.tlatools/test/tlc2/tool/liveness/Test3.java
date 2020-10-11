@@ -55,13 +55,13 @@ public class Test3 extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(4);
 		expectedTrace.add("x = 0");
 		expectedTrace.add("x = 1");
 		expectedTrace.add("x = 0");
 		expectedTrace.add("x = 2");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 		
 		assertBackToState(1);
 

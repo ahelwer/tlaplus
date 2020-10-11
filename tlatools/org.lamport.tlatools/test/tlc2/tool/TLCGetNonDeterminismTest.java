@@ -54,7 +54,7 @@ public class TLCGetNonDeterminismTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(4);
 		expectedTrace.add("/\\ x = 0\n" 
 						+ "/\\ y = 0");
@@ -64,7 +64,7 @@ public class TLCGetNonDeterminismTest extends ModelCheckerTestCase {
 				        + "/\\ y = 2");
 		expectedTrace.add("/\\ x = 3\n" 
 						+ "/\\ y = 3");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 		assertStuttering(5);
 	}

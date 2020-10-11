@@ -57,7 +57,7 @@ public class SymmetryModelCheckerTestLonga extends ModelCheckerTestCase {
 		assertNodeAndPtrSizes(180L, 80L);
 
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(4);
 		expectedTrace.add("/\\ x = a\n/\\ y = 0");
 		expectedTrace.add("/\\ x = a\n/\\ y = 1");
@@ -69,7 +69,7 @@ public class SymmetryModelCheckerTestLonga extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = b\n/\\ y = 2");
 		expectedTrace.add("/\\ x = b\n/\\ y = 3");
 		expectedTrace.add("/\\ x = b\n/\\ y = 4");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 		
 		assertBackToState(1, "<Action line 25, col 12 to line 27, col 27 of module SymmetryLivenessLong>");
 	}

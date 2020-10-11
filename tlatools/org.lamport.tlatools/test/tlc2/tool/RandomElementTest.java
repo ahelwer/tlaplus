@@ -63,7 +63,7 @@ public class RandomElementTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = 443\n/\\ y = 8");
 		expectedTrace.add("/\\ x = 151\n/\\ y = 9");
 		expectedTrace.add("/\\ x = 767\n/\\ y = 10");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 	assertZeroUncovered();
 	}

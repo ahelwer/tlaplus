@@ -51,13 +51,13 @@ public abstract class BidirectionalTransitions2CTest extends ModelCheckerTestCas
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(3);
 		expectedTrace.add("x = 0");
 		expectedTrace.add("x = 1");
 		expectedTrace.add("x = 2");
 		expectedTrace.add("x = 3");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 		assertBackToState(1);
 	}

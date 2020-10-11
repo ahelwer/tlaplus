@@ -53,7 +53,7 @@ public class PrintTraceRaceTest extends ModelCheckerTestCase {
 
 		assertTrue(recorder.recorded(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT));
 		
-		final List<Object> records = recorder.getRecords(EC.TLC_STATE_PRINT2);
+		final List<Object> records = recorder.getRecords(EC.TLC_STATE_TRACE);
 
 		int i = 0; // State's position in records
 		Object[] objs = (Object[]) records.get(i++);

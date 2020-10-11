@@ -102,14 +102,14 @@ public class BugzillaBug279Test extends ModelCheckerTestCase {
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_DEADLOCK_REACHED));
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(6);
 		expectedTrace.add("/\\ set = {}\n/\\ pc = 0\n/\\ fun = {}");
 		expectedTrace.add("/\\ set = SUBSET 1..20\n/\\ pc = 1\n/\\ fun = {5}");
 		expectedTrace.add(
 				"/\\ set = " + Values.ppr(new SubsetValue(new IntervalValue(1, 8)).toSetEnum().normalize())
 						+ "\n/\\ pc = 2\n/\\ fun = {5}");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 		
 		assertZeroUncovered();
 	}

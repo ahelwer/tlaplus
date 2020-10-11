@@ -69,10 +69,10 @@ public abstract class SuccessfulSimulationTestCase extends ModelCheckerTestCase 
 		// No counterexample
 		assertFalse(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		// No trace
-		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertFalse(recorder.recorded(EC.TLC_STATE_TRACE));
 		// Does not stutter
-		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT3));
+		assertFalse(recorder.recorded(EC.TLC_STUTTER_STATE));
 		// No back loop to init state
-		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertFalse(recorder.recorded(EC.TLC_STATE_TRACE));
 	}
 }

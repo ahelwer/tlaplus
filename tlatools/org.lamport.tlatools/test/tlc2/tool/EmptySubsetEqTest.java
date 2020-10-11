@@ -58,10 +58,10 @@ public class EmptySubsetEqTest extends ModelCheckerTestCase {
 				+ "{}\nis in the integer interval 1..4"));
 
 		// Expect an error trace consisting of a single state.
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(4);
 		expectedTrace.add("b = TRUE");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 		assertUncovered("line 8, col 9 to line 8, col 48 of module EmptySubsetEq: 0\n");
 	}

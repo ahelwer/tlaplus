@@ -74,7 +74,7 @@ public class May09Test extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(2);
 		expectedTrace.add("/\\ x = a\n/\\ y = 0");
 		expectedTrace.add("/\\ x = a\n/\\ y = 1");
@@ -82,7 +82,7 @@ public class May09Test extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = a\n/\\ y = 3");
 		expectedTrace.add("/\\ x = a\n/\\ y = 4");
 		expectedTrace.add("/\\ x = a\n/\\ y = 5");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 		assertBackToState(2, "<Action line 19, col 10 to line 21, col 18 of module May09>");
 	}

@@ -63,7 +63,7 @@ public class RandomSubsetNextTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = 42\n/\\ y = 8");
 		expectedTrace.add("/\\ x = 8\n/\\ y = 9");
 		expectedTrace.add("/\\ x = 30\n/\\ y = 10");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 		
 		assertZeroUncovered();
 	}

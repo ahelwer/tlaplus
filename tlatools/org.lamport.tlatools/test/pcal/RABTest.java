@@ -50,7 +50,7 @@ public class RABTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "551", "350", "130"));
 		assertEquals(7, recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH));
 
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>();
 		expectedTrace.add("/\\ myattr = (p0 :> \"A\" @@ p1 :> \"A\")\n" + 
 				"/\\ temp = ( p0 :>\n" + 
@@ -129,7 +129,7 @@ public class RABTest extends PCalModelCheckerTestCase {
 				"/\\ pc = (p0 :> \"ReadFlags\" @@ p1 :> \"ReadFlags\")\n" + 
 				"/\\ flags = [ A |-> [valid |-> TRUE, value |-> FALSE],\n" + 
 				"  B |-> [valid |-> FALSE, value |-> FALSE] ]");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 		assertZeroUncovered();
 	}

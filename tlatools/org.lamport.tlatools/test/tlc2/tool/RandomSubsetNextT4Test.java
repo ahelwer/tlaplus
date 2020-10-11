@@ -54,7 +54,7 @@ public class RandomSubsetNextT4Test extends ModelCheckerTestCase {
 
 		assertTrue(recorder.recorded(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT));
 		
-		final List<Object> records = recorder.getRecords(EC.TLC_STATE_PRINT2);
+		final List<Object> records = recorder.getRecords(EC.TLC_STATE_TRACE);
 		assertEquals(11, records.size());
 		
 		int cnt = 0;

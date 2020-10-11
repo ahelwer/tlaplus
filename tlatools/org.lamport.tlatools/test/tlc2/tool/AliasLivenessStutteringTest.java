@@ -58,10 +58,10 @@ public class AliasLivenessStutteringTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(7);
 		expectedTrace.add("/\\ y = FALSE\n/\\ x = 1\n/\\ a = 0\n/\\ b = TRUE\n/\\ anim = \"e1: 1 e2: FALSE\"\n/\\ te = TRUE");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 		
 		assertStuttering(2);
 	}

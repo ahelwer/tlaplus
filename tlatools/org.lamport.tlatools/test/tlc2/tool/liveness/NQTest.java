@@ -65,6 +65,6 @@ public class NQTest extends ModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
 		// Assert *no* error trace
-		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertFalse(recorder.recorded(EC.TLC_STATE_TRACE));
 	}
 }

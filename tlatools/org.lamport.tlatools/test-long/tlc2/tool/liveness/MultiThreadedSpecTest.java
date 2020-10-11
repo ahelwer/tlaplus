@@ -91,7 +91,7 @@ public abstract class MultiThreadedSpecTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
+		assertTrue(recorder.recorded(EC.TLC_STUTTER_STATE));
 		
 		// Allow TLC worker threads to take 10 seconds to shutdown and report
 		// their PerformanceResults to us. TLC's master thread has no reason to

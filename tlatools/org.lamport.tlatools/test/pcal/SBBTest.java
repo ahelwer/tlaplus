@@ -51,7 +51,7 @@ public class SBBTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3126", "1617", "328"));
 		assertEquals(15, recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH));
 
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>();
 		expectedTrace.add("/\\ availablebuffers = {b1, b2, b3}\n" + 
 				"/\\ publishedbuffers = {}\n" + 
@@ -143,7 +143,7 @@ public class SBBTest extends PCalModelCheckerTestCase {
 				"/\\ buf = (p0 :> b1 @@ p1 :> b1)\n" + 
 				"/\\ op = (p0 :> \"Publish\" @@ p1 :> \"Modify\")\n" + 
 				"/\\ pc = (p0 :> \"Loop\" @@ p1 :> \"Modify2\")");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 		assertZeroUncovered();
 	}

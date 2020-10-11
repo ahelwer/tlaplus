@@ -54,7 +54,7 @@ public class April20aTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(6);
 		expectedTrace.add("/\\ x = 0\n" 
 						+ "/\\ y = 0");
@@ -68,7 +68,7 @@ public class April20aTest extends ModelCheckerTestCase {
 						+ "/\\ y = 1");
 		expectedTrace.add("/\\ x = m2\n" 
 						+ "/\\ y = 2");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 		assertBackToState(1, "<Action line 17, col 12 to line 19, col 20 of module April20a>");
 	}

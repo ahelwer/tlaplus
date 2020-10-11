@@ -1258,14 +1258,14 @@ public class MP
         case EC.TLC_STATE_PRINT1:
             b.append("%1%:\n%2%");
             break;
-        case EC.TLC_STATE_PRINT2:
+        case EC.TLC_STATE_TRACE:
         	if (DO_DEBUG) {
         		b.append("%1%: %2%\n%3%fp: %4%\n");
         	} else {
         		b.append("%1%: %2%\n%3%");
         	}
             break;
-        case EC.TLC_STATE_PRINT3:
+        case EC.TLC_STUTTER_STATE:
             b.append("%1%:").append(TLAConstants.STUTTERING);
             break;
 

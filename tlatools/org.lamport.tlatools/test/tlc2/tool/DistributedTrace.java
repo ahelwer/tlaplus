@@ -48,7 +48,7 @@ public class DistributedTrace extends ModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(5);
 		expectedTrace.add("x = 10");
 		expectedTrace.add("x = 11");
@@ -61,7 +61,7 @@ public class DistributedTrace extends ModelCheckerTestCase {
 		expectedTrace.add("x = 18");
 		expectedTrace.add("x = 19");
 		expectedTrace.add("x = 20");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 	}
 
 	/* (non-Javadoc)

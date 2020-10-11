@@ -57,7 +57,7 @@ public class OneBitMutexNoSymmetryTest extends ModelCheckerTestCase {
 		assertNodeAndPtrSizes(11700L, 3728L);
 
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(17);
 		//1
 		expectedTrace.add("/\\ unchecked = (A :> {} @@ B :> {})\n" 
@@ -159,7 +159,7 @@ public class OneBitMutexNoSymmetryTest extends ModelCheckerTestCase {
 						+ "/\\ other = (A :> B @@ B :> A)\n"
 						+ "/\\ x = (A :> TRUE @@ B :> TRUE)\n" 
 						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e2\")");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 
 		assertBackToState(9, "<e2 line 66, col 13 to line 74, col 21 of module OneBitMutex>");
 

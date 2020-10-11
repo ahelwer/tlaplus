@@ -60,7 +60,7 @@ public class CodePlexBug08aTest extends ModelCheckerTestCase {
 		assertNodeAndPtrSizes(816L, 352L);
 		
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>(4);
 		expectedTrace.add("/\\ b = FALSE\n/\\ x = 1");
 		expectedTrace.add("/\\ b = TRUE\n/\\ x = 2");
@@ -70,7 +70,7 @@ public class CodePlexBug08aTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ b = TRUE\n/\\ x = 4");
 		expectedTrace.add("/\\ b = FALSE\n/\\ x = 4");
 		expectedTrace.add("/\\ b = TRUE\n/\\ x = 5");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 		
 		// Assert the error trace contains a stuttering step at position 5
 		assertStuttering(9);

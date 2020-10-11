@@ -50,7 +50,7 @@ public class SubsetEqTest extends ModelCheckerTestCase {
 		
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
 		// No error trace!
-		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertFalse(recorder.recorded(EC.TLC_STATE_TRACE));
 
 	assertZeroUncovered();
 	}

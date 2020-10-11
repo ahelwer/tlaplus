@@ -49,13 +49,13 @@ public class ContinueTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "32", "29", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "29"));
 
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		
 		// With -continue, TLC simply prints two or more consecutive traces in no given
 		// order (determined by concurrent BFS) to stdout. This means that the
 		// MPRecorder just concatenates the traces and it is difficult to check them.
 		// For now we check that the concatenated trace has the expected number of states.
-		assertEquals(32, recorder.getRecords(EC.TLC_STATE_PRINT2).size());
+		assertEquals(32, recorder.getRecords(EC.TLC_STATE_TRACE).size());
 //		// Trace 1
 //		final List<String> expectedTrace = new ArrayList<String>(2);
 //		expectedTrace.add("/\\ x = 1\n/\\ y = 1");

@@ -59,8 +59,8 @@ public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		List<Object> trace = recorder.getRecords(EC.TLC_STATE_PRINT2);
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
+		List<Object> trace = recorder.getRecords(EC.TLC_STATE_TRACE);
 		
 		assertEquals(10, trace.size());
 
@@ -75,11 +75,11 @@ public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
 		assertEquals("x = 9", stateInfo.toString().trim());
 		
 		// Must not stutter
-		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT3));
+		assertFalse(recorder.recorded(EC.TLC_STUTTER_STATE));
 		
 		// Must show back loop to init state
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		trace = recorder.getRecords(EC.TLC_STATE_PRINT2);
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
+		trace = recorder.getRecords(EC.TLC_STATE_TRACE);
 		objs = (Object[]) trace.get(0);
 		assertEquals(1, objs[1]);
 	}

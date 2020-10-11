@@ -60,7 +60,7 @@ public class CodePlexBug08EWD840FL2Test extends ModelCheckerTestCase {
 		assertNodeAndPtrSizes(54037212L, 831296L);
 		
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		assertTrue(recorder.recorded(EC.TLC_STATE_TRACE));
 		final List<String> expectedTrace = new ArrayList<String>();
 		expectedTrace.add("/\\ tpos = 0\n"
 		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
@@ -102,7 +102,7 @@ public class CodePlexBug08EWD840FL2Test extends ModelCheckerTestCase {
 		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
 		                + "/\\ tcolor = \"black\"\n"
 		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_TRACE), expectedTrace);
 		
 		// last state points back to state 1
 		assertBackToState(1);

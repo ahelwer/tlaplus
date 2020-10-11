@@ -27,29 +27,76 @@
 package tlc2.output;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import tlc2.model.MCError;
+import tlc2.tool.TLCStateInfo;
+import tlc2.tool.TLCState;
 
 /**
- * Saves all messages that pass through {@link tlc.output.MP}. Includes some methods to ease
- * reading those messages.
+ * Saves all messages containing info about error traces that pass through {@link tlc.output.MP}.
+ * Ideally this will eventually go away and all of TLC's model checking implementations will
+ * bubble their error traces up through their top-level .run() methods, but until that
+ * refactoring takes place this is how we get the error trace: by hooking into the static
+ * console output handler class and intercepting TLC output.
+ * 
+ * There are a number of places that error traces are generated within TLC:
+ *  - Basic local BFS model checking in {@link tlc2.tool.ModelChecker#doNextCheckInvariants}
+ *  - Concurrent local BFS model checking in {@link tlc2.tool.Worker#doNextCheckInvariants}
+ *  - Local DFID model checking in {@link tlc2.tool.DFIDModelChecker#doNext}
+ *  - Simulator model checking in {@link tlc2.tool.Simulator#simulate}
+ *  - Distributed model checking in {@link tlc2.tool.distributed.TLCServerThread#run}
+ *  
+ * The purpose of this class is to record error trace output from all of those sources while
+ * ignoring output that is not an error trace (some of which superficially resembles error
+ * traces, for example printing out an invalid/incomplete state transition).
  */
-public class ErrorTraceMessagePrinterRecorder implements tlc2.output.IMessagePrinterRecorder {
-	private final Map<Integer, List<Object[]>> records = new HashMap<Integer, List<Object[]>>();
+public class ErrorTraceMessagePrinterRecorder implements IMessagePrinterRecorder {
+	private Optional<String> failedInvariantName = Optional.empty();
+	
+	private List<TLCState> trace = new ArrayList<TLCState>();
+	
+	/**
+	 * The {@link EC#TLC_STATE_PRINT1} error code is generally used to record runtime errors
+	 * (incomplete next state definition, invalid steps, etc.) which we want to ignore. The
+	 * exception is with DFID model checking, which also prints its state traces using the 
+	 * {@link EC#TLC_STATE_PRINT1} error code. We can distinguish this case because DFID
+	 * model checking will first print the {@link EC#TLC_INVARIANT_VIOLATED_BEHAVIOR} error
+	 * code. If this recorder sees that error code, this flag is set to true.
+	 */
+	private boolean recordTlcStatePrint1 = false;
 	
 	@Override
 	public void record(int code, Object... objects) {
-		if(!this.records.containsKey(code)) {
-			this.records.put(code, new ArrayList<Object[]>());
+		if (EC.TLC_INVARIANT_VIOLATED_BEHAVIOR == code)
+		{
+			
 		}
+		switch (code) {
+			case EC.TLC_INVARIANT_VIOLATED_BEHAVIOR:
+				if (objects.length >= 1 && objects[0] instanceof String) {
+					this.failedInvariantName = Optional.ofNullable((String)objects[0]);
+				}
 
-		this.records.get(code).add(objects);
+				break;
+			case EC.TLC_STATE_PRINT1:
+				// Unknown
+				break;
+			case EC.TLC_STATE_TRACE:
+				if (objects.length >= 2 && objects[0] instanceof TLCStateInfo && objects[1] instanceof Integer) {
+
+				}
+				break;
+			case EC.TLC_STUTTER_STATE:
+				// Stuttering?
+				break;
+			case EC.TLC_BACK_TO_STATE:
+				// Liveness checking?
+				break;
+			default:
+				break;
+		}
 	}
 	
 	/**
@@ -57,277 +104,11 @@ public class ErrorTraceMessagePrinterRecorder implements tlc2.output.IMessagePri
 	 */
 	public Optional<MCError> getErrorTrace()
 	{
+		MCError error = new MCError(this.failedInvariantName.orElse(null));
 		return Optional.empty();
 	}
-
-	/**
-	 * Whether this has recorded a message with the given code.
-	 * @param code The code to check.
-	 * @return Whether a messages with the code exists.
-	 */
-	public boolean recorded(final int code) {
-		return this.records.containsKey(code);
-	}
-
-	/**
-	 * Retrieves all messages with the given code.
-	 * @param code The code for which to retrieve messages.
-	 * @return Messages associated with the given code.
-	 */
-	public List<Object[]> getRecords(final int code) {
-		return this.records.get(code);
-	}
 	
-	/**
-	 * Retrieves all messages with the given code, or returns a default value.
-	 * @param code The code for which to retrieve messages.
-	 * @param defaultValue Value to return if no messages exist.
-	 * @return Messages associated with the given code, or a default value.
-	 */
-	private List<Object[]> getRecordsOrDefault(final int code, final List<Object[]> defaultValue) {
-		return records.getOrDefault(code, defaultValue);
-	}
-
-	/**
-	 * Returns a message parsed as an int.
-	 * @param code The code for which to retrieve messages.
-	 * @return Message associated with the given code, as an int.
-	 */
-	public int getRecordAsInt(int code) {
-		List<Object[]> codeRecord = this.records.get(code);
-		Object[] record = codeRecord.get(0);
-		String message = (String)record[0];
-		return Integer.parseInt(message);
-	}
-
-	public List<String[]> getRecordAsStringArray(int code) {
-		final List<Object[]> l = records.get(code);
-		
-		final List<String[]> strs = new ArrayList<>(l.size());
-		for (Object o : l) {
-			strs.add((String[]) o);
-		}
-		return strs;
-	}
-	
-	// This is a best effort implementation that only checks the first
-	// elements of the nested records and contained arrays
-	public boolean recordedWithStringValue(int code, String str) {
-		try {
-			return recordedWithStringValueAt(code, str, 0);
-		} catch (Exception e) {
-			return false;
-		}
-	}
-
-	public boolean recordedWithSubStringValue(int code, String substring) {
-		return recordedWithSubStringValue(code, substring, 0);
-	}
-	
-	public boolean recordedWithSubStringValue(int code, String substring, int idx) {
-		try {
-			Object object = records.get(code).get(0);
-			if (object instanceof String[]) {
-				String[] strs = (String[]) object;
-				for (String string : strs) {
-					if (string.contains(substring)) {
-						return true;
-					}
-				}
-				return false;
-			} else if (object instanceof String) {
-				return ((String) object).contains(substring);
-			}
-			return false;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-
-	public boolean recordedWithStringValueAt(int code, String str, int idx) {
-		try {
-			Object object = records.get(code).get(0);
-			if (object instanceof String[]) {
-				String[] strs = (String[]) object;
-				return strs[idx].equals(str);
-			} else if (object instanceof String) {
-				return object.equals(str);
-			}
-			return false;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-
-	public boolean recordedWithStringValues(int code, String... strings) {
-		int i = 0;
-		for (String string : strings) {
-			if (!recordedWithStringValueAt(code, string, i++)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public String getCoverageRecords() {
-		final List<Object[]> coverages = getRecords(EC.TLC_COVERAGE_VALUE);
-		String out = "";
-		if (coverages == null) {
-			return out;
-		}
-		for (final Object o : coverages) {
-			final String[] coverage = (String[]) o;
-			out += coverage[0] + ": " + Integer.parseInt(coverage[1]) + "\n";
-		}
-		return out;
-	}
-
-	public List<Coverage> getActionCoverage() {
-		final List<Object[]> init = getRecordsOrDefault(EC.TLC_COVERAGE_INIT, new ArrayList<>(0));
-		final List<Object[]> next = getRecordsOrDefault(EC.TLC_COVERAGE_NEXT, new ArrayList<>(0));
-		final List<Object[]> prop = getRecordsOrDefault(EC.TLC_COVERAGE_PROPERTY, new ArrayList<>(0));
-		final List<Object[]> con = getRecordsOrDefault(EC.TLC_COVERAGE_CONSTRAINT, new ArrayList<>(0));
-		init.addAll(next);
-		init.addAll(prop);
-		init.addAll(con);
-
-		return init.stream().map(o -> (String[]) o).map(a -> new Coverage(a)).filter(Coverage::isAction)
-				.collect(Collectors.toList());
-	}
-
-	public List<Coverage> getZeroCoverage() {
-		return getCoverage(EC.TLC_COVERAGE_VALUE, (Predicate<? super Coverage>) o -> o.isZero());
-	}
-	
-	public List<Coverage> getNonZeroCoverage() {
-		return getCoverage(EC.TLC_COVERAGE_VALUE, (Predicate<? super Coverage>) o -> !o.isZero());
-	}
-	
-	public List<Coverage> getCostCoverage() {
-		return getCoverage(EC.TLC_COVERAGE_VALUE_COST, (Predicate<? super Coverage>) o -> !o.isZero());
-	}
-
-	private List<Coverage> getCoverage(final int code, Predicate<? super Coverage> p) {
-		final List<Object[]> coverages = getRecordsOrDefault(code, new ArrayList<>(0));
-		return coverages.stream().map(o -> (String[]) o).map(a -> new Coverage(a)).filter(p)
-				.collect(Collectors.toList());
-	}
-
-	public static class Coverage {
-		private final String line;
-		private final long count;
-		private final long cost;
-		//TODO Take level into account in comparison!
-		private final int level;
-		private final boolean isAction;
-		
-		public Coverage(String[] line) {
-			this.isAction = line[0].startsWith("<");
-			this.line = line[0].replace("|", "").trim();
-			this.level = line[0].length() - this.line.length();
-			if (line.length == 1) {
-				this.count = -1;
-				this.cost = -1;
-			} else if (line.length == 2) {
-				this.count = Long.valueOf(line[1].trim());
-				this.cost = -1;
-			} else if (line.length == 3) {
-				this.count = Long.valueOf(line[1].trim());
-				this.cost = Long.valueOf(line[2].trim());
-			} else {
-				throw new IllegalArgumentException();
-			}
-		}
-		
-		public String getLine() {
-			return line;
-		}
-
-		public long getCount() {
-			return count;
-		}
-		
-		public int getLevel() {
-			return level;
-		}
-		
-		public boolean isZero() {
-			return count == 0L;
-		}
-		
-		public boolean isCoverage() {
-			return !isAction;
-		}
-		
-		public boolean isCost() {
-			return cost >= 0;
-		}
-		
-		public boolean isAction() {
-			return isAction;
-		}
-
-		@Override
-		public String toString() {
-			return "Coverage [line=" + line + ", count=" + count  + ", cost=" + cost + "]";
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + (int) (count ^ (count >>> 32));
-			result = prime * result + (int) (cost ^ (cost >>> 32));
-			result = prime * result + ((line == null) ? 0 : line.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			Coverage other = (Coverage) obj;
-			if (count != other.count)
-				return false;
-			if (cost != other.cost)
-				return false;
-			if (line == null) {
-				if (other.line != null)
-					return false;
-			} else if (!line.equals(other.line))
-				return false;
-			return true;
-		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		final StringBuffer buf = new StringBuffer(records.size());
-		for(Integer key : records.keySet()) {
-			final List<Object[]> list = records.get(key);
-			for (Object elem : list) {
-				if (elem instanceof String[]) {
-					String[] strs = (String[]) elem;
-					for (String s : strs) {
-						buf.append(key);
-						buf.append(" -> ");
-						buf.append(s);
-						buf.append("\n");
-					}
-				} else if (elem instanceof String) {
-					buf.append(key);
-					buf.append(" -> ");
-					buf.append(elem);
-					buf.append("\n");
-				}
-			}
-		}
-		return buf.toString();
+	public class SafetyErrorTrace
+	{
 	}
 }
