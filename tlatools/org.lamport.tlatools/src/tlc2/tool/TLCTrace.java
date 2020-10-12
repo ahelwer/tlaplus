@@ -351,7 +351,7 @@ public class TLCTrace {
 			// use the two states s1 and s2 directly.
 			MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
 			if (s2 == null) {
-			    StatePrinter.printState(new TLCStateInfo(s1));
+			    StatePrinter.printInvariantViolationStateTraceState(new TLCStateInfo(s1));
 			} else {
 				// Print initial state
 				StatePrinter.printInvariantViolationStateTraceState(this.tool.evalAlias(new TLCStateInfo(s1), s2), s1, 1);

@@ -1255,7 +1255,7 @@ public class MP
 
         /* ************************************************************************ */
         // state printing
-        case EC.TLC_STATE_PRINT1:
+        case EC.TLC_RUNTIME_ERROR_STATE_TRACE:
             b.append("%1%:\n%2%");
             break;
         case EC.TLC_STATE_TRACE:

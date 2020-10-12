@@ -20,7 +20,7 @@ public class StatePrinter
 	 */
     public static void printRuntimeErrorStateTraceState(TLCState currentState, int num)
     {
-        MP.printState(EC.TLC_STATE_PRINT1, new String[] { String.valueOf(num), currentState.toString() }, currentState, num);
+        MP.printState(EC.TLC_RUNTIME_ERROR_STATE_TRACE, new String[] { String.valueOf(num), currentState.toString() }, currentState, num);
     }
 
     /**
@@ -31,10 +31,15 @@ public class StatePrinter
      */
     public static void printStandaloneErrorState(TLCState currentState)
     {
-        MP.printState(EC.TLC_STATE_PRINT1, new String[] { "", currentState.toString() }, currentState, -1);
+        MP.printState(EC.TLC_RUNTIME_ERROR_STATE_TRACE, new String[] { "", currentState.toString() }, currentState, -1);
     }
 
-    public static void printState(TLCStateInfo currentStateInfo) {
+    /**
+     * Prints a single state out of a larger state trace, for use when an
+     * invariant is violated.
+     * @param currentStateInfo
+     */
+    public static void printInvariantViolationStateTraceState(TLCStateInfo currentStateInfo) {
     	if (currentStateInfo.predecessorState == null) {
     		// It's an initial state
 			StatePrinter.printInvariantViolationStateTraceState(currentStateInfo, null, (int) currentStateInfo.stateNumber);

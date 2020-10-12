@@ -1,38 +1,11 @@
-/*******************************************************************************
- * Copyright (c) 2015 Microsoft Research. All rights reserved. 
- *
- * The MIT License (MIT)
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
- * of the Software, and to permit persons to whom the Software is furnished to do
- * so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software. 
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
- * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Contributors:
- *   Markus Alexander Kuppe - initial API and implementation
- ******************************************************************************/
-
 package tlc2.output;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
+import java.util.TreeMap;
+import java.util.SortedMap;
 
-import tlc2.model.MCError;
 import tlc2.tool.TLCStateInfo;
-import tlc2.tool.TLCState;
+import util.OneOf;
 
 /**
  * Saves all messages containing info about error traces that pass through {@link tlc.output.MP}.
@@ -44,8 +17,8 @@ import tlc2.tool.TLCState;
  * There are a number of places that error traces are generated within TLC:
  *  - Basic local BFS model checking in {@link tlc2.tool.ModelChecker#doNextCheckInvariants}
  *  - Concurrent local BFS model checking in {@link tlc2.tool.Worker#doNextCheckInvariants}
- *  - Local DFID model checking in {@link tlc2.tool.DFIDModelChecker#doNext}
- *  - Simulator model checking in {@link tlc2.tool.Simulator#simulate}
+ *  - DFID local model checking in {@link tlc2.tool.DFIDModelChecker#doNext}
+ *  - Simulator local model checking in {@link tlc2.tool.Simulator#simulate}
  *  - Distributed model checking in {@link tlc2.tool.distributed.TLCServerThread#run}
  *  
  * The purpose of this class is to record error trace output from all of those sources while
@@ -53,62 +26,215 @@ import tlc2.tool.TLCState;
  * traces, for example printing out an invalid/incomplete state transition).
  */
 public class ErrorTraceMessagePrinterRecorder implements IMessagePrinterRecorder {
-	private Optional<String> failedInvariantName = Optional.empty();
-	
-	private List<TLCState> trace = new ArrayList<TLCState>();
 	
 	/**
-	 * The {@link EC#TLC_STATE_PRINT1} error code is generally used to record runtime errors
-	 * (incomplete next state definition, invalid steps, etc.) which we want to ignore. The
-	 * exception is with DFID model checking, which also prints its state traces using the 
-	 * {@link EC#TLC_STATE_PRINT1} error code. We can distinguish this case because DFID
-	 * model checking will first print the {@link EC#TLC_INVARIANT_VIOLATED_BEHAVIOR} error
-	 * code. If this recorder sees that error code, this flag is set to true.
+	 * We can either have:
+	 *  - no state trace
+	 *  - a state trace counterexample to a safety property
+	 *  - a state trace counterexample to a liveness property:
+	 *  	* ending in stuttering
+	 *  	* ending in a lasso
+	 * This field captures these possibilities in a way which forces consumers
+	 * to explicitly handle each.
 	 */
-	private boolean recordTlcStatePrint1 = false;
+	private
+		Optional<
+			OneOf<
+				SafetyPropertyCounterExampleStateTrace,
+				LivenessPropertyCounterExampleStateTraceWithStuttering,
+				LivenessPropertyCounterExampleStateTraceWithLasso
+			>
+		> trace = Optional.empty();
 	
 	@Override
 	public void record(int code, Object... objects) {
-		if (EC.TLC_INVARIANT_VIOLATED_BEHAVIOR == code)
-		{
-			
-		}
-		switch (code) {
-			case EC.TLC_INVARIANT_VIOLATED_BEHAVIOR:
-				if (objects.length >= 1 && objects[0] instanceof String) {
-					this.failedInvariantName = Optional.ofNullable((String)objects[0]);
-				}
+		if (objects.length >= 2 && objects[0] instanceof TLCStateInfo && objects[1] instanceof Integer) {
+			TLCStateInfo stateInfo = (TLCStateInfo)objects[0];
+			Integer stateOrdinal = (Integer)objects[1];
+			switch (code) {
+				case EC.TLC_STATE_TRACE:
+					stateInfo.stateNumber = stateOrdinal;
 
-				break;
-			case EC.TLC_STATE_PRINT1:
-				// Unknown
-				break;
-			case EC.TLC_STATE_TRACE:
-				if (objects.length >= 2 && objects[0] instanceof TLCStateInfo && objects[1] instanceof Integer) {
-
-				}
-				break;
-			case EC.TLC_STUTTER_STATE:
-				// Stuttering?
-				break;
-			case EC.TLC_BACK_TO_STATE:
-				// Liveness checking?
-				break;
-			default:
-				break;
+					// Idempotent transition from no trace to safety trace
+					this.trace = Optional.of(this.trace.orElse(toSafetyTrace()));
+					
+					// Add state to existing safety trace; if we've seen the
+					// stuttering or lasso markers, the state is ignored
+					this.trace = this.trace.map(traceType ->
+						traceType.mapFirst(safety ->
+							safety.addState(stateOrdinal, stateInfo)));
+					break;
+				case EC.TLC_STUTTER_STATE:
+					// Transition from safety trace to liveness trace ending in stuttering
+					this.trace = this.trace.map(traceType -> 
+						traceType.flatMapFirst(safety ->
+							toStutteringTrace(safety)));
+					break;
+				case EC.TLC_BACK_TO_STATE:
+					// Transition from safety trace to liveness trace ending in lasso
+					this.trace = this.trace.map(traceType ->
+						traceType.flatMapFirst(safety ->
+							toLassoTrace(safety, stateOrdinal)));
+					break;
+				default:
+					break;
+			}
 		}
 	}
 	
 	/**
-	 * Returns an error trace reconstructed from recorded messages, if one exists.
+	 * Gets the error trace.
+	 * @return The error trace.
 	 */
-	public Optional<MCError> getErrorTrace()
-	{
-		MCError error = new MCError(this.failedInvariantName.orElse(null));
-		return Optional.empty();
+	public
+		Optional<
+			OneOf<
+				SafetyPropertyCounterExampleStateTrace,
+				LivenessPropertyCounterExampleStateTraceWithStuttering,
+				LivenessPropertyCounterExampleStateTraceWithLasso
+			>
+		> getErrorTrace() {
+		return this.trace;
 	}
 	
-	public class SafetyErrorTrace
-	{
+	/**
+	 * Helper function to create a type with a very long name because Java
+	 * doesn't have typedef.
+	 * @return A safety property counter-example state trace.
+	 */
+	private
+		OneOf<
+			SafetyPropertyCounterExampleStateTrace,
+			LivenessPropertyCounterExampleStateTraceWithStuttering,
+			LivenessPropertyCounterExampleStateTraceWithLasso
+		> toSafetyTrace() {
+		return OneOf.first(new SafetyPropertyCounterExampleStateTrace());
+	}
+
+	/**
+	 * Helper function to create a type with a very long name because Java
+	 * doesn't have typedef.
+	 * @return A liveness property stuttering counter-example state trace.
+	 */
+	private
+		OneOf<
+			SafetyPropertyCounterExampleStateTrace,
+			LivenessPropertyCounterExampleStateTraceWithStuttering,
+			LivenessPropertyCounterExampleStateTraceWithLasso
+		> toStutteringTrace(SafetyPropertyCounterExampleStateTrace trace) {
+		return OneOf.second(new LivenessPropertyCounterExampleStateTraceWithStuttering(trace));
+	}
+
+	/**
+	 * Helper function to create a type with a very long name because Java
+	 * doesn't have typedef.
+	 * @return A liveness property lasso counter-example state trace.
+	 */
+	private
+		OneOf<
+			SafetyPropertyCounterExampleStateTrace,
+			LivenessPropertyCounterExampleStateTraceWithStuttering,
+			LivenessPropertyCounterExampleStateTraceWithLasso
+		> toLassoTrace(SafetyPropertyCounterExampleStateTrace trace, int ordinal) {
+		return OneOf.third(new LivenessPropertyCounterExampleStateTraceWithLasso(trace, ordinal));
+	}
+
+	/**
+	 * State trace providing a counter-example to some hoped-for model property.
+	 */
+	private abstract class CounterExampleStateTrace {
+
+		/**
+		 * We use a sorted map in case states are given out of order.
+		 */
+		protected SortedMap<Integer, TLCStateInfo> trace;
+
+		/**
+		 * Gets a copy of the trace.
+		 * @return A copy of the trace.
+		 */
+		public SortedMap<Integer, TLCStateInfo> getTrace() {
+			return new TreeMap<Integer, TLCStateInfo>(this.trace);
+		}
+	}
+	
+	/**
+	 * State trace providing a counter-example to a safety property.
+	 */
+	public class SafetyPropertyCounterExampleStateTrace extends CounterExampleStateTrace {
+
+		/**
+		 * Creates a new instance of this class.
+		 */
+		public SafetyPropertyCounterExampleStateTrace() {
+			this.trace = new TreeMap<Integer, TLCStateInfo>();
+		}
+		
+		/**
+		 * Creates a new instance of this class.
+		 * Copy constructor.
+		 * @param other Class instance from which to copy.
+		 */
+		private SafetyPropertyCounterExampleStateTrace(SafetyPropertyCounterExampleStateTrace other) {
+			this.trace = new TreeMap<Integer, TLCStateInfo>(other.trace);
+		}
+		
+		/**
+		 * Adds state to trace immutably.
+		 * @param ordinal Position of state in the trace.
+		 * @param info The state to add to the trace.
+		 * @return A copy of this class instance with the state added.
+		 */
+		public SafetyPropertyCounterExampleStateTrace addState(int ordinal, TLCStateInfo info) {
+			SafetyPropertyCounterExampleStateTrace other = new SafetyPropertyCounterExampleStateTrace(this);
+			other.trace.put(ordinal, info);
+			return other;
+		}
+	}
+	
+	/**
+	 * State trace providing a stuttering counter-example to a liveness property.
+	 */
+	public class LivenessPropertyCounterExampleStateTraceWithStuttering extends CounterExampleStateTrace {
+
+		/**
+		 * Creates a new instance of this class.
+		 * @param safetyTrace A safety property counter-example state trace.
+		 */
+		public LivenessPropertyCounterExampleStateTraceWithStuttering(
+				SafetyPropertyCounterExampleStateTrace safetyTrace) {
+			this.trace = new TreeMap<Integer, TLCStateInfo>(safetyTrace.getTrace());
+		}
+	}
+	
+	/**
+	 * State trace providing a lasso counter-example to a liveness property.
+	 */
+	public class LivenessPropertyCounterExampleStateTraceWithLasso extends CounterExampleStateTrace {
+
+		/**
+		 * Position of state in trace at which trace terminates, in lasso.
+		 */
+		private int finalStateOrdinal = 0;
+
+		/**
+		 * Creates a new instance of this class.
+		 * @param safetyTrace A safety property counter-example state trace.
+		 * @param finalStateOrdinal Position of final state in trace.
+		 */
+		public LivenessPropertyCounterExampleStateTraceWithLasso(
+				SafetyPropertyCounterExampleStateTrace safetyTrace,
+				int finalStateOrdinal) {
+			this.trace = new TreeMap<Integer, TLCStateInfo>(safetyTrace.getTrace());
+			this.finalStateOrdinal = finalStateOrdinal;
+		}
+		
+		/**
+		 * Gets position of state in trace at which trace terminates.
+		 * @return Position of state in trace at which trace terminates.
+		 */
+		public int getFinalStateOrdinal() {
+			return this.finalStateOrdinal;
+		}
 	}
 }

@@ -266,14 +266,12 @@ public interface EC
      *  - During DFID model checking, when next state is not fully defined
      *  - In the {@link tlc2.tool.CheckImpl} tool, when there is an invalid step
      *  - During Simulation model checking, when maximum trace depth is reached
-     * 	- During DFID model checking when reporting an error trace to a safety invariant violation
-     *    * Note we discriminate this case because {@link @EC#TLC_INVARIANT_VIOLATED_BEHAVIOR} is printed first
      */
-    public static final int TLC_STATE_PRINT1 = 2216;
+    public static final int TLC_RUNTIME_ERROR_STATE_TRACE = 2216;
     
     /**
      * This error code is used in the following situations:
-     *  - Printing a safety invariant violation error trace everywhere except DFID model checking
+     *  - Printing a safety invariant violation error trace
      *  - Printing every state except the final state of a liveness error trace; the final state is printed with:
      *    * {@link EC#TLC_BACK_TO_STATE} for liveness traces ending in a lasso
      *    * {@link EC#TLC_STUTTER_STATE} for liveness traces ending in stuttering

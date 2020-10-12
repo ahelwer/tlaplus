@@ -79,7 +79,7 @@ public final class OneOf<T1,T2,T3>
     	Optional<NT> thirdResult = this.third.map(thirdFunc);
     	return firstResult.orElseGet(() -> secondResult.orElseGet(() -> thirdResult.get()));
     }
-
+    
     /**
      * Applies a map to the first value, if present.
      * @param <NT> Function return type.
@@ -89,6 +89,17 @@ public final class OneOf<T1,T2,T3>
     public <NT> OneOf<NT,T2,T3> mapFirst(Function<? super T1, ? extends NT> firstFunc)
     {
     	return new OneOf<>(this.first.map(firstFunc), this.second, this.third);
+    }
+    
+    /**
+     * Applies a flat map to the first value, if present.
+     * Flat maps enable recreating an entire OneOf instance from one of the parameters.
+     * @param firstFlatFunc Flat function to apply to first value, if present.
+     * @return A OneOf instance.
+     */
+    public OneOf<T1,T2,T3> flatMapFirst(Function<? super T1, OneOf<T1,T2,T3>> firstFlatFunc)
+    {
+    	return this.first.map(firstFlatFunc).orElse(this);
     }
 
     /**

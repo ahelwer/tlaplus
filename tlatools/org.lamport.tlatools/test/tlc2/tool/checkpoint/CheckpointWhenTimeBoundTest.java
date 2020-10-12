@@ -52,7 +52,7 @@ public class CheckpointWhenTimeBoundTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		
-		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT1));
+		assertFalse(recorder.recorded(EC.TLC_RUNTIME_ERROR_STATE_TRACE));
 		assertFalse(recorder.recorded(EC.TLC_STATE_TRACE));
 		
 		// Check that a checkpoint has been taken.
