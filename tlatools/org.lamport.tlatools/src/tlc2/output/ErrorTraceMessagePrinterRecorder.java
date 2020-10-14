@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.SortedMap;
 
+import tlc2.model.MCError;
 import tlc2.tool.TLCStateInfo;
 import util.OneOf;
 
@@ -97,6 +98,12 @@ public class ErrorTraceMessagePrinterRecorder implements IMessagePrinterRecorder
 		return this.trace;
 	}
 	
+	public Optional<MCError> getMCErrorTrace() {
+		MCError error = new MCError();
+		
+		return Optional.of(error);
+	}
+	
 	/**
 	 * Helper function to create a type with a very long name because Java
 	 * doesn't have typedef.
@@ -142,7 +149,7 @@ public class ErrorTraceMessagePrinterRecorder implements IMessagePrinterRecorder
 	/**
 	 * State trace providing a counter-example to some hoped-for model property.
 	 */
-	private abstract class CounterExampleStateTrace {
+	public abstract class CounterExampleStateTrace {
 
 		/**
 		 * We use a sorted map in case states are given out of order.

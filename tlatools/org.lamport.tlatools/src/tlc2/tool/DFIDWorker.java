@@ -122,40 +122,52 @@ public class DFIDWorker extends IdThread implements IWorker {
    * @param s1 
    * @param s2
    */
-  public final void printTrace(int errorCode, String[] parameters, TLCState s1, TLCState s2) 
+  public final void printErrorTrace(int errorCode, String[] parameters, TLCState s1, TLCState s2) 
   {
       MP.printError(errorCode, parameters);
       MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
       int idx = 0;
       while (idx < this.curLevel) 
       {
-    	  // Invariant violation error traces are treated differently from other traces
-    	  if (EC.TLC_INVARIANT_VIOLATED_BEHAVIOR == errorCode)
-    	  {
-    		  TLCStateInfo info = new TLCStateInfo(s1, null);
-    		  StatePrinter.printInvariantViolationStateTraceState(info, null, ++idx);
-    	  }
-    	  else
-    	  {
-			  StatePrinter.printRuntimeErrorStateTraceState(this.stateStack[idx], ++idx);
-    	  }
+          StatePrinter.printRuntimeErrorStateTraceState(this.stateStack[idx], ++idx);
       }
       // the prefix printed by the while loop should end at s1.
       assert s1.equals(this.stateStack[idx]);
       StatePrinter.printRuntimeErrorStateTraceState(s1, ++idx);
       if (s2 != null) 
       {
-    	  // Invariant violation error traces are treated differently from other traces
-    	  if (EC.TLC_INVARIANT_VIOLATED_BEHAVIOR == errorCode)
-    	  {
-    		  TLCStateInfo info = new TLCStateInfo(s2, null);
-    		  StatePrinter.printInvariantViolationStateTraceState(info, null, idx+1);
-    	  }
-    	  else
-    	  {
-			  StatePrinter.printRuntimeErrorStateTraceState(s2, idx+1);
-    	  }
+          StatePrinter.printRuntimeErrorStateTraceState(s2, idx+1);
       }
+  }
+  
+  /**
+   * Prints the state trace when an invariant fails.
+   * @param errorCode Error code identifying type of failure.
+   * @param parameters Error detail.
+   * @param s1 Predecessor state to state which fails to satisfy invariant.
+   * @param s2 State which fails to satisfy invariant.
+   */
+  public final void printInvariantTrace(int errorCode, String[] parameters, TLCState s1, TLCState s2)
+  {
+      MP.printError(errorCode, parameters);
+      MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
+      int idx = 0;
+      for (; idx <= this.curLevel; idx++)
+      {
+    	  if (this.curLevel == idx)
+    	  {
+    		  assert s1.equals(this.stateStack[idx]);
+    	  }
+    	  
+    	  final int ordinal = idx + 1;
+    	  final TLCStateInfo currentState = new TLCStateInfo(this.stateStack[idx], ordinal);
+    	  final TLCState previousState = 0 == idx ? null : this.stateStack[idx-1];
+    	  StatePrinter.printInvariantViolationStateTraceState(currentState, previousState, ordinal);
+      }
+      
+      final int ordinal = idx + 1;
+	  final TLCStateInfo currentState = new TLCStateInfo(s2, ordinal);
+	  StatePrinter.printInvariantViolationStateTraceState(currentState, s1, ordinal);
   }
 
   /* This method does a depth-first search up to the depth of toLevel. */

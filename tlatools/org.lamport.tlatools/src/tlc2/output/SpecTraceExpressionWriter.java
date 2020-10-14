@@ -853,7 +853,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		addInitNext(trace, null, initId, nextId, actionConstraintId, nextSubActionBasename);
 	}
 
-	public void addInitNextTraceFunction(final List<MCState> trace, final String[] vars, final String initId, String nextId) {
+	public void addInitNextTraceFunction(final List<MCState> trace, final List<String> vars, final String initId, String nextId) {
         /*******************************************************
          * Add the init definition.                            *
          *******************************************************/
@@ -872,8 +872,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		tlaBuffer.append(initId).append(TLAConstants.DEFINES_CR);
         
         // variables from spec
-		for (int i = 0; i < vars.length; i++) {
-            final String var = vars[i];
+		for (String var : vars) {
             tlaBuffer.append(TLAConstants.INDENTED_CONJUNCTIVE);
             tlaBuffer.append(var).append(TLAConstants.EQ).append("_TETrace[1].").append(var);
             tlaBuffer.append(TLAConstants.CR);
@@ -922,8 +921,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 						.append(TLAConstants.INDENTED_CONJUNCTIVE).append("j = ").append(backToState.getStateNumber())
 						.append(TLAConstants.CR);
 			}
-			for (int i = 0; i < vars.length; i++) {
-	            final String var = vars[i];
+			for (String var : vars) {
 	            // x = _TETrace[_TEPosition].x
 				tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENTED_CONJUNCTIVE);
 				tlaBuffer.append(var).append(" ").append(TLAConstants.EQ).append("_TETrace[i].")

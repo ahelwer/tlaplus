@@ -1614,7 +1614,7 @@ public class MP
      */
     public static void printState(int code, String[] parameters, TLCState state, int num)
     {
-        printState(code, parameters, new TLCStateInfo(state, ""), num);
+        printState(code, parameters, new TLCStateInfo(state, num), num);
     }
     
     public static void printState(int code, String[] parameters, TLCStateInfo stateInfo, int num)
@@ -1759,6 +1759,9 @@ public class MP
 
 	public static void setRecorder(IMessagePrinterRecorder mpRecorder) {
 		recorder.subscribe(mpRecorder);
+	}
+	
+	public static void unsubscribeRecorder(IMessagePrinterRecorder recorder) {
 	}
 
     private static String now() {

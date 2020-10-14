@@ -183,7 +183,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	@After
 	public void tearDown() {
 		beforeTearDown();
-		
+		MP.unsubscribeRecorder(recorder);
 		assertExitStatus();
 	}
 	

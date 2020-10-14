@@ -29,4 +29,13 @@ public class BroadcastMessagePrinterRecorder implements IMessagePrinterRecorder 
 	{
 		this.subscribers.add(recorder);
 	}
+	
+	/**
+	 * Unsubscribes a recorder from this broadcaster.
+	 * @param recorder The recorder the unsubscribe.
+	 */
+	public void unsubscribe(final IMessagePrinterRecorder recorder)
+	{
+		this.subscribers.remove(recorder);
+	}
 }

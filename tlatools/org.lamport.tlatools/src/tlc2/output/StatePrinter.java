@@ -54,17 +54,17 @@ public class StatePrinter
      * If the {@link TLCGlobals#printDiffsOnly} flag is set, will print state
      * diffs instead of full state.
      * @param currentStateInfo Information about the single state in the trace.
-     * @param lastState The previous state in the trace for diff printing.
+     * @param previousState The previous state in the trace for diff printing.
      * @param num The index of the state in the trace, counting from one.
      */
-    public static void printInvariantViolationStateTraceState(TLCStateInfo currentStateInfo, TLCState lastState, int num)
+    public static void printInvariantViolationStateTraceState(TLCStateInfo currentStateInfo, TLCState previousState, int num)
     {
         final String stateString =
-        		null != lastState && TLCGlobals.printDiffsOnly
-        		? currentStateInfo.state.toString(lastState)
+        		null != previousState && TLCGlobals.printDiffsOnly
+        		? currentStateInfo.state.toString(previousState)
         		: currentStateInfo.state.toString();
  
-		// Fingerprint can't be calculated when state is incomplete; just return a random value.
+		// Fingerprint can't be calculated when state is incomplete; just use a random value.
         final String fingerprint =
         		currentStateInfo.state.allAssigned()
         		? String.valueOf(currentStateInfo.fingerPrint())
