@@ -1,9 +1,14 @@
 package tlc2.model;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import tla2sany.st.Location;
+import tlc2.tool.TLCStateInfo;
+import tlc2.value.IValue;
 import util.TLAConstants;
+import util.UniqueString;
 
 /**
  * Encapsulates information about a TLC state.
@@ -133,6 +138,26 @@ public class MCState {
 		isStuttering = stuttering;
 		isBackToState = backToState;
 		stateNumber = ordinal;
+	}
+	
+	public MCState(TLCStateInfo tlcState) {
+		this.name = "";
+		this.label = "";
+		this.location = null;
+		this.isStuttering = false;
+		this.isBackToState = false;
+		this.stateNumber = (int)tlcState.stateNumber;
+
+		Map<UniqueString, IValue> variables = tlcState.state.getVals();
+		this.variables = (MCVariable[])variables
+				.keySet()
+				.stream()
+				.map(varName ->
+					new MCVariable(
+							varName.toString(),
+							variables.get(varName).toString()))
+				.collect(Collectors.<MCVariable>toList())
+				.toArray();
 	}
 
 	public MCVariable[] getVariables() {

@@ -5,6 +5,7 @@ import java.util.TreeMap;
 import java.util.SortedMap;
 
 import tlc2.model.MCError;
+import tlc2.model.MCState;
 import tlc2.tool.TLCStateInfo;
 import util.OneOf;
 
@@ -100,7 +101,15 @@ public class ErrorTraceMessagePrinterRecorder implements IMessagePrinterRecorder
 	
 	public Optional<MCError> getMCErrorTrace() {
 		MCError error = new MCError();
-		
+		this.trace.ifPresent(traceType -> traceType.ifPresent(
+				safety -> {
+					for (TLCStateInfo tlcState : safety.getTrace().values()) {
+						MCState mcState = new MCState(tlcState);
+						error.addState(mcState);
+					}
+				},
+				stuttering -> { },
+				lasso -> { }));
 		return Optional.of(error);
 	}
 	
