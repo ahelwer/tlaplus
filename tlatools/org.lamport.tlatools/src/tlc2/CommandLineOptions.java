@@ -803,7 +803,7 @@ public class CommandLineOptions
 				{
 					throw new IllegalArgumentException(
 							String.format(
-									"Error: Value in interval [{0}, {1}] for maxSetSize required; encountered {2}",
+									"Error: Value in interval [%d, %d] for maxSetSize required; encountered %d",
 									lowerBound,
 									upperBound,
 									value));
@@ -821,7 +821,7 @@ public class CommandLineOptions
 						{
 							throw new IllegalArgumentException(
 									String.format(
-											"Error: auto-detection of host processor count for TLC workers returned [{0}]; require at least 1",
+											"Error: auto-detection of host processor count for TLC workers returned [%d]; require at least 1",
 											workerCount));
 						}
 					},
@@ -844,7 +844,7 @@ public class CommandLineOptions
 				{
 					throw new IllegalArgumentException(
 							String.format(
-									"Error: The number for -fp must be between {0} and {1} (inclusive).",
+									"Error: The number for -fp must be between %d and %d (inclusive).",
 									lowerBound,
 									upperBound));
 				}
@@ -859,7 +859,7 @@ public class CommandLineOptions
 				{
 					throw new IllegalArgumentException(
 							String.format(
-									"Error: Value in interval [{0}, {1}] for fpbits required; encountered {2}",
+									"Error: Value in interval [%d, %d] for fpbits required; encountered %d",
 									lowerBound,
 									upperBound,
 									value));
