@@ -5,6 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -107,11 +110,11 @@ public class TraceExpressionSpec {
 						tlaStream,
 						cfgStream);
 			} catch (FileNotFoundException e) {
-				
+				System.out.println(e.getMessage());
 			} catch (SecurityException e) {
-				
+				System.out.println(e.getMessage());
 			} catch (IOException e) {
-				
+				System.out.println(e.getMessage());
 			}
 		});
 	}
@@ -178,6 +181,7 @@ public class TraceExpressionSpec {
 		
 		@Override
 		public OutputStream getTlaStream() throws FileNotFoundException, SecurityException {
+			this.ensureDirectoryExists();
 			final File tlaFile = new File(
 					this.outputDirectory,
 					TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
@@ -187,11 +191,26 @@ public class TraceExpressionSpec {
 		
 		@Override
 		public OutputStream getCfgStream() throws FileNotFoundException, SecurityException {
+			this.ensureDirectoryExists();
 			final File cfgFile = new File(
 					this.outputDirectory,
 					TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
 					+ TLAConstants.Files.CONFIG_EXTENSION);
 			return new FileOutputStream(cfgFile);
+		}
+		
+		/**
+		 * Recursively creates directories until the desired path is present.
+		 * @throws SecurityException Access issue when creating directories.
+		 */
+		private void ensureDirectoryExists() throws SecurityException {
+			Path outputDirPath = Paths.get(this.outputDirectory);
+			for (int i = 1; i <= outputDirPath.getNameCount(); i++) {
+				Path subPath = outputDirPath.subpath(0, i);
+				if (!subPath.toFile().exists()) {
+					subPath.toFile().mkdir();
+				}
+			}
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package tlc2.model;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -148,16 +149,16 @@ public class MCState {
 		this.isBackToState = false;
 		this.stateNumber = (int)tlcState.stateNumber;
 
-		Map<UniqueString, IValue> variables = tlcState.state.getVals();
-		this.variables = (MCVariable[])variables
-				.keySet()
-				.stream()
-				.map(varName ->
-					new MCVariable(
-							varName.toString(),
-							variables.get(varName).toString()))
-				.collect(Collectors.<MCVariable>toList())
-				.toArray();
+		Map<UniqueString, IValue> variableMap = tlcState.state.getVals();
+		List<MCVariable> variableList = new ArrayList<MCVariable>();
+		for (UniqueString key : variableMap.keySet()) {
+			MCVariable variable = new MCVariable(
+					key.toString(),
+					variableMap.get(key).toString());
+			variableList.add(variable);
+		}
+		
+		this.variables = variableList.toArray(new MCVariable[variableList.size()]);
 	}
 
 	public MCVariable[] getVariables() {

@@ -84,21 +84,6 @@ public class ErrorTraceMessagePrinterRecorder implements IMessagePrinterRecorder
 		}
 	}
 	
-	/**
-	 * Gets the error trace.
-	 * @return The error trace.
-	 */
-	public
-		Optional<
-			OneOf<
-				SafetyPropertyCounterExampleStateTrace,
-				LivenessPropertyCounterExampleStateTraceWithStuttering,
-				LivenessPropertyCounterExampleStateTraceWithLasso
-			>
-		> getErrorTrace() {
-		return this.trace;
-	}
-	
 	public Optional<MCError> getMCErrorTrace() {
 		MCError error = new MCError();
 		this.trace.ifPresent(traceType -> traceType.ifPresent(

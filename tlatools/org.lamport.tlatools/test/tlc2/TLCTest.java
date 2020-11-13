@@ -7,6 +7,7 @@ import static org.junit.Assume.assumeTrue;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.junit.Test;
@@ -689,14 +690,14 @@ public class TLCTest {
 
 		final Integer expectedValue = 128;
 		Supplier<Integer> hostProcessorCount = () -> expectedValue;
-		TLC tlc = new TLC(hostProcessorCount);
+		TLC tlc = new TLC(hostProcessorCount, Optional.empty());
 		String[] args = new String[] {"-workers", "auto", tlaFile};
 		assertTrue(tlc.handleParameters(args, false));
 		assertEquals(expectedValue.intValue(), TLCGlobals.getNumWorkers());
 		
 		final Integer edgeCaseValue = 1;
 		hostProcessorCount = () -> edgeCaseValue;
-		tlc = new TLC(hostProcessorCount);
+		tlc = new TLC(hostProcessorCount, Optional.empty());
 		args = new String[] {"-workers", "auto", tlaFile};
 		assertTrue(tlc.handleParameters(args, false));
 		assertEquals(edgeCaseValue.intValue(), TLCGlobals.getNumWorkers());
@@ -707,7 +708,7 @@ public class TLCTest {
 	{
 		final Supplier<Integer> hostProcessorCount = () -> 0;
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
-		final TLC tlc = new TLC(hostProcessorCount);
+		final TLC tlc = new TLC(hostProcessorCount, Optional.empty());
 		String[] args = new String[] {tlaFile, "-workers"};
 		assertFalse(tlc.handleParameters(args, false));
 		

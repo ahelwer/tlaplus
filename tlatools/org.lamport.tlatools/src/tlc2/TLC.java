@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.TimeZone;
-import java.util.concurrent.Phaser;
 import java.util.function.Supplier;
 
 import model.InJarFilenameToStream;
@@ -54,7 +53,6 @@ import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
 import util.UsageGenerator;
-import util.UsageGenerator.Argument;
 
 /**
  * Main TLC starter class.
@@ -99,11 +97,9 @@ public class TLC {
     private boolean checkDeadlock = true;
     
     /**
-     * Options controlling generation of trace expression spec.
+     * Trace expression spec generator.
      */
-    private Optional<TraceExpressionSpec> traceExpressionSpec =
-    		Optional.of(new TraceExpressionSpec(
-    				TLAConstants.Directories.TRACE_EXPRESSION_SPEC));
+    private Optional<TraceExpressionSpec> traceExpressionSpec;
 
     /**
      * Whether a seed for the random number generator was provided.
@@ -178,8 +174,6 @@ public class TLC {
      */
     private int traceDepth = 100;
     
-    private FilenameToStream resolver = null;
-    
     /**
      * Name of dump file.
      */
@@ -209,28 +203,35 @@ public class TLC {
      * Function returning host processor count.
      * This function can be injected for unit testing purposes.
      */
-    private Supplier<Integer> hostProcessorCount =
-    		() -> Runtime.getRuntime().availableProcessors();
+    private Supplier<Integer> hostProcessorCount;
     
+    /**
+     * Interface to retrieve model properties.
+     */
     private volatile ITool tool;
-
-    private final Phaser waitingOnGenerationCompletion = new Phaser();
     
+    private FilenameToStream resolver = null;
+
     /**
      * Initializes a new instance of TLC.
      */
 	public TLC() {
-        this.waitingOnGenerationCompletion.register();
+		this.hostProcessorCount = () -> Runtime.getRuntime().availableProcessors();
+		this.traceExpressionSpec =
+    		Optional.of(new TraceExpressionSpec(
+    				TLAConstants.Directories.TRACE_EXPRESSION_SPEC));
 	}
 	
 	/**
 	 * Initializes a new instance of TLC.
 	 * @param hostProcessorCount Injected function for returning host processor count.
+	 * @param teSpec Injected trace expression spec generator.
 	 */
-	public TLC(Supplier<Integer> getHostProcessorCount)
-	{
-		this();
+	public TLC(
+			Supplier<Integer> getHostProcessorCount,
+			Optional<TraceExpressionSpec> teSpec) {
 		this.hostProcessorCount = getHostProcessorCount;
+		this.traceExpressionSpec = teSpec;
 	}
 
     /*
@@ -432,7 +433,7 @@ public class TLC {
 					},
 					validationSuccess -> {
 						// Transform command line options
-						parseSuccess.options.transform();;
+						parseSuccess.options.transform();
 						// Set variables from options
 						this.setClassVariables(parseSuccess.options);
 						this.setGlobalVariables(parseSuccess.options);
@@ -703,13 +704,6 @@ public class TLC {
 			}
 		}
 
-		this.traceExpressionSpec.ifPresent(spec -> {
-			ErrorTraceSpec.initialize(
-					this.waitingOnGenerationCompletion,
-					this.tool,
-					msg -> this.printErrorMsg(msg));
-		});
-		
 		if (cleanup && (fromChkpt == null)) {
 			// clean up the states directory only when not recovering
 			FileUtil.deleteDir(TLCGlobals.metaRoot, true);
@@ -891,8 +885,10 @@ public class TLC {
 							? Long.toString(runtime) + "ms"
 							: convertRuntimeToHumanReadable(runtime));
 			MP.flush();
-			// Wait for the SpecTE generation to complete before termination.
-			waitingOnGenerationCompletion.arriveAndAwaitAdvance();
+			
+			// Generate trace expression spec
+			this.traceExpressionSpec.ifPresent(teSpec -> teSpec.generate(this.tool));
+
         }
     }
     
@@ -1141,7 +1137,7 @@ public class TLC {
     														+ "the event of TLC finding a state or behavior that does\n"
     														+ "not satisfy the invariants; TLC's default behavior is to\n"
     														+ "generate this spec.", true));
-    	sharedArguments.add(new UsageGenerator.Argument("-traceExpressionSpecDir", "some-dir-name",
+    	sharedArguments.add(new UsageGenerator.Argument("-traceExpressionSpecOutDir", "some-dir-name",
     													"Directory to which to output the TE spec if TLC generates\n"
     														+ "an error trace. Can be a relative (to root spec dir)\n"
     														+ "or absolute path. By default the TE spec is output\n"
