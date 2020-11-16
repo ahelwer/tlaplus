@@ -233,6 +233,9 @@ public class LiveCheck implements ILiveCheck {
 		// creating a low-level array.
 		final CompletionService<Boolean> completionService = new ExecutorCompletionService<Boolean>(pool);
 
+		// Resets static worker fields, supporting multiple sequential liveness checks in single process
+		LiveWorker.reset();
+
 		for (int i = 0; i < wNum; i++) {
 			completionService.submit(new LiveWorker(tool, i, wNum, this, queue, finalCheck));
 		}

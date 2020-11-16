@@ -93,6 +93,13 @@ public class LiveWorker implements Callable<Boolean> {
 			return (errFoundByThread == id);
 		}
 	}
+	
+	/**
+	 * Resets static fields in this class to original values.
+	 */
+	public static void reset() {
+		LiveWorker.errFoundByThread = -1;
+	}
 
 	/**
 	 * Returns true iff either an error has not been found or the error is found

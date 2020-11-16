@@ -1761,7 +1761,8 @@ public class MP
 		recorder.subscribe(mpRecorder);
 	}
 	
-	public static void unsubscribeRecorder(IMessagePrinterRecorder recorder) {
+	public static void unsubscribeRecorder(IMessagePrinterRecorder mpRecorder) {
+		recorder.unsubscribe(mpRecorder);
 	}
 
     private static String now() {

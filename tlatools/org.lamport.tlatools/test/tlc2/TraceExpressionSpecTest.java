@@ -32,6 +32,11 @@ import tlc2.output.MP;
 
 public class TraceExpressionSpecTest {
 	
+	/*
+	@Rule
+	TemporaryFolder tempDir = new TemporaryFolder();
+	*/
+	
 	@Test
 	public void testSetOutputDirectory() {
 		String expected = TLAConstants.Directories.TRACE_EXPRESSION_SPEC;
@@ -78,7 +83,11 @@ public class TraceExpressionSpecTest {
 			FakeStreamProvider streams = new FakeStreamProvider(outputDir, tlaStream, cfgStream);
 			TraceExpressionSpec teSpec = new TraceExpressionSpec(streams, recorder);
 
-			teSpec.generate(originalSpecName, Arrays.asList(constants), Arrays.asList(variables));
+			teSpec.generate(
+					originalSpecName,
+					Arrays.asList(constants),
+					Arrays.asList(variables),
+					error);
 			System.out.println(tlaStream.toString());
 			System.out.println(cfgStream.toString());
 		} catch (IOException e) {
@@ -88,39 +97,40 @@ public class TraceExpressionSpecTest {
 	
 	@Test
 	public void integrationTestSafetyViolationTESpec() {
-		final Path modelDir = Paths.get("test-model");
-		Path stateDir = modelDir.resolve(UUID.randomUUID().toString());
-		final Path teDir = modelDir.resolve(UUID.randomUUID().toString());
-		final Path originalSpecPath = modelDir.resolve("SafetyPropertyTestMC" + TLAConstants.Files.TLA_EXTENSION);
+		final Path modelDir = Paths.get("test-model", "TESpecTest");
+		final Path tempDir = modelDir.resolve("temp");
+		final Path ogStateDir = tempDir.resolve(UUID.randomUUID().toString());
+		final Path teDir = tempDir.resolve(UUID.randomUUID().toString());
+		final Path ogTlaPath = modelDir.resolve("TESpecTest" + TLAConstants.Files.TLA_EXTENSION);
+		final Path ogCfgPath = modelDir.resolve("TESpecSafetyTest" + TLAConstants.Files.CONFIG_EXTENSION);
 
 		final ErrorTraceMessagePrinterRecorder originalRecorder = new ErrorTraceMessagePrinterRecorder();
 		MP.setRecorder(originalRecorder);
-		TLC tlc = new TLC();
-		tlc.setResolver(new SimpleFilenameToStream(originalSpecPath.getParent().toString()));
-		assertTrue(tlc.handleParameters(new String[] {
+		final TLC ogTlc = new TLC();
+		ogTlc.setResolver(new SimpleFilenameToStream(modelDir.toString()));
+		assertTrue(ogTlc.handleParameters(new String[] {
 				"-traceExpressionSpecOutDir", teDir.toString(),
-				"-metadir", stateDir.toString(),
-				"-cleanup",
-				originalSpecPath.toString() }));
-		tlc.process();
+				"-metadir", ogStateDir.toString(),
+				"-config", ogCfgPath.toString(),
+				ogTlaPath.toString() }));
+		ogTlc.process();
 		MP.unsubscribeRecorder(originalRecorder);
 
 		assertTrue(originalRecorder.getMCErrorTrace().isPresent());
 		final MCError originalError = originalRecorder.getMCErrorTrace().get();
 
-		stateDir = modelDir.resolve(UUID.randomUUID().toString());
-		Path teSpecPath = teDir.resolve(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION);
+		final Path teStateDir = tempDir.resolve(UUID.randomUUID().toString());
+		final Path teTlaPath = teDir.resolve(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION);
 		
 		ErrorTraceMessagePrinterRecorder teRecorder = new ErrorTraceMessagePrinterRecorder();
 		MP.setRecorder(teRecorder);
-		tlc = new TLC();
-		tlc.setResolver(new SimpleFilenameToStream(new String[] { modelDir.toString(), teDir.toString() }));
-		assertTrue(tlc.handleParameters(new String[] {
+		final TLC teTlc = new TLC();
+		teTlc.setResolver(new SimpleFilenameToStream(new String[] { modelDir.toString(), teDir.toString() }));
+		assertTrue(teTlc.handleParameters(new String[] {
 				"-noGenerateTraceExpressionSpec",
-				"-metadir", stateDir.toString(),
-				"-cleanup",
-				teSpecPath.toString() }));
-		tlc.process();
+				"-metadir", teStateDir.toString(),
+				teTlaPath.toString() }));
+		teTlc.process();
 		MP.unsubscribeRecorder(teRecorder);
 
 		assertTrue(teRecorder.getMCErrorTrace().isPresent());
@@ -149,39 +159,42 @@ public class TraceExpressionSpecTest {
 	
 	@Test
 	public void integrationTestStutteringTESpec() {
-		final Path modelDir = Paths.get("test-model");
-		Path stateDir = modelDir.resolve(UUID.randomUUID().toString());
-		final Path teDir = modelDir.resolve(UUID.randomUUID().toString());
-		final Path originalSpecPath = modelDir.resolve("SafetyPropertyTestMC" + TLAConstants.Files.TLA_EXTENSION);
+		final Path modelDir = Paths.get("test-model", "TESpecTest");
+		final Path tempDir = modelDir.resolve("temp");
+		final Path ogStateDir = tempDir.resolve(UUID.randomUUID().toString());
+		final Path teDir = tempDir.resolve(UUID.randomUUID().toString());
+		final Path ogTlaPath = modelDir.resolve("TESpecTest" + TLAConstants.Files.TLA_EXTENSION);
+		final Path ogCfgPath = modelDir.resolve("TESpecStutteringTest" + TLAConstants.Files.CONFIG_EXTENSION);
 
 		final ErrorTraceMessagePrinterRecorder originalRecorder = new ErrorTraceMessagePrinterRecorder();
 		MP.setRecorder(originalRecorder);
-		TLC tlc = new TLC();
-		tlc.setResolver(new SimpleFilenameToStream(originalSpecPath.getParent().toString()));
-		assertTrue(tlc.handleParameters(new String[] {
+		final TLC ogTlc = new TLC();
+		ogTlc.setResolver(new SimpleFilenameToStream(modelDir.toString()));
+		assertTrue(ogTlc.handleParameters(new String[] {
 				"-traceExpressionSpecOutDir", teDir.toString(),
-				"-metadir", stateDir.toString(),
-				"-cleanup",
-				originalSpecPath.toString() }));
-		tlc.process();
+				"-metadir", ogStateDir.toString(),
+				"-lncheck", "sequential",
+				"-config", ogCfgPath.toString(),
+				ogTlaPath.toString() }));
+		ogTlc.process();
 		MP.unsubscribeRecorder(originalRecorder);
 
 		assertTrue(originalRecorder.getMCErrorTrace().isPresent());
 		final MCError originalError = originalRecorder.getMCErrorTrace().get();
 
-		stateDir = modelDir.resolve(UUID.randomUUID().toString());
-		Path teSpecPath = teDir.resolve(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION);
+		final Path teStateDir = tempDir.resolve(UUID.randomUUID().toString());
+		final Path teTlaPath = teDir.resolve(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION);
 		
 		ErrorTraceMessagePrinterRecorder teRecorder = new ErrorTraceMessagePrinterRecorder();
 		MP.setRecorder(teRecorder);
-		tlc = new TLC();
-		tlc.setResolver(new SimpleFilenameToStream(new String[] { modelDir.toString(), teDir.toString() }));
-		assertTrue(tlc.handleParameters(new String[] {
+		final TLC teTlc = new TLC();
+		teTlc.setResolver(new SimpleFilenameToStream(new String[] { modelDir.toString(), teDir.toString() }));
+		assertTrue(teTlc.handleParameters(new String[] {
 				"-noGenerateTraceExpressionSpec",
-				"-metadir", stateDir.toString(),
-				"-cleanup",
-				teSpecPath.toString() }));
-		tlc.process();
+				"-metadir", teStateDir.toString(),
+				"-lncheck", "sequential",
+				teTlaPath.toString() }));
+		teTlc.process();
 		MP.unsubscribeRecorder(teRecorder);
 
 		assertTrue(teRecorder.getMCErrorTrace().isPresent());
@@ -195,14 +208,17 @@ public class TraceExpressionSpecTest {
 			MCState originalState = originalStates.get(i);
 			MCState teState = teStates.get(i);
 
-			assertEquals(i + 1, originalState.getStateNumber());
-			assertEquals(originalState.getStateNumber(), teState.getStateNumber());
-
 			assertFalse(originalState.isBackToState());
-			assertEquals(originalState.getStateNumber(), teState.getStateNumber());
 			
-			assertFalse(originalState.isStuttering());
-			assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+			if (originalStates.size() == i + 1) {
+				assertTrue(originalState.isStuttering());
+				assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+				assertEquals(i, originalState.getStateNumber());
+				assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+			} else {
+				assertEquals(i + 1, originalState.getStateNumber());
+				assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+			}
 			
 			assertEquals(originalState.asSimpleRecord(), teState.asSimpleRecord());
 		}
@@ -215,23 +231,23 @@ public class TraceExpressionSpecTest {
 
 		FakeStreamProvider stream = new FakeStreamProvider(outputDir, null, null, true, false, false, false);
 		TraceExpressionSpec teSpec = new TraceExpressionSpec(stream, recorder);
-		teSpec.generate(null, null, null);
+		teSpec.generate(null, null, null, null);
 
 		stream = new FakeStreamProvider(outputDir, null, null, true, false, false, false);
 		teSpec = new TraceExpressionSpec(stream, recorder);
-		teSpec.generate(null, null, null);
+		teSpec.generate(null, null, null, null);
 
 		stream = new FakeStreamProvider(outputDir, null, null, false, true, false, false);
 		teSpec = new TraceExpressionSpec(stream, recorder);
-		teSpec.generate(null, null, null);
+		teSpec.generate(null, null, null, null);
 
 		stream = new FakeStreamProvider(outputDir, null, null, false, false, true, false);
 		teSpec = new TraceExpressionSpec(stream, recorder);
-		teSpec.generate(null, null, null);
+		teSpec.generate(null, null, null, null);
 
 		stream = new FakeStreamProvider(outputDir, null, null, false, false, false, true);
 		teSpec = new TraceExpressionSpec(stream, recorder);
-		teSpec.generate(null, null, null);
+		teSpec.generate(null, null, null, null);
 	}
 	
 	private class FakeStreamProvider implements TraceExpressionSpec.IStreamProvider {

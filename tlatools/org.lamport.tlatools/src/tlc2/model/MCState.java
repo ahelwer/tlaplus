@@ -141,6 +141,22 @@ public class MCState {
 		stateNumber = ordinal;
 	}
 	
+	/**
+	 * Initializes a new instance of this class.
+	 * @param other The state from which to copy values.
+	 * @param isStuttering Whether to mark this state as stuttering.
+	 * @param isBackToState Whether to mark this state as the end of a lasso.
+	 */
+	public MCState(final MCState other, boolean isStuttering, boolean isBackToState) {
+		this.variables = other.variables;
+		this.name = other.name;
+		this.label = other.label;
+		this.location = other.location;
+		this.stateNumber = other.stateNumber;
+		this.isStuttering = isStuttering;
+		this.isBackToState = isBackToState;
+	}
+	
 	public MCState(TLCStateInfo tlcState) {
 		this.name = "";
 		this.label = "";

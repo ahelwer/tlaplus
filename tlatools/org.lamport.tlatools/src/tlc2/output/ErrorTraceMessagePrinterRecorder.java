@@ -1,5 +1,6 @@
 package tlc2.output;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.SortedMap;
@@ -48,6 +49,10 @@ public class ErrorTraceMessagePrinterRecorder implements IMessagePrinterRecorder
 			>
 		> trace = Optional.empty();
 	
+	private Optional<MCError> errorTrace = Optional.empty();
+	
+	private boolean traceFinished = false;
+	
 	@Override
 	public void record(int code, Object... objects) {
 		if (objects.length >= 2 && objects[0] instanceof TLCStateInfo && objects[1] instanceof Integer) {
@@ -58,25 +63,33 @@ public class ErrorTraceMessagePrinterRecorder implements IMessagePrinterRecorder
 					stateInfo.stateNumber = stateOrdinal;
 
 					// Idempotent transition from no trace to safety trace
-					this.trace = Optional.of(this.trace.orElse(toSafetyTrace()));
+					this.errorTrace = Optional.of(this.errorTrace.orElse(new MCError()));
 					
 					// Add state to existing safety trace; if we've seen the
 					// stuttering or lasso markers, the state is ignored
-					this.trace = this.trace.map(traceType ->
-						traceType.mapFirst(safety ->
-							safety.addState(stateOrdinal, stateInfo)));
+					if (!this.traceFinished) {
+						MCState state = new MCState(stateInfo);
+						this.errorTrace.ifPresent(trace -> trace.addState(state));
+					}
+
 					break;
 				case EC.TLC_STUTTER_STATE:
-					// Transition from safety trace to liveness trace ending in stuttering
-					this.trace = this.trace.map(traceType -> 
-						traceType.flatMapFirst(safety ->
-							toStutteringTrace(safety)));
+					// Mark trace as ending in stuttering
+					if (!this.traceFinished) {
+						this.errorTrace.ifPresent(trace -> {
+							List<MCState> states = trace.getStates();
+							if (states.size() > 0) {
+								MCState finalState = states.get(states.size() - 1);
+								MCState stutteringState = new MCState(finalState, true, false);
+								trace.addState(stutteringState);
+							}
+						});
+					}
+
+					this.traceFinished = true;
 					break;
 				case EC.TLC_BACK_TO_STATE:
 					// Transition from safety trace to liveness trace ending in lasso
-					this.trace = this.trace.map(traceType ->
-						traceType.flatMapFirst(safety ->
-							toLassoTrace(safety, stateOrdinal)));
 					break;
 				default:
 					break;
@@ -85,17 +98,7 @@ public class ErrorTraceMessagePrinterRecorder implements IMessagePrinterRecorder
 	}
 	
 	public Optional<MCError> getMCErrorTrace() {
-		MCError error = new MCError();
-		this.trace.ifPresent(traceType -> traceType.ifPresent(
-				safety -> {
-					for (TLCStateInfo tlcState : safety.getTrace().values()) {
-						MCState mcState = new MCState(tlcState);
-						error.addState(mcState);
-					}
-				},
-				stuttering -> { },
-				lasso -> { }));
-		return Optional.of(error);
+		return this.errorTrace;
 	}
 	
 	/**

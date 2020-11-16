@@ -888,7 +888,6 @@ public class TLC {
 			
 			// Generate trace expression spec
 			this.traceExpressionSpec.ifPresent(teSpec -> teSpec.generate(this.tool));
-
         }
     }
     

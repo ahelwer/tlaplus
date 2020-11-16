@@ -23,6 +23,7 @@ toolbox/org.lamport.tla.toolbox.jnlp/files/dist-tlc.zip
 workspace/
 states/
 states
+temp/
 tlatools/states
 .DS_Store
 screenshots/

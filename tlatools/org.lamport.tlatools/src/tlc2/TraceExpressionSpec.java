@@ -5,15 +5,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import tlc2.input.MCParser;
 import tlc2.input.MCParserResults;
+import tlc2.model.MCError;
 import tlc2.output.MP;
 import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.tool.ITool;
@@ -81,13 +80,15 @@ public class TraceExpressionSpec {
 	 * @param specInfo Information about the original spec.
 	 */
 	public void generate(ITool specInfo) {
-		ModelConfig cfg = specInfo.getModelConfig();
-		SpecProcessor spec = specInfo.getSpecProcessor();
-		String originalSpecName = specInfo.getRootName();
-		List<String> variables = Arrays.asList(TLCState.Empty.getVarsAsStrings());
-		MCParserResults parserResults = MCParser.generateResultsFromProcessorAndConfig(spec, cfg);
-		List<String> constants = parserResults.getModelConfig().getRawConstants();
-		this.generate(originalSpecName, constants, variables);
+		this.recorder.getMCErrorTrace().ifPresent(errorTrace -> {
+			ModelConfig cfg = specInfo.getModelConfig();
+			SpecProcessor spec = specInfo.getSpecProcessor();
+			String originalSpecName = specInfo.getRootName();
+			List<String> variables = Arrays.asList(TLCState.Empty.getVarsAsStrings());
+			MCParserResults parserResults = MCParser.generateResultsFromProcessorAndConfig(spec, cfg);
+			List<String> constants = parserResults.getModelConfig().getRawConstants();
+			this.generate(originalSpecName, constants, variables, errorTrace);
+		});
 	}
 
 	/**
@@ -95,28 +96,31 @@ public class TraceExpressionSpec {
 	 * @param originalSpecName Name of the original spec.
 	 * @param constants Constants from the original spec.
 	 * @param variables Variables from the original spec.
+	 * @param errorTrace The error trace.
 	 */
-	public void generate(String originalSpecName, List<String> constants, List<String> variables) {
-		this.recorder.getMCErrorTrace().ifPresent(errorTrace -> {
-			try (
-					OutputStream tlaStream = this.streamProvider.getTlaStream();
-					OutputStream cfgStream = this.streamProvider.getCfgStream();
-			) {
-				TraceExplorer.writeSpecTEStreams(
-						originalSpecName,
-						constants,
-						variables,
-						errorTrace,
-						tlaStream,
-						cfgStream);
-			} catch (FileNotFoundException e) {
-				System.out.println(e.getMessage());
-			} catch (SecurityException e) {
-				System.out.println(e.getMessage());
-			} catch (IOException e) {
-				System.out.println(e.getMessage());
-			}
-		});
+	public void generate(
+			String originalSpecName,
+			List<String> constants,
+			List<String> variables,
+			MCError errorTrace) {
+		try (
+				OutputStream tlaStream = this.streamProvider.getTlaStream();
+				OutputStream cfgStream = this.streamProvider.getCfgStream();
+		) {
+			TraceExplorer.writeSpecTEStreams(
+					originalSpecName,
+					constants,
+					variables,
+					errorTrace,
+					tlaStream,
+					cfgStream);
+		} catch (FileNotFoundException e) {
+			System.out.println(e.getMessage());
+		} catch (SecurityException e) {
+			System.out.println(e.getMessage());
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
 	}
 	
 	/**
