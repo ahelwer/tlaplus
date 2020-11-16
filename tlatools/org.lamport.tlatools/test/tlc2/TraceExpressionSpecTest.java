@@ -186,7 +186,35 @@ public class TraceExpressionSpecTest {
 		assertTrue(teSpecTest("TESpecLassoTest", eval));
 	}
 	
-	public static boolean teSpecTest(String cfgName, BiFunction<MCError, MCError, Boolean> eval) {
+	@Test
+	public void integrationTestToolLassoTESpec() {
+		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
+			List<MCState> originalStates = originalError.getStates();
+			List<MCState> teStates = teError.getStates();
+			assertEquals(originalStates.size(), teStates.size());
+			for (int i = 0; i < originalStates.size(); i++)
+			{
+				MCState originalState = originalStates.get(i);
+				MCState teState = teStates.get(i);
+
+				if (originalStates.size() == i + 1) {
+					assertTrue(originalState.isBackToState());
+					assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+				} else {
+					assertEquals(i + 1, originalState.getStateNumber());
+					assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+				}
+				
+				assertEquals(originalState.asSimpleRecord(), teState.asSimpleRecord());
+			}
+			
+			return true;
+		};
+		
+		assertTrue(teSpecTest("TESpecLassoTest", eval, "-tool"));
+	}
+	
+	public static boolean teSpecTest(String cfgName, BiFunction<MCError, MCError, Boolean> eval, String... otherArgs) {
 		final Path modelDir = Paths.get("test-model", "TESpecTest");
 		final Path tempDir = modelDir.resolve("temp");
 		final Path ogStateDir = tempDir.resolve(UUID.randomUUID().toString());
@@ -198,11 +226,19 @@ public class TraceExpressionSpecTest {
 		MP.setRecorder(originalRecorder);
 		final TLC ogTlc = new TLC();
 		ogTlc.setResolver(new SimpleFilenameToStream(modelDir.toString()));
-		assertTrue(ogTlc.handleParameters(new String[] {
-				"-traceExpressionSpecOutDir", teDir.toString(),
-				"-metadir", ogStateDir.toString(),
-				"-config", ogCfgPath.toString(),
-				ogTlaPath.toString() }));
+		
+		String[] baseArgs = new String[] {
+			"-traceExpressionSpecOutDir", teDir.toString(),
+			"-metadir", ogStateDir.toString(),
+			"-config", ogCfgPath.toString(),
+		};
+		
+		String[] args = new String[baseArgs.length + otherArgs.length + 1];
+		for (int i = 0; i < baseArgs.length; i++) { args[i] = baseArgs[i]; }
+		for (int i = 0; i < otherArgs.length; i++) { args[baseArgs.length + i] = otherArgs[i]; }
+		args[args.length - 1] = ogTlaPath.toString();
+
+		assertTrue(ogTlc.handleParameters(args));
 		ogTlc.process();
 		MP.unsubscribeRecorder(originalRecorder);
 
