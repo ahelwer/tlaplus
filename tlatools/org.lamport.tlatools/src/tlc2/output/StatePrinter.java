@@ -96,15 +96,15 @@ public class StatePrinter
      * @param currentStateInfo Info about the loopback state.
      * @param stateNum The index of the state in the trace, counting from one.
      */
-	public static void printBackToState(final TLCStateInfo currentStateInfo, final long stateNum) {
+	public static void printBackToState(final TLCStateInfo currentStateInfo, final int stateNum) {
 		if (TLCGlobals.tool) {
 			//TODO If the unit test suite runs with -tool mode always turned on, many tests fail because of a NPE.  The NPE results
 			//from null passed here as TLCState, which eventually causes the NPE in tlc2.tool.TLCStateInfo.toString().  When I changed
 			//this from printState to printMessage, nothing obvious broke. However, I suspect some corner case in the Toolbox breaks,
 			//which is why I decided not to touch this. 
-			MP.printState(EC.TLC_BACK_TO_STATE, new String[] { "" + stateNum, currentStateInfo.info.toString() }, (TLCState) null, -1);
+			MP.printState(EC.TLC_BACK_TO_STATE, new String[] { Integer.toString(stateNum), currentStateInfo.info.toString() }, (TLCState)null, stateNum);
 		} else {
-			MP.printMessage(EC.TLC_BACK_TO_STATE, new String[] {"" + stateNum, currentStateInfo.info.toString()});
+			MP.printMessage(EC.TLC_BACK_TO_STATE, new String[] {Integer.toString(stateNum), currentStateInfo.info.toString()});
 		}
 	}
 }

@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +31,7 @@ import tlc2.model.MCState;
 import tlc2.model.Utils;
 import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.output.MP;
+import tlc2.tool.impl.Tool;
 
 public class TraceExpressionSpecTest {
 	
@@ -97,74 +100,99 @@ public class TraceExpressionSpecTest {
 	
 	@Test
 	public void integrationTestSafetyViolationTESpec() {
-		final Path modelDir = Paths.get("test-model", "TESpecTest");
-		final Path tempDir = modelDir.resolve("temp");
-		final Path ogStateDir = tempDir.resolve(UUID.randomUUID().toString());
-		final Path teDir = tempDir.resolve(UUID.randomUUID().toString());
-		final Path ogTlaPath = modelDir.resolve("TESpecTest" + TLAConstants.Files.TLA_EXTENSION);
-		final Path ogCfgPath = modelDir.resolve("TESpecSafetyTest" + TLAConstants.Files.CONFIG_EXTENSION);
+		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
+			List<MCState> originalStates = originalError.getStates();
+			List<MCState> teStates = teError.getStates();
+			assertEquals(originalStates.size(), teStates.size());
+			for (int i = 0; i < originalStates.size(); i++)
+			{
+				MCState originalState = originalStates.get(i);
+				MCState teState = teStates.get(i);
 
-		final ErrorTraceMessagePrinterRecorder originalRecorder = new ErrorTraceMessagePrinterRecorder();
-		MP.setRecorder(originalRecorder);
-		final TLC ogTlc = new TLC();
-		ogTlc.setResolver(new SimpleFilenameToStream(modelDir.toString()));
-		assertTrue(ogTlc.handleParameters(new String[] {
-				"-traceExpressionSpecOutDir", teDir.toString(),
-				"-metadir", ogStateDir.toString(),
-				"-config", ogCfgPath.toString(),
-				ogTlaPath.toString() }));
-		ogTlc.process();
-		MP.unsubscribeRecorder(originalRecorder);
+				assertEquals(i + 1, originalState.getStateNumber());
+				assertEquals(originalState.getStateNumber(), teState.getStateNumber());
 
-		assertTrue(originalRecorder.getMCErrorTrace().isPresent());
-		final MCError originalError = originalRecorder.getMCErrorTrace().get();
-
-		final Path teStateDir = tempDir.resolve(UUID.randomUUID().toString());
-		final Path teTlaPath = teDir.resolve(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION);
-		
-		ErrorTraceMessagePrinterRecorder teRecorder = new ErrorTraceMessagePrinterRecorder();
-		MP.setRecorder(teRecorder);
-		final TLC teTlc = new TLC();
-		teTlc.setResolver(new SimpleFilenameToStream(new String[] { modelDir.toString(), teDir.toString() }));
-		assertTrue(teTlc.handleParameters(new String[] {
-				"-noGenerateTraceExpressionSpec",
-				"-metadir", teStateDir.toString(),
-				teTlaPath.toString() }));
-		teTlc.process();
-		MP.unsubscribeRecorder(teRecorder);
-
-		assertTrue(teRecorder.getMCErrorTrace().isPresent());
-		final MCError teError = teRecorder.getMCErrorTrace().get();
-		
-		List<MCState> originalStates = originalError.getStates();
-		List<MCState> teStates = teError.getStates();
-		assertEquals(originalStates.size(), teStates.size());
-		for (int i = 0; i < originalStates.size(); i++)
-		{
-			MCState originalState = originalStates.get(i);
-			MCState teState = teStates.get(i);
-
-			assertEquals(i + 1, originalState.getStateNumber());
-			assertEquals(originalState.getStateNumber(), teState.getStateNumber());
-
-			assertFalse(originalState.isBackToState());
-			assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+				assertFalse(originalState.isBackToState());
+				assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+				
+				assertFalse(originalState.isStuttering());
+				assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+				
+				assertEquals(originalState.asSimpleRecord(), teState.asSimpleRecord());
+			}
 			
-			assertFalse(originalState.isStuttering());
-			assertEquals(originalState.getStateNumber(), teState.getStateNumber());
-			
-			assertEquals(originalState.asSimpleRecord(), teState.asSimpleRecord());
-		}
+			return true;
+		};
+
+		assertTrue(teSpecTest("TESpecSafetyTest", eval));
 	}
 	
 	@Test
 	public void integrationTestStutteringTESpec() {
+		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
+			List<MCState> originalStates = originalError.getStates();
+			List<MCState> teStates = teError.getStates();
+			assertEquals(originalStates.size(), teStates.size());
+			for (int i = 0; i < originalStates.size(); i++)
+			{
+				MCState originalState = originalStates.get(i);
+				MCState teState = teStates.get(i);
+
+				assertFalse(originalState.isBackToState());
+				
+				if (originalStates.size() == i + 1) {
+					assertTrue(originalState.isStuttering());
+					assertEquals(i, originalState.getStateNumber());
+					assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+				} else {
+					assertEquals(i + 1, originalState.getStateNumber());
+					assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+				}
+				
+				assertEquals(originalState.asSimpleRecord(), teState.asSimpleRecord());
+			}
+			
+			return true;
+		};
+
+		assertTrue(teSpecTest("TESpecStutteringTest", eval));
+	}
+	
+	@Test
+	public void integrationTestLassoTESpec() {
+		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
+			List<MCState> originalStates = originalError.getStates();
+			List<MCState> teStates = teError.getStates();
+			assertEquals(originalStates.size(), teStates.size());
+			for (int i = 0; i < originalStates.size(); i++)
+			{
+				MCState originalState = originalStates.get(i);
+				MCState teState = teStates.get(i);
+
+				if (originalStates.size() == i + 1) {
+					assertTrue(originalState.isBackToState());
+					assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+				} else {
+					assertEquals(i + 1, originalState.getStateNumber());
+					assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+				}
+				
+				assertEquals(originalState.asSimpleRecord(), teState.asSimpleRecord());
+			}
+			
+			return true;
+		};
+		
+		assertTrue(teSpecTest("TESpecLassoTest", eval));
+	}
+	
+	public static boolean teSpecTest(String cfgName, BiFunction<MCError, MCError, Boolean> eval) {
 		final Path modelDir = Paths.get("test-model", "TESpecTest");
 		final Path tempDir = modelDir.resolve("temp");
 		final Path ogStateDir = tempDir.resolve(UUID.randomUUID().toString());
 		final Path teDir = tempDir.resolve(UUID.randomUUID().toString());
 		final Path ogTlaPath = modelDir.resolve("TESpecTest" + TLAConstants.Files.TLA_EXTENSION);
-		final Path ogCfgPath = modelDir.resolve("TESpecStutteringTest" + TLAConstants.Files.CONFIG_EXTENSION);
+		final Path ogCfgPath = modelDir.resolve(cfgName + TLAConstants.Files.CONFIG_EXTENSION);
 
 		final ErrorTraceMessagePrinterRecorder originalRecorder = new ErrorTraceMessagePrinterRecorder();
 		MP.setRecorder(originalRecorder);
@@ -173,7 +201,6 @@ public class TraceExpressionSpecTest {
 		assertTrue(ogTlc.handleParameters(new String[] {
 				"-traceExpressionSpecOutDir", teDir.toString(),
 				"-metadir", ogStateDir.toString(),
-				"-lncheck", "sequential",
 				"-config", ogCfgPath.toString(),
 				ogTlaPath.toString() }));
 		ogTlc.process();
@@ -192,7 +219,6 @@ public class TraceExpressionSpecTest {
 		assertTrue(teTlc.handleParameters(new String[] {
 				"-noGenerateTraceExpressionSpec",
 				"-metadir", teStateDir.toString(),
-				"-lncheck", "sequential",
 				teTlaPath.toString() }));
 		teTlc.process();
 		MP.unsubscribeRecorder(teRecorder);
@@ -200,30 +226,11 @@ public class TraceExpressionSpecTest {
 		assertTrue(teRecorder.getMCErrorTrace().isPresent());
 		final MCError teError = teRecorder.getMCErrorTrace().get();
 		
-		List<MCState> originalStates = originalError.getStates();
-		List<MCState> teStates = teError.getStates();
-		assertEquals(originalStates.size(), teStates.size());
-		for (int i = 0; i < originalStates.size(); i++)
-		{
-			MCState originalState = originalStates.get(i);
-			MCState teState = teStates.get(i);
-
-			assertFalse(originalState.isBackToState());
-			
-			if (originalStates.size() == i + 1) {
-				assertTrue(originalState.isStuttering());
-				assertEquals(originalState.getStateNumber(), teState.getStateNumber());
-				assertEquals(i, originalState.getStateNumber());
-				assertEquals(originalState.getStateNumber(), teState.getStateNumber());
-			} else {
-				assertEquals(i + 1, originalState.getStateNumber());
-				assertEquals(originalState.getStateNumber(), teState.getStateNumber());
-			}
-			
-			assertEquals(originalState.asSimpleRecord(), teState.asSimpleRecord());
-		}
+		assertTrue(eval.apply(originalError, teError));
+		
+		return true;
 	}
-	
+
 	@Test
 	public void testFileWriteExceptions() {
 		final String outputDir = TLAConstants.Directories.TRACE_EXPRESSION_SPEC;
