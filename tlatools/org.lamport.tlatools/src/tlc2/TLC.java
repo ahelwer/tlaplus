@@ -9,6 +9,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -478,6 +480,17 @@ public class TLC {
 			this.cleanup = true;
 		}
 		
+		// If this is a TE spec, don't generate another TE spec
+		// TODO: branch based on something better than the filename
+		options.mainSpecFilePath.ifPresent(path -> {
+			try {
+				String filename = Paths.get(path).getFileName().toString();
+				if (filename.startsWith(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME)) {
+					options.noGenerateTraceExpressionSpecFlag = true;
+				}
+			} catch (InvalidPathException e) { }
+		});
+
 		if (options.noGenerateTraceExpressionSpecFlag)
 		{
 			this.traceExpressionSpec = Optional.empty();
@@ -884,10 +897,18 @@ public class TLC {
 					TLCGlobals.tool || Boolean.getBoolean(TLC.class.getName() + ".asMilliSeconds")
 							? Long.toString(runtime) + "ms"
 							: convertRuntimeToHumanReadable(runtime));
-			MP.flush();
 			
 			// Generate trace expression spec
-			this.traceExpressionSpec.ifPresent(teSpec -> teSpec.generate(this.tool));
+			this.traceExpressionSpec.ifPresent(teSpec -> {
+				MP.printMessage(EC.TLC_TE_SPEC_GENERATION_START);
+				if (teSpec.generate(this.tool)) {
+					MP.printMessage(EC.TLC_TE_SPEC_GENERATION_END, teSpec.getOutputDirectory());
+				} else {
+					MP.printMessage(EC.TLC_TE_SPEC_GENERATION_ERROR);
+				}
+			});
+
+			MP.flush();
         }
     }
     

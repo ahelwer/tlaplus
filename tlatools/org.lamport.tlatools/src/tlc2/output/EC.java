@@ -326,6 +326,10 @@ public interface EC
     
     public static final int TLC_ENVIRONMENT_JVM_GC = 2401;
 
+    // Codes for trace expression spec generation events
+    public static final int TLC_TE_SPEC_GENERATION_START = 2500;
+    public static final int TLC_TE_SPEC_GENERATION_END = 2501;
+    public static final int TLC_TE_SPEC_GENERATION_ERROR = 2502;
     
     //**************************************************************//
     // Mapping error constants above to process exit/return values. //

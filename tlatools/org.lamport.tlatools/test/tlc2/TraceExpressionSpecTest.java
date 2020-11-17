@@ -16,29 +16,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import util.TLAConstants;
-import util.FileUtil;
 import util.SimpleFilenameToStream;
 import tlc2.model.MCError;
 import tlc2.model.MCState;
 import tlc2.model.Utils;
 import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.output.MP;
-import tlc2.tool.impl.Tool;
 
 public class TraceExpressionSpecTest {
-	
-	/*
-	@Rule
-	TemporaryFolder tempDir = new TemporaryFolder();
-	*/
 	
 	@Test
 	public void testSetOutputDirectory() {
@@ -50,52 +40,6 @@ public class TraceExpressionSpecTest {
 		expected = "some-other-directory-name";
 		teSpec.setOutputDirectory(expected);
 		assertEquals(expected, teSpec.getOutputDirectory());
-	}
-	
-	@Test
-	public void testCreateSimpleTraceExpressionSpec() {
-		final String outputDir = TLAConstants.Directories.TRACE_EXPRESSION_SPEC;
-		final String originalSpecName = "Original";
-		final String[] constants = new String[] {
-			"CONSTANT FirstConstant <- FirstConstantDef",
-			"CONSTANT SecondConstant <- SecondConstantDef"
-		};
-		
-		final String[] variables = new String[] { "x", "y" };
-
-		final MCError error = new MCError();
-		final MCState[] states = new MCState[] {
-				Utils.buildState(1, "init", "", "x = 1", "y = TRUE"),
-				Utils.buildState(2, "next", "", "x = 2", "y = FALSE"),
-				Utils.buildState(3, "next", "", "x = 3", "y = TRUE"),
-				Utils.buildState(5, "next", "", "x = 4", "y = FALSE"),
-				Utils.buildState(6, "next", "", "x = 5", "y = TRUE")
-		};
-		
-		for (MCState state : states)
-		{
-			error.addState(state);
-		}
-
-		final ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(error);
-		
-		try (
-				ByteArrayOutputStream tlaStream = new ByteArrayOutputStream();
-				ByteArrayOutputStream cfgStream = new ByteArrayOutputStream();) {
-				
-			FakeStreamProvider streams = new FakeStreamProvider(outputDir, tlaStream, cfgStream);
-			TraceExpressionSpec teSpec = new TraceExpressionSpec(streams, recorder);
-
-			teSpec.generate(
-					originalSpecName,
-					Arrays.asList(constants),
-					Arrays.asList(variables),
-					error);
-			System.out.println(tlaStream.toString());
-			System.out.println(cfgStream.toString());
-		} catch (IOException e) {
-			fail(e.getMessage());
-		}
 	}
 	
 	@Test
@@ -253,7 +197,6 @@ public class TraceExpressionSpecTest {
 		final TLC teTlc = new TLC();
 		teTlc.setResolver(new SimpleFilenameToStream(new String[] { modelDir.toString(), teDir.toString() }));
 		assertTrue(teTlc.handleParameters(new String[] {
-				"-noGenerateTraceExpressionSpec",
 				"-metadir", teStateDir.toString(),
 				teTlaPath.toString() }));
 		teTlc.process();
@@ -262,9 +205,7 @@ public class TraceExpressionSpecTest {
 		assertTrue(teRecorder.getMCErrorTrace().isPresent());
 		final MCError teError = teRecorder.getMCErrorTrace().get();
 		
-		assertTrue(eval.apply(originalError, teError));
-		
-		return true;
+		return eval.apply(originalError, teError);
 	}
 
 	@Test
@@ -272,25 +213,21 @@ public class TraceExpressionSpecTest {
 		final String outputDir = TLAConstants.Directories.TRACE_EXPRESSION_SPEC;
 		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
 
-		FakeStreamProvider stream = new FakeStreamProvider(outputDir, null, null, true, false, false, false);
+		FakeStreamProvider stream = new FakeStreamProvider(outputDir, null, null, ThrowException.TLA_FILENOTFOUND);
 		TraceExpressionSpec teSpec = new TraceExpressionSpec(stream, recorder);
-		teSpec.generate(null, null, null, null);
+		assertFalse(teSpec.generate(null, null, null, null));
 
-		stream = new FakeStreamProvider(outputDir, null, null, true, false, false, false);
+		stream = new FakeStreamProvider(outputDir, null, null, ThrowException.TLA_SECURITY);
 		teSpec = new TraceExpressionSpec(stream, recorder);
-		teSpec.generate(null, null, null, null);
+		assertFalse(teSpec.generate(null, null, null, null));
 
-		stream = new FakeStreamProvider(outputDir, null, null, false, true, false, false);
+		stream = new FakeStreamProvider(outputDir, null, null, ThrowException.CFG_FILENOTFOUND);
 		teSpec = new TraceExpressionSpec(stream, recorder);
-		teSpec.generate(null, null, null, null);
+		assertFalse(teSpec.generate(null, null, null, null));
 
-		stream = new FakeStreamProvider(outputDir, null, null, false, false, true, false);
+		stream = new FakeStreamProvider(outputDir, null, null, ThrowException.CFG_SECURITY);
 		teSpec = new TraceExpressionSpec(stream, recorder);
-		teSpec.generate(null, null, null, null);
-
-		stream = new FakeStreamProvider(outputDir, null, null, false, false, false, true);
-		teSpec = new TraceExpressionSpec(stream, recorder);
-		teSpec.generate(null, null, null, null);
+		assertFalse(teSpec.generate(null, null, null, null));
 	}
 	
 	private class FakeStreamProvider implements TraceExpressionSpec.IStreamProvider {
@@ -301,13 +238,7 @@ public class TraceExpressionSpecTest {
 		
 		private ByteArrayOutputStream cfgStream;
 		
-		private boolean throwTlaIoException = false;
-		
-		private boolean throwTlaSecurityException = false;
-		
-		private boolean throwCfgIoException = false;
-		
-		private boolean throwCfgSecurityException = false;
+		private ThrowException ex;
 		
 		public FakeStreamProvider(
 				String outputDirectory,
@@ -316,23 +247,18 @@ public class TraceExpressionSpecTest {
 			this.outputDirectory = outputDirectory;
 			this.tlaStream = tlaStream;
 			this.cfgStream = cfgStream;
+			this.ex = ThrowException.NONE;
 		}
 		
 		public FakeStreamProvider(
 				String outputDirectory,
 				ByteArrayOutputStream tlaStream,
 				ByteArrayOutputStream cfgStream,
-				boolean throwTlaIoException,
-				boolean throwTlaSecurityException,
-				boolean throwCfgIoException,
-				boolean throwCfgSecurityException) {
+				ThrowException ex) {
 			this.outputDirectory = outputDirectory;
 			this.tlaStream = tlaStream;
 			this.cfgStream = cfgStream;
-			this.throwTlaIoException = throwTlaIoException;
-			this.throwTlaSecurityException = throwTlaSecurityException;
-			this.throwCfgIoException = throwCfgIoException;
-			this.throwCfgSecurityException = throwCfgSecurityException;
+			this.ex = ex;
 		}
 
 		@Override
@@ -347,25 +273,35 @@ public class TraceExpressionSpecTest {
 
 		@Override
 		public OutputStream getTlaStream() throws FileNotFoundException, SecurityException {
-			if (this.throwTlaIoException) {
-				throw new FileNotFoundException();
-			} else if (this.throwTlaSecurityException) {
-				throw new SecurityException();
-			} else {
-				return this.tlaStream;
+			switch (this.ex) {
+				case TLA_SECURITY:
+					throw new SecurityException("TLA_SECURITY");
+				case TLA_FILENOTFOUND:
+					throw new FileNotFoundException("TLA_FILENOTFOUND");
+				default:
+					return this.tlaStream;
 			}
 		}
 
 		@Override
 		public OutputStream getCfgStream() throws FileNotFoundException, SecurityException {
-			if (this.throwCfgIoException) {
-				throw new FileNotFoundException();
-			} else if (this.throwCfgSecurityException) {
-				throw new SecurityException();
-			} else {
-				return this.cfgStream;
+			switch (this.ex) {
+				case CFG_SECURITY:
+					throw new SecurityException("CFG_SECURITY");
+				case CFG_FILENOTFOUND:
+					throw new FileNotFoundException("CFG_FILENOTFOUND");
+				default:
+					return this.cfgStream;
 			}
 		}
+	}
+	
+	private enum ThrowException {
+		NONE,
+		TLA_SECURITY,
+		TLA_FILENOTFOUND,
+		CFG_SECURITY,
+		CFG_FILENOTFOUND
 	}
 	
 	private class FakeErrorRecorder extends ErrorTraceMessagePrinterRecorder {

@@ -14,6 +14,7 @@ import tlc2.input.MCParser;
 import tlc2.input.MCParserResults;
 import tlc2.model.MCError;
 import tlc2.output.MP;
+import tlc2.output.EC;
 import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
@@ -79,26 +80,30 @@ public class TraceExpressionSpec {
 	 * Generates the TE spec and writes it to TLA and CFG files.
 	 * @param specInfo Information about the original spec.
 	 */
-	public void generate(ITool specInfo) {
-		this.recorder.getMCErrorTrace().ifPresent(errorTrace -> {
+	public boolean generate(ITool specInfo) {
+		return this.recorder.getMCErrorTrace().map(errorTrace -> {
 			ModelConfig cfg = specInfo.getModelConfig();
 			SpecProcessor spec = specInfo.getSpecProcessor();
 			String originalSpecName = specInfo.getRootName();
 			List<String> variables = Arrays.asList(TLCState.Empty.getVarsAsStrings());
 			MCParserResults parserResults = MCParser.generateResultsFromProcessorAndConfig(spec, cfg);
 			List<String> constants = parserResults.getModelConfig().getRawConstants();
-			this.generate(originalSpecName, constants, variables, errorTrace);
-		});
+			return this.generate(originalSpecName, constants, variables, errorTrace);
+		}).orElse(false);
 	}
 
 	/**
 	 * Generates the TE spec and writes it to TLA and CFG files.
 	 * @param originalSpecName Name of the original spec.
-	 * @param constants Constants from the original spec.
+	 * @param constants Constants from the original spec; to be put into cfg file.
+	 * 	example value: { "CONSTANT X <- XVal", "CONSTANT Y <- YVAL" }
 	 * @param variables Variables from the original spec.
+	 * 	example value: { "x", "y" }
 	 * @param errorTrace The error trace.
+	 * 
+	 * @return Whether TE spec generation was successful.
 	 */
-	public void generate(
+	public boolean generate(
 			String originalSpecName,
 			List<String> constants,
 			List<String> variables,
@@ -114,12 +119,31 @@ public class TraceExpressionSpec {
 					errorTrace,
 					tlaStream,
 					cfgStream);
+			return true;
 		} catch (FileNotFoundException e) {
-			System.out.println(e.getMessage());
+			MP.printError(
+					EC.SYSTEM_UNABLE_TO_OPEN_FILE,
+					new String[] {
+						this.streamProvider.getOutputDirectory(),
+						e.toString()
+					});
+			return false;
 		} catch (SecurityException e) {
-			System.out.println(e.getMessage());
+			MP.printError(
+					EC.SYSTEM_UNABLE_TO_OPEN_FILE,
+					new String[] {
+						this.streamProvider.getOutputDirectory(),
+						e.toString()
+					});
+			return false;
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
+			MP.printError(
+					EC.SYSTEM_UNABLE_TO_OPEN_FILE,
+					new String[] {
+						this.streamProvider.getOutputDirectory(),
+						e.toString()
+					});
+			return false;
 		}
 	}
 	

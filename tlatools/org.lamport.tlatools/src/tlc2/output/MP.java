@@ -1268,7 +1268,18 @@ public class MP
         case EC.TLC_STUTTER_STATE:
             b.append("%1%:").append(TLAConstants.STUTTERING);
             break;
-
+            
+        /* ************************************************************************ */
+        case EC.TLC_TE_SPEC_GENERATION_START:
+        	b.append("Generating trace expression spec reproducing error behavior (skip this with -noGenerateTraceExpressionSpec flag)");
+        	break;
+        case EC.TLC_TE_SPEC_GENERATION_END:
+        	b.append("Successfully generated trace expression spec in %1% directory");
+        	break;
+        case EC.TLC_TE_SPEC_GENERATION_ERROR:
+        	b.append("Failed to generate trace expression spec");
+        	break;
+            
         /* ************************************************************************ */
         // configuration file errors
         case EC.CFG_MISSING_ID:
