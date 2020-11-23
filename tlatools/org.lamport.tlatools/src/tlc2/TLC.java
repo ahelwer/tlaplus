@@ -893,15 +893,8 @@ public class TLC {
 							? Long.toString(runtime) + "ms"
 							: convertRuntimeToHumanReadable(runtime));
 			
-			// Generate trace expression spec
-			this.traceExpressionSpec.ifPresent(teSpec -> {
-				MP.printMessage(EC.TLC_TE_SPEC_GENERATION_START);
-				if (teSpec.generate(this.tool)) {
-					MP.printMessage(EC.TLC_TE_SPEC_GENERATION_END, teSpec.getOutputDirectory().toString());
-				} else {
-					MP.printMessage(EC.TLC_TE_SPEC_GENERATION_ERROR);
-				}
-			});
+			// Generate trace expression spec if error occurred
+			this.traceExpressionSpec.ifPresent(teSpec -> teSpec.generate(this.tool));
 
 			MP.unsubscribeRecorder(this.recorder);
 			MP.flush();

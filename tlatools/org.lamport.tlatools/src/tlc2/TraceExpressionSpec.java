@@ -81,16 +81,21 @@ public class TraceExpressionSpec {
 	 * Generates the TE spec and writes it to TLA and CFG files.
 	 * @param specInfo Information about the original spec.
 	 */
-	public boolean generate(ITool specInfo) {
-		return this.recorder.getMCErrorTrace().map(errorTrace -> {
+	public void generate(ITool specInfo) {
+		this.recorder.getMCErrorTrace().ifPresent(errorTrace -> {
+			MP.printMessage(EC.TLC_TE_SPEC_GENERATION_START);
 			ModelConfig cfg = specInfo.getModelConfig();
 			SpecProcessor spec = specInfo.getSpecProcessor();
 			String originalSpecName = specInfo.getRootName();
 			List<String> variables = Arrays.asList(TLCState.Empty.getVarsAsStrings());
 			MCParserResults parserResults = MCParser.generateResultsFromProcessorAndConfig(spec, cfg);
 			List<String> constants = parserResults.getModelConfig().getRawConstants();
-			return this.generate(originalSpecName, constants, variables, errorTrace);
-		}).orElse(false);
+			if (this.generate(originalSpecName, constants, variables, errorTrace)) {
+				MP.printMessage(EC.TLC_TE_SPEC_GENERATION_END, this.getOutputDirectory().toString());
+			} else {
+				MP.printMessage(EC.TLC_TE_SPEC_GENERATION_ERROR);
+			}
+		});
 	}
 
 	/**

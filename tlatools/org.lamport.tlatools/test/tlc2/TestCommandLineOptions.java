@@ -12,6 +12,8 @@ import util.FileUtil;
 import util.TLAConstants;
 import util.Either;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -362,8 +364,8 @@ public class TestCommandLineOptions
 	@Test
 	public void testTraceExpressionSpecFilePath()
 	{
-		final String expected = "some/file/path/";
-		String[] args = new String[]{"-traceExpressionSpecOutDir", expected, "test.tla"};
+		final Path expected = Paths.get("some", "file", "path");
+		String[] args = new String[]{"-traceExpressionSpecOutDir", expected.toString(), "test.tla"};
 		assertTrue(CommandLineOptions.parse(args).map(
 				parseFailure -> false,
 				helpRequest -> false,
