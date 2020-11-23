@@ -7,7 +7,6 @@ package tlc2.tool.liveness;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -52,10 +51,8 @@ public class LiveWorker implements Callable<Boolean> {
 	public static final IBucketStatistics STATS = new BucketStatistics("Histogram SCC sizes", LiveWorker.class
 			.getPackage().getName(), "StronglyConnectedComponent sizes");
 	
-	/**
-	 * Used to synchronize among workers so only one prints the error.
-	 */
-	private ErrorFound errorSync;
+	private static int errFoundByThread = -1;
+	private static final Object workerLock = new Object();
 
 	private OrderOfSolution oos = null;
 	private AbstractDiskGraph dg = null;
@@ -72,63 +69,47 @@ public class LiveWorker implements Callable<Boolean> {
 
 	private final int id;
 
-	public LiveWorker(
-			final ITool tool,
-			int id,
-			int numWorkers,
-			final ILiveCheck liveCheck,
-			final BlockingQueue<ILiveChecker> queue,
-			final boolean finalCheck,
-			ErrorFound errorSync) {
+	public LiveWorker(final ITool tool, int id, int numWorkers, final ILiveCheck liveCheck, final BlockingQueue<ILiveChecker> queue, final boolean finalCheck) {
 		this.id = id;
 		this.tool = tool;
 		this.numWorkers = numWorkers;
 		this.liveCheck = liveCheck;
 		this.queue = queue;
 		this.isFinalCheck = finalCheck;
-		this.errorSync = errorSync;
 	}
 
 	/**
 	 * Returns true iff an error has already been found.
-	 * 
-	 * @return Whether an error has already been found.
 	 */
-	private boolean hasErrFound() {
-		synchronized (this.errorSync) {
-			return this.errorSync.threadId.isPresent();
+	private static boolean hasErrFound() {
+		synchronized (workerLock) {
+			return (errFoundByThread != -1);
+		}
+	}
+
+	// True iff this LiveWorker found a liveness violation.zs
+	private static boolean hasErrFound(final int id) {
+		synchronized (workerLock) {
+			return (errFoundByThread == id);
 		}
 	}
 
 	/**
-	 * True iff a worker with the given ID has found a liveness violation.
-	 * 
-	 * @param id ID of the worker to check.
-	 * @return Whether the worker has found a liveness violation.
+	 * Returns true iff either an error has not been found or the error is found
+	 * by this thread.
+	 * <p>
+	 * This is used so that only one of the threads which have found an error
+	 * prints it.
 	 */
-	private boolean hasErrFound(final int id) {
-		synchronized (this.errorSync) {
-			return this.errorSync.threadId.map(tid -> tid == id).orElse(false);
-		}
-	}
-	
-	/**
-	 * Marks the given worker ID as having found an error, if one has not
-	 * yet been marked as found. Returns whether the given worker ID is the
-	 * first/only worker to find an error. If it is, that worker is given
-	 * the privilege of printing out the error.
-	 * 
-	 * @param id ID of the worker to set/check.
-	 * @return Whether the worker was the first/only to find an error.
-	 */
-	private boolean setErrFound(final int id) {
-		synchronized (this.errorSync) {
-			if (this.errorSync.threadId.isEmpty()) {
-				this.errorSync.threadId = Optional.of(this.id);
+	private/* static synchronized */boolean setErrFound() {
+		synchronized (workerLock) {
+			if (errFoundByThread == -1) {
+				errFoundByThread = this.id; // GetId();
 				return true;
-			} else {
-				return this.errorSync.threadId.map(tid -> tid == id).orElse(false);
+			} else if (errFoundByThread == this.id) { // (* GetId()) {
+				return true;
 			}
+			return false;
 		}
 	}
 
@@ -776,7 +757,7 @@ public class LiveWorker implements Callable<Boolean> {
 		// This component must contain a counter-example because all three
 		// conditions are satisfied. So, print a counter-example (if this thread
 		// is the first one to find a counter-example)!
-		if (setErrFound(this.id)) {
+		if (setErrFound()) {
 			this.printTrace(tool, state, tidx, com);
 		}
 		return false;
@@ -1358,18 +1339,6 @@ public class LiveWorker implements Callable<Boolean> {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	/**
-	 * Whether an error has been found by a thread.
-	 * Used to synchronize & ensure only one thread prints the error.
-	 */
-	public static class ErrorFound {
-
-		/**
-		 * Whether an error has been found and, if so, by which thread.
-		 */
-		public Optional<Integer> threadId = Optional.empty();
 	}
 	
   	/*

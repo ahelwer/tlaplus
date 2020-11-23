@@ -233,9 +233,8 @@ public class LiveCheck implements ILiveCheck {
 		// creating a low-level array.
 		final CompletionService<Boolean> completionService = new ExecutorCompletionService<Boolean>(pool);
 
-		LiveWorker.ErrorFound errorSync = new LiveWorker.ErrorFound();
 		for (int i = 0; i < wNum; i++) {
-			completionService.submit(new LiveWorker(tool, i, wNum, this, queue, finalCheck, errorSync));
+			completionService.submit(new LiveWorker(tool, i, wNum, this, queue, finalCheck));
 		}
 		// Wait for all LWs to complete.
 		pool.shutdown();
