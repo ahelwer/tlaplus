@@ -5,9 +5,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.junit.Test;
@@ -303,7 +303,6 @@ public class TLCTest {
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
 		final String[] args = new String[] {"-generateSpecTE", tlaFile};
-		assertTrue(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.handleParameters(args, false));
 		assertTrue(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
@@ -315,7 +314,6 @@ public class TLCTest {
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
 		final String[] args = new String[] {"-generateSpecTE", "nomonolith", tlaFile};
-		assertTrue(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.handleParameters(args, false));
 		assertTrue(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
@@ -327,7 +325,6 @@ public class TLCTest {
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
 		final String[] args = new String[] {"-noGenerateTraceExpressionSpec", tlaFile};
-		assertTrue(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.handleParameters(args, false));
 		assertFalse(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.getTraceExpressionOutputDirectory().isEmpty());
@@ -339,7 +336,6 @@ public class TLCTest {
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
 		final String[] args = new String[] {"-generateSpecTE", "-noGenerateTraceExpressionSpec", tlaFile};
-		assertTrue(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.handleParameters(args, false));
 		assertFalse(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.getTraceExpressionOutputDirectory().isEmpty());
@@ -350,15 +346,33 @@ public class TLCTest {
 	{
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
-		final String expectedPath = Paths.get("some", "file", "path").toString();
-		final String[] args = new String[] {"-traceExpressionSpecOutDir", expectedPath, tlaFile};
-		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
-		assertEquals(TLAConstants.Directories.TRACE_EXPRESSION_SPEC, tlc.getTraceExpressionOutputDirectory().get());
+		final Path expectedPath = Paths.get("some", "file", "path");
+		final String[] args = new String[] {"-traceExpressionSpecOutDir", expectedPath.toString(), tlaFile};
+		assertFalse(tlc.getTraceExpressionOutputDirectory().isPresent());
 		assertTrue(tlc.handleParameters(args, false));
 		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
 		assertEquals(expectedPath, tlc.getTraceExpressionOutputDirectory().get());
 	}
 	
+	@Test
+	public void testTraceExpressionOutDirDefault()
+	{
+		Path tlaPath = Paths.get("some", "file", "path", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME);
+		TLC tlc = new TLC();
+		String[] args = new String[] {tlaPath.toString()};
+		assertFalse(tlc.getTraceExpressionOutputDirectory().isPresent());
+		assertTrue(tlc.handleParameters(args, false));
+		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
+		assertEquals(tlaPath.getParent(), tlc.getTraceExpressionOutputDirectory().get());
+
+		tlc = new TLC();
+		args = new String[] { TLAConstants.Files.MODEL_CHECK_FILE_BASENAME };
+		assertFalse(tlc.getTraceExpressionOutputDirectory().isPresent());
+		assertTrue(tlc.handleParameters(args, false));
+		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
+		assertEquals(Paths.get("."), tlc.getTraceExpressionOutputDirectory().get());
+	}
+
 	@Test
 	public void testLnCheckOptionSetsGlobalVariable()
 	{
@@ -690,14 +704,14 @@ public class TLCTest {
 
 		final Integer expectedValue = 128;
 		Supplier<Integer> hostProcessorCount = () -> expectedValue;
-		TLC tlc = new TLC(hostProcessorCount, Optional.empty());
+		TLC tlc = new TLC(hostProcessorCount);
 		String[] args = new String[] {"-workers", "auto", tlaFile};
 		assertTrue(tlc.handleParameters(args, false));
 		assertEquals(expectedValue.intValue(), TLCGlobals.getNumWorkers());
 		
 		final Integer edgeCaseValue = 1;
 		hostProcessorCount = () -> edgeCaseValue;
-		tlc = new TLC(hostProcessorCount, Optional.empty());
+		tlc = new TLC(hostProcessorCount);
 		args = new String[] {"-workers", "auto", tlaFile};
 		assertTrue(tlc.handleParameters(args, false));
 		assertEquals(edgeCaseValue.intValue(), TLCGlobals.getNumWorkers());
@@ -708,7 +722,7 @@ public class TLCTest {
 	{
 		final Supplier<Integer> hostProcessorCount = () -> 0;
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
-		final TLC tlc = new TLC(hostProcessorCount, Optional.empty());
+		final TLC tlc = new TLC(hostProcessorCount);
 		String[] args = new String[] {tlaFile, "-workers"};
 		assertFalse(tlc.handleParameters(args, false));
 		

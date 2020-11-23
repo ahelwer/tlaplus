@@ -1,5 +1,8 @@
 package tlc2;
 
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -174,7 +177,7 @@ public class CommandLineOptions
 	/**
 	 * Directory to which to write the trace expression spec file.
 	 */
-	public Optional<String> traceExpressionSpecDirectory = Optional.empty();
+	public Optional<Path> traceExpressionSpecDirectory = Optional.empty();
 	
 	/**
 	 * Whether to perform liveness checking.
@@ -372,8 +375,16 @@ public class CommandLineOptions
 					index++;
 					if (index < args.length)
 					{
-						options.traceExpressionSpecDirectory = Optional.of(args[index]);
-						index++;
+						String path = args[index];
+						try {
+							options.traceExpressionSpecDirectory =
+									Optional.of(Paths.get(path));
+							index++;
+						} catch (InvalidPathException e) {
+							throw new ParseException(
+									"Error: invalid path provided for -traceExpressionSpecOutDir: " + path,
+									index);
+						}
 					} else
 					{
 						throw new ParseException(

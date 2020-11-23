@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.function.Supplier;
 import model.InJarFilenameToStream;
 import model.ModelInJar;
 import tlc2.output.EC;
+import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.output.MP;
 import tlc2.output.Messages;
 import tlc2.tool.DFIDModelChecker;
@@ -99,9 +101,14 @@ public class TLC {
     private boolean checkDeadlock = true;
     
     /**
+     * Records errors as TLC runs.
+     */
+    private ErrorTraceMessagePrinterRecorder recorder = new ErrorTraceMessagePrinterRecorder();
+    
+    /**
      * Trace expression spec generator.
      */
-    private Optional<TraceExpressionSpec> traceExpressionSpec;
+    private Optional<TraceExpressionSpec> traceExpressionSpec = Optional.empty();
 
     /**
      * Whether a seed for the random number generator was provided.
@@ -219,21 +226,14 @@ public class TLC {
      */
 	public TLC() {
 		this.hostProcessorCount = () -> Runtime.getRuntime().availableProcessors();
-		this.traceExpressionSpec =
-    		Optional.of(new TraceExpressionSpec(
-    				TLAConstants.Directories.TRACE_EXPRESSION_SPEC));
 	}
 	
 	/**
 	 * Initializes a new instance of TLC.
 	 * @param hostProcessorCount Injected function for returning host processor count.
-	 * @param teSpec Injected trace expression spec generator.
 	 */
-	public TLC(
-			Supplier<Integer> getHostProcessorCount,
-			Optional<TraceExpressionSpec> teSpec) {
+	public TLC(Supplier<Integer> getHostProcessorCount) {
 		this.hostProcessorCount = getHostProcessorCount;
-		this.traceExpressionSpec = teSpec;
 	}
 
     /*
@@ -480,25 +480,29 @@ public class TLC {
 			this.cleanup = true;
 		}
 		
-		// If this is a TE spec, don't generate another TE spec
-		// TODO: branch based on something better than the filename
-		options.mainSpecFilePath.ifPresent(path -> {
-			try {
-				String filename = Paths.get(path).getFileName().toString();
-				if (filename.startsWith(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME)) {
-					options.noGenerateTraceExpressionSpecFlag = true;
-				}
-			} catch (InvalidPathException e) { }
-		});
+		boolean generateTESpec =
+				!options.noGenerateTraceExpressionSpecFlag &&
+				options.mainSpecFilePath.map(path -> {
+					try {
+						// If this is a TE spec, don't generate another TE spec
+						// TODO: branch based on something better than the filename
+						String filename = Paths.get(path).getFileName().toString();
+						return !filename.startsWith(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME);
+					} catch (InvalidPathException e) { return true; }
+				}).orElse(true);
 
-		if (options.noGenerateTraceExpressionSpecFlag)
-		{
-			this.traceExpressionSpec = Optional.empty();
+		if (generateTESpec) {
+			Path specDir = options.traceExpressionSpecDirectory.orElse(
+				options.mainSpecFilePath.map(path -> {
+					try {
+						// Sets TE spec output directory to main spec directory by default.
+						Path tlaDirPath = Paths.get(path).getParent();
+						return null == tlaDirPath ? Paths.get(".") : tlaDirPath;
+					} catch (InvalidPathException e) { return Paths.get("."); }
+				}).orElse(Paths.get(".")));
+			
+			this.traceExpressionSpec = Optional.of(new TraceExpressionSpec(specDir, this.recorder));
 		}
-
-		options.traceExpressionSpecDirectory.ifPresent(value -> {
-			this.traceExpressionSpec.ifPresent(spec -> spec.setOutputDirectory(value));
-		});
 
 		options.configurationFilePath.ifPresent(value -> {
 			this.configFile = value;
@@ -772,21 +776,12 @@ public class TLC {
 	}
 
 	/**
-	 * Require a $suffix file extension unless already given. It is not clear why
-	 * this is enforced.
-	 */
-	private static String getDumpFile(String dumpFile, String suffix) {
-		if (dumpFile.endsWith(suffix)) {
-			return dumpFile;
-		}
-		return dumpFile + suffix;
-	}
-
-	/**
      * The processing method
      */
     public int process()
     {
+    	MP.setRecorder(this.recorder);
+
         // UniqueString.initialize();
         
         // a JMX wrapper that exposes runtime statistics 
@@ -902,12 +897,13 @@ public class TLC {
 			this.traceExpressionSpec.ifPresent(teSpec -> {
 				MP.printMessage(EC.TLC_TE_SPEC_GENERATION_START);
 				if (teSpec.generate(this.tool)) {
-					MP.printMessage(EC.TLC_TE_SPEC_GENERATION_END, teSpec.getOutputDirectory());
+					MP.printMessage(EC.TLC_TE_SPEC_GENERATION_END, teSpec.getOutputDirectory().toString());
 				} else {
 					MP.printMessage(EC.TLC_TE_SPEC_GENERATION_ERROR);
 				}
 			});
 
+			MP.unsubscribeRecorder(this.recorder);
 			MP.flush();
         }
     }
@@ -1161,7 +1157,7 @@ public class TLC {
     													"Directory to which to output the TE spec if TLC generates\n"
     														+ "an error trace. Can be a relative (to root spec dir)\n"
     														+ "or absolute path. By default the TE spec is output\n"
-    														+ "to the " + TLAConstants.Directories.TRACE_EXPRESSION_SPEC + " directory.", true));
+    														+ "to the same directory as the main spec.", true));
     	sharedArguments.add(new UsageGenerator.Argument("-gzip",
 														"control if gzip is applied to value input/output streams;\n"
 															+ "defaults to 'off'", true));
@@ -1285,7 +1281,7 @@ public class TLC {
     	return this.traceExpressionSpec.isPresent();
     }
     
-    public Optional<String> getTraceExpressionOutputDirectory() {
+    public Optional<Path> getTraceExpressionOutputDirectory() {
     	return this.traceExpressionSpec.map(spec -> spec.getOutputDirectory());
     }
     

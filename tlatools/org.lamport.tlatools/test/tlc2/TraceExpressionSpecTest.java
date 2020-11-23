@@ -1,18 +1,14 @@
 package tlc2;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +20,6 @@ import util.TLAConstants;
 import util.SimpleFilenameToStream;
 import tlc2.model.MCError;
 import tlc2.model.MCState;
-import tlc2.model.Utils;
 import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.output.MP;
 
@@ -32,13 +27,9 @@ public class TraceExpressionSpecTest {
 	
 	@Test
 	public void testSetOutputDirectory() {
-		String expected = TLAConstants.Directories.TRACE_EXPRESSION_SPEC;
-		FakeStreamProvider streams = new FakeStreamProvider(expected, null, null);
+		Path expected = Paths.get("trace");
 		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
-		TraceExpressionSpec teSpec = new TraceExpressionSpec(streams, recorder);
-		assertEquals(expected, teSpec.getOutputDirectory());
-		expected = "some-other-directory-name";
-		teSpec.setOutputDirectory(expected);
+		TraceExpressionSpec teSpec = new TraceExpressionSpec(expected, recorder);
 		assertEquals(expected, teSpec.getOutputDirectory());
 	}
 	
@@ -210,29 +201,26 @@ public class TraceExpressionSpecTest {
 
 	@Test
 	public void testFileWriteExceptions() {
-		final String outputDir = TLAConstants.Directories.TRACE_EXPRESSION_SPEC;
 		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
 
-		FakeStreamProvider stream = new FakeStreamProvider(outputDir, null, null, ThrowException.TLA_FILENOTFOUND);
+		FakeStreamProvider stream = new FakeStreamProvider(null, null, ThrowException.TLA_FILENOTFOUND);
 		TraceExpressionSpec teSpec = new TraceExpressionSpec(stream, recorder);
 		assertFalse(teSpec.generate(null, null, null, null));
 
-		stream = new FakeStreamProvider(outputDir, null, null, ThrowException.TLA_SECURITY);
+		stream = new FakeStreamProvider(null, null, ThrowException.TLA_SECURITY);
 		teSpec = new TraceExpressionSpec(stream, recorder);
 		assertFalse(teSpec.generate(null, null, null, null));
 
-		stream = new FakeStreamProvider(outputDir, null, null, ThrowException.CFG_FILENOTFOUND);
+		stream = new FakeStreamProvider(null, null, ThrowException.CFG_FILENOTFOUND);
 		teSpec = new TraceExpressionSpec(stream, recorder);
 		assertFalse(teSpec.generate(null, null, null, null));
 
-		stream = new FakeStreamProvider(outputDir, null, null, ThrowException.CFG_SECURITY);
+		stream = new FakeStreamProvider(null, null, ThrowException.CFG_SECURITY);
 		teSpec = new TraceExpressionSpec(stream, recorder);
 		assertFalse(teSpec.generate(null, null, null, null));
 	}
 	
 	private class FakeStreamProvider implements TraceExpressionSpec.IStreamProvider {
-		
-		private String outputDirectory;
 		
 		private ByteArrayOutputStream tlaStream;
 		
@@ -241,34 +229,12 @@ public class TraceExpressionSpecTest {
 		private ThrowException ex;
 		
 		public FakeStreamProvider(
-				String outputDirectory,
-				ByteArrayOutputStream tlaStream,
-				ByteArrayOutputStream cfgStream) {
-			this.outputDirectory = outputDirectory;
-			this.tlaStream = tlaStream;
-			this.cfgStream = cfgStream;
-			this.ex = ThrowException.NONE;
-		}
-		
-		public FakeStreamProvider(
-				String outputDirectory,
 				ByteArrayOutputStream tlaStream,
 				ByteArrayOutputStream cfgStream,
 				ThrowException ex) {
-			this.outputDirectory = outputDirectory;
 			this.tlaStream = tlaStream;
 			this.cfgStream = cfgStream;
 			this.ex = ex;
-		}
-
-		@Override
-		public String getOutputDirectory() {
-			return this.outputDirectory;
-		}
-
-		@Override
-		public void setOutputDirectory(String outputDirectory) {
-			this.outputDirectory = outputDirectory;
 		}
 
 		@Override

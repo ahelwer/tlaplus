@@ -28,6 +28,11 @@ import util.TLAConstants;
 public class TraceExpressionSpec {
 	
 	/**
+	 * Directory to which TE spec is written.
+	 */
+	private Path outputDirectory = null;
+	
+	/**
 	 * Resolves TE spec files & provides output streams to them.
 	 */
 	private IStreamProvider streamProvider;
@@ -40,11 +45,14 @@ public class TraceExpressionSpec {
 	/**
 	 * Initializes a new instance of the {@link TraceExpressionSpec} class.
 	 * @param outputDirectory Directory to which to output the TE spec.
+	 * @param recorder Recorder to record TLC as it runs; assumed to already be subscribed.
 	 */
-	public TraceExpressionSpec(String outputDirectory) {
+	public TraceExpressionSpec(
+			Path outputDirectory,
+			ErrorTraceMessagePrinterRecorder recorder) {
+		this.outputDirectory = outputDirectory;
 		this.streamProvider = new FileStreamProvider(outputDirectory);
-		this.recorder = new ErrorTraceMessagePrinterRecorder();
-		MP.setRecorder(this.recorder);
+		this.recorder = recorder;
 	}
 	
 	/**
@@ -56,24 +64,17 @@ public class TraceExpressionSpec {
 	public TraceExpressionSpec(
 			IStreamProvider streamProvider,
 			ErrorTraceMessagePrinterRecorder recorder) {
+		this.outputDirectory = Paths.get(".");
 		this.streamProvider = streamProvider;
 		this.recorder = recorder;
 	}
 	
 	/**
-	 * Gets the TE spec's output directory.
-	 * @return Path to the directory to which to output the TE spec.
+	 * Returns path to directory to which TE spec will be written.
+	 * @return Path to directory to which TE spec will be written.
 	 */
-	public String getOutputDirectory() {
-		return this.streamProvider.getOutputDirectory();
-	}
-	
-	/**
-	 * Sets the TE spec's output directory.
-	 * @param outputDirectory Path to directory to which to output the TE spec.
-	 */
-	public void setOutputDirectory(String outputDirectory) {
-		this.streamProvider.setOutputDirectory(outputDirectory);
+	public Path getOutputDirectory() {
+		return this.outputDirectory;
 	}
 	
 	/**
@@ -124,7 +125,7 @@ public class TraceExpressionSpec {
 			MP.printError(
 					EC.SYSTEM_UNABLE_TO_OPEN_FILE,
 					new String[] {
-						this.streamProvider.getOutputDirectory(),
+						this.getOutputDirectory().toString(),
 						e.toString()
 					});
 			return false;
@@ -132,7 +133,7 @@ public class TraceExpressionSpec {
 			MP.printError(
 					EC.SYSTEM_UNABLE_TO_OPEN_FILE,
 					new String[] {
-						this.streamProvider.getOutputDirectory(),
+						this.getOutputDirectory().toString(),
 						e.toString()
 					});
 			return false;
@@ -140,7 +141,7 @@ public class TraceExpressionSpec {
 			MP.printError(
 					EC.SYSTEM_UNABLE_TO_OPEN_FILE,
 					new String[] {
-						this.streamProvider.getOutputDirectory(),
+						this.getOutputDirectory().toString(),
 						e.toString()
 					});
 			return false;
@@ -152,18 +153,6 @@ public class TraceExpressionSpec {
 	 */
 	public interface IStreamProvider {
 		
-		/**
-		 * Gets the TE spec's output directory.
-		 * @return The TE spec's output directory.
-		 */
-		public String getOutputDirectory();
-
-		/**
-		 * Sets the TE spec's output directory.
-		 * @param outputDirectory The TE spec's output directory.
-		 */
-		public void setOutputDirectory(String outputDirectory);
-
 		/**
 		 * Creates an output stream to which to write the TE spec.
 		 * Caller is responsible for managing stream lifecycle.
@@ -191,39 +180,28 @@ public class TraceExpressionSpec {
 		/**
 		 * Directory to which to output the files.
 		 */
-		private String outputDirectory;
+		private Path outputDirectory;
 		
-		public FileStreamProvider(String outputDirectory) {
-			this.outputDirectory = outputDirectory;
-		}
-		
-		@Override
-		public String getOutputDirectory() {
-			return this.outputDirectory;
-		}
-		
-		@Override
-		public void setOutputDirectory(String outputDirectory) {
+		public FileStreamProvider(Path outputDirectory) {
 			this.outputDirectory = outputDirectory;
 		}
 		
 		@Override
 		public OutputStream getTlaStream() throws FileNotFoundException, SecurityException {
 			this.ensureDirectoryExists();
-			final File tlaFile = new File(
-					this.outputDirectory,
+			final File tlaFile = this.outputDirectory.resolve(
 					TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
-					+ TLAConstants.Files.TLA_EXTENSION);
+					+ TLAConstants.Files.TLA_EXTENSION).toFile();
 			return new FileOutputStream(tlaFile);
 		}
 		
 		@Override
 		public OutputStream getCfgStream() throws FileNotFoundException, SecurityException {
 			this.ensureDirectoryExists();
-			final File cfgFile = new File(
-					this.outputDirectory,
+
+			final File cfgFile = this.outputDirectory.resolve(
 					TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
-					+ TLAConstants.Files.CONFIG_EXTENSION);
+					+ TLAConstants.Files.CONFIG_EXTENSION).toFile();
 			return new FileOutputStream(cfgFile);
 		}
 		
@@ -232,9 +210,8 @@ public class TraceExpressionSpec {
 		 * @throws SecurityException Access issue when creating directories.
 		 */
 		private void ensureDirectoryExists() throws SecurityException {
-			Path outputDirPath = Paths.get(this.outputDirectory);
-			for (int i = 1; i <= outputDirPath.getNameCount(); i++) {
-				Path subPath = outputDirPath.subpath(0, i);
+			for (int i = 1; i <= this.outputDirectory.getNameCount(); i++) {
+				Path subPath = this.outputDirectory.subpath(0, i);
 				if (!subPath.toFile().exists()) {
 					subPath.toFile().mkdir();
 				}

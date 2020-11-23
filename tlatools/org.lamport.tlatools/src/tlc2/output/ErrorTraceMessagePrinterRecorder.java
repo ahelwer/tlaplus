@@ -2,13 +2,10 @@ package tlc2.output;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.TreeMap;
-import java.util.SortedMap;
 
 import tlc2.model.MCError;
 import tlc2.model.MCState;
 import tlc2.tool.TLCStateInfo;
-import util.OneOf;
 
 /**
  * Saves all messages containing info about error traces that pass through {@link tlc.output.MP}.

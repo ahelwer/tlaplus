@@ -32,10 +32,6 @@ public final class TLAConstants {
 		public static final String MODEL_CHECK_TLA_FILE = MODEL_CHECK_FILE_BASENAME + TLA_EXTENSION;
 	}
 	
-	public final class Directories {
-		public static final String TRACE_EXPRESSION_SPEC = "trace";
-	}
-	
 	public final class KeyWords {
 		public static final String ACTION_CONSTRAINT = "ACTION_CONSTRAINT";
 	    public static final String CONSTANT = "CONSTANT";
