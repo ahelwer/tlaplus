@@ -403,21 +403,17 @@ public class TLC {
 	 */
 	public boolean handleParameters(String[] args)
 	{
-		return this.handleParameters(args, true);
+		return this.parseValidateTransformParameters(args) ? this.initialize(args) : false;
 	}
 	
 	/**
-	 * Parses command line parameters, sets up class & global variables,
-	 * and initializes various systems. The latter is rendered optional
-	 * for unit testing purposes.
-	 * @param args The command line parameters to parse
-	 * @param initialize Whether to perform initialization
-	 * @return True IFF there were no parsing or input validation errors
+	 * Parses, validates, and transforms command line parameters
+	 * @param args The command line parameters
 	 */
-	public boolean handleParameters(String[] args, boolean initialize)
+	public boolean parseValidateTransformParameters(String[] args)
     {
 		// Parse command line options
-		boolean success = CommandLineOptions.parse(args).map(
+		return CommandLineOptions.parse(args).map(
 			parseFailure -> {
 				this.printErrorMsg(parseFailure.errorMessage);
 				return false;
@@ -443,13 +439,6 @@ public class TLC {
 					}
 				)
 		);
-		
-		if (success & initialize)
-		{
-			return this.initialize(args);
-		}
-		
-		return success;
     }
 	
 	/**

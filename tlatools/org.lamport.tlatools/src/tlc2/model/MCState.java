@@ -3,7 +3,6 @@ package tlc2.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import tla2sany.st.Location;
 import tlc2.tool.TLCStateInfo;

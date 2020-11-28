@@ -29,10 +29,20 @@ import tlc2.tool.TLCStateInfo;
  */
 public class ErrorTraceMessagePrinterRecorder implements IMessagePrinterRecorder {
 	
+	/**
+	 * The error trace, if one exists.
+	 */
 	private Optional<MCError> errorTrace = Optional.empty();
 	
+	/**
+	 * Whether the trace has terminated or more states are expected;
+	 */
 	private boolean traceFinished = false;
 	
+	/**
+	 * Gets the error trace, if it exists.
+	 * @return The error trace.
+	 */
 	public Optional<MCError> getMCErrorTrace() {
 		return this.errorTrace;
 	}

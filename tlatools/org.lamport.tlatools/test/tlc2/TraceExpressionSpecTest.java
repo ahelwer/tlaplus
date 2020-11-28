@@ -16,15 +16,21 @@ import java.util.function.BiFunction;
 
 import org.junit.Test;
 
+import classloadhelper.IsolatedTLCRunner;
 import util.TLAConstants;
-import util.SimpleFilenameToStream;
 import tlc2.model.MCError;
 import tlc2.model.MCState;
 import tlc2.output.ErrorTraceMessagePrinterRecorder;
-import tlc2.output.MP;
 
+/**
+ * Tests for {@link tlc2.TraceExpressionSpec}, both in isolation and
+ * integrated with {@link tlc2.TLC}.
+ */
 public class TraceExpressionSpecTest {
 	
+	/**
+	 * Tests setting & getting the output directory of the TE generator.
+	 */
 	@Test
 	public void testSetOutputDirectory() {
 		Path expected = Paths.get("trace");
@@ -33,6 +39,10 @@ public class TraceExpressionSpecTest {
 		assertEquals(expected, teSpec.getOutputDirectory());
 	}
 	
+	/**
+	 * Given a spec generating a simple safety violation error trace, tests
+	 * that the generated TE spec results in the same error trace.
+	 */
 	@Test
 	public void integrationTestSafetyViolationTESpec() {
 		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
@@ -62,6 +72,10 @@ public class TraceExpressionSpecTest {
 		assertTrue(teSpecTest("TESpecSafetyTest", eval));
 	}
 	
+	/**
+	 * Given a spec generating a simple stuttering error trace, tests
+	 * that the generated TE spec results in the same error trace.
+	 */
 	@Test
 	public void integrationTestStutteringTESpec() {
 		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
@@ -93,6 +107,10 @@ public class TraceExpressionSpecTest {
 		assertTrue(teSpecTest("TESpecStutteringTest", eval));
 	}
 	
+	/**
+	 * Given a spec generating a simple lasso error trace, tests
+	 * that the generated TE spec results in the same error trace.
+	 */
 	@Test
 	public void integrationTestLassoTESpec() {
 		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
@@ -121,6 +139,11 @@ public class TraceExpressionSpecTest {
 		assertTrue(teSpecTest("TESpecLassoTest", eval));
 	}
 	
+	/**
+	 * Given a spec generating a simple lasso error trace, tests
+	 * that the generated TE spec results in the same error trace.
+	 * This one uses tool output.
+	 */
 	@Test
 	public void integrationTestToolLassoTESpec() {
 		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
@@ -149,7 +172,16 @@ public class TraceExpressionSpecTest {
 		assertTrue(teSpecTest("TESpecLassoTest", eval, "-tool"));
 	}
 	
+	/**
+	 * Runs TLC on a spec, runs TLC on the resulting TE spec, then compares
+	 * the two error traces.
+	 * @param cfgName Name of the TLA+ config file.
+	 * @param eval Function comparing the two error traces.
+	 * @param otherArgs Additional arguments for TLC.
+	 * @return Whether all operations were successful.
+	 */
 	public static boolean teSpecTest(String cfgName, BiFunction<MCError, MCError, Boolean> eval, String... otherArgs) {
+		// Defines various directories & paths
 		final Path modelDir = Paths.get("test-model", "TESpecTest");
 		final Path tempDir = modelDir.resolve("temp");
 		final Path ogStateDir = tempDir.resolve(UUID.randomUUID().toString());
@@ -157,11 +189,8 @@ public class TraceExpressionSpecTest {
 		final Path ogTlaPath = modelDir.resolve("TESpecTest" + TLAConstants.Files.TLA_EXTENSION);
 		final Path ogCfgPath = modelDir.resolve(cfgName + TLAConstants.Files.CONFIG_EXTENSION);
 
-		final ErrorTraceMessagePrinterRecorder originalRecorder = new ErrorTraceMessagePrinterRecorder();
-		MP.setRecorder(originalRecorder);
-		final TLC ogTlc = new TLC();
-		ogTlc.setResolver(new SimpleFilenameToStream(modelDir.toString()));
-		
+		// First run of TLC to generate error trace & TE spec
+		String[] searchDirs = new String[] { modelDir.toString() };
 		String[] baseArgs = new String[] {
 			"-traceExpressionSpecOutDir", teDir.toString(),
 			"-metadir", ogStateDir.toString(),
@@ -173,32 +202,30 @@ public class TraceExpressionSpecTest {
 		for (int i = 0; i < otherArgs.length; i++) { args[baseArgs.length + i] = otherArgs[i]; }
 		args[args.length - 1] = ogTlaPath.toString();
 
-		assertTrue(ogTlc.handleParameters(args));
-		ogTlc.process();
-		MP.unsubscribeRecorder(originalRecorder);
+		IsolatedTLCRunner tlc = new IsolatedTLCRunner(false);
+		assertTrue(tlc.initialize(searchDirs, args));
+		Optional<MCError> ogError = tlc.run();
+		assertTrue(ogError.isPresent());
 
-		assertTrue(originalRecorder.getMCErrorTrace().isPresent());
-		final MCError originalError = originalRecorder.getMCErrorTrace().get();
-
+		// Second run of TLC to run TE spec
 		final Path teStateDir = tempDir.resolve(UUID.randomUUID().toString());
 		final Path teTlaPath = teDir.resolve(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION);
 		
-		ErrorTraceMessagePrinterRecorder teRecorder = new ErrorTraceMessagePrinterRecorder();
-		MP.setRecorder(teRecorder);
-		final TLC teTlc = new TLC();
-		teTlc.setResolver(new SimpleFilenameToStream(new String[] { modelDir.toString(), teDir.toString() }));
-		assertTrue(teTlc.handleParameters(new String[] {
-				"-metadir", teStateDir.toString(),
-				teTlaPath.toString() }));
-		teTlc.process();
-		MP.unsubscribeRecorder(teRecorder);
+		searchDirs = new String[] { modelDir.toString(), teDir.toString() };
+		args = new String[] { "-metadir", teStateDir.toString(), teTlaPath.toString() };
 
-		assertTrue(teRecorder.getMCErrorTrace().isPresent());
-		final MCError teError = teRecorder.getMCErrorTrace().get();
-		
-		return eval.apply(originalError, teError);
+		tlc = new IsolatedTLCRunner(false);
+		assertTrue(tlc.initialize(searchDirs, args));
+		Optional<MCError> teError = tlc.run();
+		assertTrue(teError.isPresent());
+
+		// Tests equivalence of original error trace with TE error trace
+		return eval.apply(ogError.get(), teError.get());
 	}
 
+	/**
+	 * Tests TE generation code handles exceptions correctly.
+	 */
 	@Test
 	public void testFileWriteExceptions() {
 		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
@@ -220,6 +247,9 @@ public class TraceExpressionSpecTest {
 		assertFalse(teSpec.generate(null, null, null, null));
 	}
 	
+	/**
+	 * Helper class to inject IO exceptions into the TE generation code.
+	 */
 	private class FakeStreamProvider implements TraceExpressionSpec.IStreamProvider {
 		
 		private ByteArrayOutputStream tlaStream;

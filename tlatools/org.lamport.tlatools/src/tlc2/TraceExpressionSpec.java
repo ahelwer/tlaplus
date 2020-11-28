@@ -126,23 +126,7 @@ public class TraceExpressionSpec {
 					tlaStream,
 					cfgStream);
 			return true;
-		} catch (FileNotFoundException e) {
-			MP.printError(
-					EC.SYSTEM_UNABLE_TO_OPEN_FILE,
-					new String[] {
-						this.getOutputDirectory().toString(),
-						e.toString()
-					});
-			return false;
-		} catch (SecurityException e) {
-			MP.printError(
-					EC.SYSTEM_UNABLE_TO_OPEN_FILE,
-					new String[] {
-						this.getOutputDirectory().toString(),
-						e.toString()
-					});
-			return false;
-		} catch (IOException e) {
+		} catch (SecurityException | IOException e) {
 			MP.printError(
 					EC.SYSTEM_UNABLE_TO_OPEN_FILE,
 					new String[] {
