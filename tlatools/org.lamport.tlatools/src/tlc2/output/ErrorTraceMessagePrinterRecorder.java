@@ -16,6 +16,7 @@ import tlc2.tool.TLCStateInfo;
  * 
  * There are a number of places that error traces are generated within TLC:
  *  - Basic local BFS model checking in {@link tlc2.tool.ModelChecker#doNextCheckInvariants}
+ *    > note: appears to be dead, the concurrent BFS implementation is always used instead
  *  - Concurrent local BFS model checking in {@link tlc2.tool.Worker#doNextCheckInvariants}
  *  - DFID local model checking in {@link tlc2.tool.DFIDModelChecker#doNext}
  *  - Simulator local model checking in {@link tlc2.tool.Simulator#simulate}

@@ -9,14 +9,18 @@ import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
 import org.junit.Test;
 
 import classloadhelper.IsolatedTLCRunner;
+import util.SubsetHelper;
 import util.TLAConstants;
 import tlc2.model.MCError;
 import tlc2.model.MCState;
@@ -27,6 +31,12 @@ import tlc2.output.ErrorTraceMessagePrinterRecorder;
  * integrated with {@link tlc2.TLC}.
  */
 public class TraceExpressionSpecTest {
+	
+	/**
+	 * Whether to print TLC console output while running tests.
+	 * Useful to have this flag in one place for debugging test failures.
+	 */
+	private static final boolean printTLCConsoleOutput = false;
 	
 	/**
 	 * Tests setting & getting the output directory of the TE generator.
@@ -42,9 +52,79 @@ public class TraceExpressionSpecTest {
 	/**
 	 * Given a spec generating a simple safety violation error trace, tests
 	 * that the generated TE spec results in the same error trace.
+	 * Iterates through subsets of possible CL arguments.
 	 */
 	@Test
 	public void integrationTestSafetyViolationTESpec() {
+		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
+			"-dfid 10",
+			"-workers 4",
+			"-tool"
+		}));
+		
+		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
+			assertTrue(integrationTestSafetyViolation(args));
+		}
+	}
+
+	/**
+	 * Given a spec generating a simple safety violation error trace, tests
+	 * that the generated TE spec results in the same error trace.
+	 * Uses simulation state exploration method.
+	 * Iterates through subsets of possible CL arguments.
+	 */
+	@Test
+	public void integrationTestSafetyViolationTESpecSimulation() {
+		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
+			"-workers 4",
+			"-tool"
+		}));
+		
+		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
+			String[] realArgs = append(args, "-simulate");
+			assertTrue(integrationTestSafetyViolationSimulation(realArgs));
+		}
+	}
+
+	/**
+	 * Given a spec generating a simple stuttering error trace, tests
+	 * that the generated TE spec results in the same error trace.
+	 */
+	@Test
+	public void integrationTestStutteringTESpec() {
+		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
+			"-workers 4",
+			"-tool"
+		}));
+		
+		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
+			assertTrue(integrationTestStutteringLivenessViolation(args));
+		}
+	}
+	
+	/**
+	 * Given a spec generating a simple lasso error trace, tests
+	 * that the generated TE spec results in the same error trace.
+	 */
+	@Test
+	public void integrationTestLassoTESpec() {
+		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
+			"-workers 4",
+			"-tool"
+		}));
+		
+		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
+			assertTrue(integrationTestLassoLivenessViolation(args));
+		}
+	}
+	
+	/**
+	 * Given a spec generating a simple safety violation error trace, tests
+	 * that the generated TE spec results in the same error trace.
+	 * @param args Additional arguments to pass to TLC.
+	 * @return Whether execution was successful.
+	 */
+	public static boolean integrationTestSafetyViolation(String... args) {
 		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
 			List<MCState> originalStates = originalError.getStates();
 			List<MCState> teStates = teError.getStates();
@@ -58,10 +138,10 @@ public class TraceExpressionSpecTest {
 				assertEquals(originalState.getStateNumber(), teState.getStateNumber());
 
 				assertFalse(originalState.isBackToState());
-				assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+				assertEquals(originalState.isBackToState(), teState.isBackToState());
 				
 				assertFalse(originalState.isStuttering());
-				assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+				assertEquals(originalState.isStuttering(), teState.isStuttering());
 				
 				assertEquals(originalState.asSimpleRecord(), teState.asSimpleRecord());
 			}
@@ -69,15 +149,55 @@ public class TraceExpressionSpecTest {
 			return true;
 		};
 
-		assertTrue(teSpecTest("TESpecSafetyTest", eval));
+		assertTrue(teSpecTest("TESpecSafetyTest", eval, args));
+		
+		return true;
 	}
 	
 	/**
-	 * Given a spec generating a simple stuttering error trace, tests
+	 * Given a spec generating a simple safety violation error trace, tests
 	 * that the generated TE spec results in the same error trace.
+	 * Runs TLC in simulation mode.
 	 */
-	@Test
-	public void integrationTestStutteringTESpec() {
+	public boolean integrationTestSafetyViolationSimulation(String... args) {
+		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
+			List<MCState> originalStates = originalError.getStates();
+			List<MCState> teStates = teError.getStates();
+			
+			// Since simulation trace doesn't have to be most direct path to
+			// counterexample state, can only compare first & last states
+			// since TE trace will be shortest path.
+			MCState ogInitState = originalStates.get(0);
+			MCState teInitState = teStates.get(0);
+			assertEquals(1, ogInitState.getStateNumber());
+			assertEquals(ogInitState.getStateNumber(), teInitState.getStateNumber());
+			assertFalse(ogInitState.isBackToState());
+			assertEquals(ogInitState.isBackToState(), teInitState.isBackToState());
+			assertFalse(ogInitState.isStuttering());
+			assertEquals(ogInitState.isStuttering(), teInitState.isStuttering());
+			assertEquals(ogInitState.asSimpleRecord(), teInitState.asSimpleRecord());
+
+			MCState ogFinalState = originalStates.get(originalStates.size() - 1);
+			MCState teFinalState = teStates.get(teStates.size() - 1);
+			assertFalse(ogFinalState.isBackToState());
+			assertEquals(ogFinalState.isBackToState(), teFinalState.isBackToState());
+			assertFalse(ogFinalState.isStuttering());
+			assertEquals(ogFinalState.isStuttering(), teFinalState.isStuttering());
+			assertEquals(ogFinalState.asSimpleRecord(), teFinalState.asSimpleRecord());
+
+			return true;
+		};
+
+		return teSpecTest("TESpecSafetyTest", eval, args);
+	}
+	
+	/**
+	 * Given a spec generating a stuttering liveness violation error trace,
+	 * tests that the generated TE spec results in the same error trace.
+	 * @param args Additional arguments to pass to TLC.
+	 * @return Whether execution was successful.
+	 */
+	public boolean integrationTestStutteringLivenessViolation(String... args) {
 		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
 			List<MCState> originalStates = originalError.getStates();
 			List<MCState> teStates = teError.getStates();
@@ -88,14 +208,18 @@ public class TraceExpressionSpecTest {
 				MCState teState = teStates.get(i);
 
 				assertFalse(originalState.isBackToState());
+				assertEquals(originalState.isBackToState(), teState.isBackToState());
 				
 				if (originalStates.size() == i + 1) {
-					assertTrue(originalState.isStuttering());
 					assertEquals(i, originalState.getStateNumber());
 					assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+					assertTrue(originalState.isStuttering());
+					assertEquals(originalState.isStuttering(), teState.isStuttering());
 				} else {
 					assertEquals(i + 1, originalState.getStateNumber());
 					assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+					assertFalse(originalState.isStuttering());
+					assertEquals(originalState.isStuttering(), teState.isStuttering());
 				}
 				
 				assertEquals(originalState.asSimpleRecord(), teState.asSimpleRecord());
@@ -104,15 +228,16 @@ public class TraceExpressionSpecTest {
 			return true;
 		};
 
-		assertTrue(teSpecTest("TESpecStutteringTest", eval));
+		return teSpecTest("TESpecStutteringTest", eval);
 	}
 	
 	/**
-	 * Given a spec generating a simple lasso error trace, tests
-	 * that the generated TE spec results in the same error trace.
+	 * Given a spec generating a simple lasso liveness violation error trace,
+	 * tests that the generated TE spec results in the same error trace.
+	 * @param args Additional arguments to pass to TLC.
+	 * @return Whether execution was successful.
 	 */
-	@Test
-	public void integrationTestLassoTESpec() {
+	public boolean integrationTestLassoLivenessViolation(String... args) {
 		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
 			List<MCState> originalStates = originalError.getStates();
 			List<MCState> teStates = teError.getStates();
@@ -121,13 +246,21 @@ public class TraceExpressionSpecTest {
 			{
 				MCState originalState = originalStates.get(i);
 				MCState teState = teStates.get(i);
+				
+				assertFalse(originalState.isStuttering());
+				assertEquals(originalState.isStuttering(), teState.isStuttering());
 
 				if (originalStates.size() == i + 1) {
-					assertTrue(originalState.isBackToState());
+					assertTrue(1 <= originalState.getStateNumber());
+					assertTrue(originalState.getStateNumber() < i);
 					assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+					assertTrue(originalState.isBackToState());
+					assertEquals(originalState.isBackToState(), teState.isBackToState());
 				} else {
 					assertEquals(i + 1, originalState.getStateNumber());
 					assertEquals(originalState.getStateNumber(), teState.getStateNumber());
+					assertFalse(originalState.isBackToState());
+					assertEquals(originalState.isBackToState(), teState.isBackToState());
 				}
 				
 				assertEquals(originalState.asSimpleRecord(), teState.asSimpleRecord());
@@ -136,42 +269,9 @@ public class TraceExpressionSpecTest {
 			return true;
 		};
 		
-		assertTrue(teSpecTest("TESpecLassoTest", eval));
+		return teSpecTest("TESpecLassoTest", eval, args);
 	}
-	
-	/**
-	 * Given a spec generating a simple lasso error trace, tests
-	 * that the generated TE spec results in the same error trace.
-	 * This one uses tool output.
-	 */
-	@Test
-	public void integrationTestToolLassoTESpec() {
-		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
-			List<MCState> originalStates = originalError.getStates();
-			List<MCState> teStates = teError.getStates();
-			assertEquals(originalStates.size(), teStates.size());
-			for (int i = 0; i < originalStates.size(); i++)
-			{
-				MCState originalState = originalStates.get(i);
-				MCState teState = teStates.get(i);
 
-				if (originalStates.size() == i + 1) {
-					assertTrue(originalState.isBackToState());
-					assertEquals(originalState.getStateNumber(), teState.getStateNumber());
-				} else {
-					assertEquals(i + 1, originalState.getStateNumber());
-					assertEquals(originalState.getStateNumber(), teState.getStateNumber());
-				}
-				
-				assertEquals(originalState.asSimpleRecord(), teState.asSimpleRecord());
-			}
-			
-			return true;
-		};
-		
-		assertTrue(teSpecTest("TESpecLassoTest", eval, "-tool"));
-	}
-	
 	/**
 	 * Runs TLC on a spec, runs TLC on the resulting TE spec, then compares
 	 * the two error traces.
@@ -197,12 +297,9 @@ public class TraceExpressionSpecTest {
 			"-config", ogCfgPath.toString(),
 		};
 		
-		String[] args = new String[baseArgs.length + otherArgs.length + 1];
-		for (int i = 0; i < baseArgs.length; i++) { args[i] = baseArgs[i]; }
-		for (int i = 0; i < otherArgs.length; i++) { args[baseArgs.length + i] = otherArgs[i]; }
-		args[args.length - 1] = ogTlaPath.toString();
+		String[] args = append(concat(baseArgs, otherArgs), ogTlaPath.toString());
 
-		IsolatedTLCRunner tlc = new IsolatedTLCRunner(false);
+		IsolatedTLCRunner tlc = new IsolatedTLCRunner(printTLCConsoleOutput);
 		assertTrue(tlc.initialize(searchDirs, args));
 		Optional<MCError> ogError = tlc.run();
 		assertTrue(ogError.isPresent());
@@ -214,7 +311,7 @@ public class TraceExpressionSpecTest {
 		searchDirs = new String[] { modelDir.toString(), teDir.toString() };
 		args = new String[] { "-metadir", teStateDir.toString(), teTlaPath.toString() };
 
-		tlc = new IsolatedTLCRunner(false);
+		tlc = new IsolatedTLCRunner(printTLCConsoleOutput);
 		assertTrue(tlc.initialize(searchDirs, args));
 		Optional<MCError> teError = tlc.run();
 		assertTrue(teError.isPresent());
@@ -290,6 +387,33 @@ public class TraceExpressionSpecTest {
 					return this.cfgStream;
 			}
 		}
+	}
+	
+	
+	/**
+	 * Concatenates two arrays.
+	 * @param a First array.
+	 * @param b Second array.
+	 * @return Concatenated arrays.
+	 */
+	private static String[] concat(String[] a, String[] b) {
+		String[] c = new String[a.length + b.length];
+		for (int i = 0; i < a.length; i++) { c[i] = a[i]; }
+		for (int i = 0; i < b.length; i++) { c[a.length + i] = b[i]; }
+		return c;
+	}
+	
+	/**
+	 * Appends an element to an array.
+	 * @param a Array.
+	 * @param e Element to append.
+	 * @return Array with element appended.
+	 */
+	private static String[] append(String[] a, String e) {
+		String[] b = new String[a.length + 1];
+		for (int i = 0; i < a.length; i++) { b[i] = a[i]; }
+		b[b.length - 1] = e;
+		return b;
 	}
 	
 	private enum ThrowException {

@@ -403,7 +403,21 @@ public class TLC {
 	 */
 	public boolean handleParameters(String[] args)
 	{
-		return this.parseValidateTransformParameters(args) ? this.initialize(args) : false;
+		boolean result = this.parseValidateTransformParameters(args) && this.initialize();
+
+		if (TLCGlobals.debug) {
+			final StringBuilder buffer = new StringBuilder("TLC arguments:");
+			for (int i = 0; i < args.length; i++) {
+				buffer.append(args[i]);
+				if (i < args.length - 1) {
+					buffer.append(" ");
+				}
+			}
+			buffer.append("\n");
+			DebugPrinter.print(buffer.toString());
+		}
+        
+		return result;
 	}
 	
 	/**
@@ -433,13 +447,21 @@ public class TLC {
 						// Transform command line options
 						parseSuccess.options.transform();
 						// Set variables from options
-						this.setClassVariables(parseSuccess.options);
-						this.setGlobalVariables(parseSuccess.options);
+						this.setVariables(parseSuccess.options);
 						return true;
 					}
 				)
 		);
     }
+	
+	/**
+	 * Sets class & global variables according to the command line options.
+	 * @param options The parsed command line options.
+	 */
+	public void setVariables(CommandLineOptions options) {
+		this.setClassVariables(options);
+		this.setGlobalVariables(options);
+	}
 	
 	/**
 	 * Consumes command line options to set values of class variables.
@@ -646,17 +668,16 @@ public class TLC {
 				TLCGlobals.setNumWorkers(manual.workerThreadCount);
 			}));
 		
-		options.dfidStartingDepth.ifPresent(value -> {
+		options.dfidMaxDepth.ifPresent(value -> {
 			TLCGlobals.DFIDMax = value;
 		});
 	}
 	
 	/**
 	 * Initializes various TLC systems and properties as specified by the options.
-	 * @param args The command line parameters.
 	 * @return Whether there were any initialization errors.
 	 */
-	private boolean initialize(String[] args)
+	public boolean initialize()
 	{
         startTime = System.currentTimeMillis();
 
@@ -744,18 +765,6 @@ public class TLC {
 				printErrorMsg(String.format("Error: Given file name %s for dumping states invalid.", dumpFile));
 				return false;
 			}
-		}
-        
-		if (TLCGlobals.debug) {
-			final StringBuilder buffer = new StringBuilder("TLC arguments:");
-			for (int i = 0; i < args.length; i++) {
-				buffer.append(args[i]);
-				if (i < args.length - 1) {
-					buffer.append(" ");
-				}
-			}
-			buffer.append("\n");
-			DebugPrinter.print(buffer.toString());
 		}
         
         // if no errors, print welcome message

@@ -87,6 +87,11 @@ import util.OneOf;
 public class CommandLineOptions
 {
 	/**
+	 * The unparsed command line arguments.
+	 */
+	public String[] args;
+	
+	/**
 	 * Whether to run TLC in simulation mode.
 	 */
 	public boolean simulationModeFlag = false;
@@ -251,9 +256,9 @@ public class CommandLineOptions
 			Optional.empty();
 	
 	/**
-	 * Controls starting depth for depth-first iterative deepening.
+	 * Controls maximum depth for depth-first iterative deepening.
 	 */
-	public Optional<Integer> dfidStartingDepth = Optional.empty();
+	public Optional<Integer> dfidMaxDepth = Optional.empty();
 	
 	/**
 	 * Controls which irreducible polynomial to use from the list stored in the class FP64.
@@ -283,6 +288,8 @@ public class CommandLineOptions
 	public static OneOf<FailedParseResult, HelpRequestParseResult, SuccessfulParseResult> parse(String[] args)
 	{
 		CommandLineOptions options = new CommandLineOptions();
+		options.args = args;
+
 		try
 		{
 			int index = 0;
@@ -648,7 +655,7 @@ public class CommandLineOptions
 						try
 						{
 							final int value = Integer.parseInt(args[index]);
-							options.dfidStartingDepth = Optional.of(value);
+							options.dfidMaxDepth = Optional.of(value);
 							index++;
 						} catch (NumberFormatException e)
 						{
@@ -786,7 +793,7 @@ public class CommandLineOptions
 			});
 		
 			// Ensures DFID max is non-negative integer
-			options.dfidStartingDepth.ifPresent((value) ->
+			options.dfidMaxDepth.ifPresent((value) ->
 			{
 				if (value < 0)
 				{

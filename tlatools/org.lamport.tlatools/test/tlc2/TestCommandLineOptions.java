@@ -992,8 +992,8 @@ public class TestCommandLineOptions
 				parseSuccess -> {
 					CommandLineOptions actual = parseSuccess.options;
 					assertTrue(actual.mainSpecFilePath.isPresent());
-					assertTrue(actual.dfidStartingDepth.isPresent());
-					assertEquals(expectedValue, actual.dfidStartingDepth.get());
+					assertTrue(actual.dfidMaxDepth.isPresent());
+					assertEquals(expectedValue, actual.dfidMaxDepth.get());
 					return true;
 				}));
 	}
@@ -1228,13 +1228,13 @@ public class TestCommandLineOptions
 	{
 		Integer inputValue = 12;
 		CommandLineOptions options = new CommandLineOptions();
-		options.dfidStartingDepth = Optional.of(inputValue);
+		options.dfidMaxDepth = Optional.of(inputValue);
 		assertTrue(CommandLineOptions.validate(options, () -> 4).map(
 				validationFailure -> false,
 				validationSuccess -> true));
 		
 		inputValue = -1;
-		options.dfidStartingDepth = Optional.of(inputValue);
+		options.dfidMaxDepth = Optional.of(inputValue);
 		assertTrue(CommandLineOptions.validate(options, () -> 4).map(
 				validationFailure -> {
 					assertTrue(validationFailure.errorMessage.contains("dfid"));
