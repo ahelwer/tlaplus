@@ -39,17 +39,6 @@ public class TraceExpressionSpecTest {
 	private static final boolean printTLCConsoleOutput = false;
 	
 	/**
-	 * Tests setting & getting the output directory of the TE generator.
-	 */
-	@Test
-	public void testSetOutputDirectory() {
-		Path expected = Paths.get("trace");
-		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
-		TraceExpressionSpec teSpec = new TraceExpressionSpec(expected, recorder);
-		assertEquals(expected, teSpec.getOutputDirectory());
-	}
-	
-	/**
 	 * Given a spec generating a simple safety violation error trace, tests
 	 * that the generated TE spec results in the same error trace.
 	 * Iterates through subsets of possible CL arguments.
@@ -63,7 +52,7 @@ public class TraceExpressionSpecTest {
 		}));
 		
 		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
-			assertTrue(integrationTestSafetyViolation(args));
+			assertTrue(integrationTestSafetyViolation("TESpecTest", "TESpecSafetyTest", args));
 		}
 	}
 
@@ -86,6 +75,41 @@ public class TraceExpressionSpecTest {
 		}
 	}
 
+	/**
+	 * Given a spec generating a deadlock error trace, tests
+	 * that the generated TE spec results in the same error trace.
+	 * Iterates through subsets of possible CL arguments.
+	 */
+	@Test
+	public void integrationTestDeadlockViolationTESpec() {
+		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
+			"-workers 4",
+			"-tool"
+		}));
+		
+		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
+			assertTrue(integrationTestSafetyViolation("TESpecDeadlockTest", "TESpecDeadlockTest", args));
+		}
+	}
+	
+	/**
+	 * Given a PlusCal spec generating an assert error trace, tests
+	 * that the generated TE spec results in the same error trace.
+	 * Iterates through subsets of possible CL arguments.
+	 */
+	@Test
+	public void integrationTestPlusCalAssertTESpec() {
+		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
+			//"-dfid 10",
+			"-workers 4",
+			"-tool"
+		}));
+		
+		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
+			assertTrue(integrationTestSafetyViolation("TESpecPlusCalTest", "TESpecPlusCalTest", args));
+		}
+	}
+	
 	/**
 	 * Given a spec generating a simple stuttering error trace, tests
 	 * that the generated TE spec results in the same error trace.
@@ -124,7 +148,7 @@ public class TraceExpressionSpecTest {
 	 * @param args Additional arguments to pass to TLC.
 	 * @return Whether execution was successful.
 	 */
-	public static boolean integrationTestSafetyViolation(String... args) {
+	public static boolean integrationTestSafetyViolation(String tla, String cfg, String... args) {
 		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
 			List<MCState> originalStates = originalError.getStates();
 			List<MCState> teStates = teError.getStates();
@@ -149,7 +173,7 @@ public class TraceExpressionSpecTest {
 			return true;
 		};
 
-		assertTrue(teSpecTest("TESpecSafetyTest", eval, args));
+		assertTrue(teSpecTest(tla, cfg, eval, args));
 		
 		return true;
 	}
@@ -188,7 +212,7 @@ public class TraceExpressionSpecTest {
 			return true;
 		};
 
-		return teSpecTest("TESpecSafetyTest", eval, args);
+		return teSpecTest("TESpecTest", "TESpecSafetyTest", eval, args);
 	}
 	
 	/**
@@ -228,7 +252,7 @@ public class TraceExpressionSpecTest {
 			return true;
 		};
 
-		return teSpecTest("TESpecStutteringTest", eval);
+		return teSpecTest("TESpecTest", "TESpecStutteringTest", eval);
 	}
 	
 	/**
@@ -269,7 +293,7 @@ public class TraceExpressionSpecTest {
 			return true;
 		};
 		
-		return teSpecTest("TESpecLassoTest", eval, args);
+		return teSpecTest("TESpecTest", "TESpecLassoTest", eval, args);
 	}
 
 	/**
@@ -280,13 +304,13 @@ public class TraceExpressionSpecTest {
 	 * @param otherArgs Additional arguments for TLC.
 	 * @return Whether all operations were successful.
 	 */
-	public static boolean teSpecTest(String cfgName, BiFunction<MCError, MCError, Boolean> eval, String... otherArgs) {
+	public static boolean teSpecTest(String tlaName, String cfgName, BiFunction<MCError, MCError, Boolean> eval, String... otherArgs) {
 		// Defines various directories & paths
 		final Path modelDir = Paths.get("test-model", "TESpecTest");
 		final Path tempDir = modelDir.resolve("temp");
 		final Path ogStateDir = tempDir.resolve(UUID.randomUUID().toString());
 		final Path teDir = tempDir.resolve(UUID.randomUUID().toString());
-		final Path ogTlaPath = modelDir.resolve("TESpecTest" + TLAConstants.Files.TLA_EXTENSION);
+		final Path ogTlaPath = modelDir.resolve(tlaName + TLAConstants.Files.TLA_EXTENSION);
 		final Path ogCfgPath = modelDir.resolve(cfgName + TLAConstants.Files.CONFIG_EXTENSION);
 
 		// First run of TLC to generate error trace & TE spec
@@ -298,6 +322,10 @@ public class TraceExpressionSpecTest {
 		};
 		
 		String[] args = append(concat(baseArgs, otherArgs), ogTlaPath.toString());
+
+		if (printTLCConsoleOutput) {
+			System.out.println(Arrays.asList(args));
+		}
 
 		IsolatedTLCRunner tlc = new IsolatedTLCRunner(printTLCConsoleOutput);
 		assertTrue(tlc.initialize(searchDirs, args));
@@ -320,6 +348,17 @@ public class TraceExpressionSpecTest {
 		return eval.apply(ogError.get(), teError.get());
 	}
 
+	/**
+	 * Tests setting & getting the output directory of the TE generator.
+	 */
+	@Test
+	public void testSetOutputDirectory() {
+		Path expected = Paths.get("trace");
+		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
+		TraceExpressionSpec teSpec = new TraceExpressionSpec(expected, recorder);
+		assertEquals(expected, teSpec.getOutputDirectory());
+	}
+	
 	/**
 	 * Tests TE generation code handles exceptions correctly.
 	 */
