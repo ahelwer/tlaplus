@@ -96,6 +96,7 @@ public class TraceExpressionSpecTest {
 	 * Given a PlusCal spec generating an assert error trace, tests
 	 * that the generated TE spec results in the same error trace.
 	 * Iterates through subsets of possible CL arguments.
+	 * TODO: fix DFID case
 	 */
 	@Test
 	public void integrationTestPlusCalAssertTESpec() {

@@ -96,33 +96,15 @@ public class IsolatedTLCRunner {
 	 */
 	@SuppressWarnings("unchecked")
 	public Optional<MCError> run() {
-		// Registers an error trace listener
-		Class<?> errorTraceListenerHandle = this.loader.load("tlc2.output.ErrorTraceMessagePrinterRecorder");
-		Class<?> mpRecorderHandle = this.loader.load("tlc2.output.IMessagePrinterRecorder");
-		Object recorder = ReflectUtil.construct(errorTraceListenerHandle);
-		Class<?> messagePrinterHandle = this.loader.load("tlc2.output.MP");
-		ReflectUtil.invokeStaticMethodWithParams(
-				messagePrinterHandle,
-				"setRecorder",
-				new Class<?>[] { mpRecorderHandle },
-				new Object[] { recorder });
-		
 		// Invokes the {@link tlc2.TLC#process} method
 		Class<?> tlcClassHandle = this.loader.load("tlc2.TLC");
 		ReflectUtil.invokeMethod(tlcClassHandle, "process", this.tlcInstance);
 		
-		// Deregisters the error trace listener
-		ReflectUtil.invokeStaticMethodWithParams(
-				messagePrinterHandle,
-				"unsubscribeRecorder",
-				new Class<?>[] {mpRecorderHandle },
-				new Object[] { recorder });
-		
-		// Retrieves (optional) error from error trace listener
+		// Retrieves (optional) error from TLC
 		Optional<Object> errorTrace = (Optional<Object>)ReflectUtil.invokeMethod(
-				errorTraceListenerHandle,
-				"getMCErrorTrace",
-				recorder);
+				tlcClassHandle,
+				"getErrorTrace",
+				this.tlcInstance);
 		
 		return this.convertLoadedMCErrorToMCError(errorTrace);
 	}

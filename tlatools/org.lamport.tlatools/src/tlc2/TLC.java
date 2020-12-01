@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
+import tlc2.model.MCError;
 import tlc2.output.EC;
 import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.output.MP;
@@ -493,6 +494,7 @@ public class TLC {
 		
 		boolean generateTESpec =
 				!options.noGenerateTraceExpressionSpecFlag &&
+				!options.continueAfterInvariantViolationFlag &&
 				options.mainSpecFilePath.map(path -> {
 					try {
 						// If this is a TE spec, don't generate another TE spec
@@ -1274,6 +1276,10 @@ public class TLC {
     
     public Optional<Path> getTraceExpressionOutputDirectory() {
     	return this.traceExpressionSpec.map(spec -> spec.getOutputDirectory());
+    }
+    
+    public Optional<MCError> getErrorTrace() {
+    	return this.recorder.getMCErrorTrace();
     }
     
     public DumpFileOptions getDumpFileOptions() {

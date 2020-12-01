@@ -265,6 +265,7 @@ public class TLCTest {
 		final String[] args = new String[] {"-continue", tlaFile};
 		assertTrue(tlc.parseValidateTransformParameters(args));
 		assertTrue(TLCGlobals.continuation);
+		assertFalse(tlc.willGenerateTraceExpressionSpec());
 	}
 	
 	@Test
