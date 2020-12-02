@@ -48,7 +48,7 @@ public class LiveWorker implements Callable<Boolean> {
 	 */
 	private static final long SCC_MARKER = -42L;
 
-	public static final IBucketStatistics STATS = new BucketStatistics("Histogram SCC sizes", LiveWorker.class
+	public static final BucketStatistics STATS = new BucketStatistics("Histogram SCC sizes", LiveWorker.class
 			.getPackage().getName(), "StronglyConnectedComponent sizes");
 	
 	private static int errFoundByThread = -1;
@@ -77,7 +77,7 @@ public class LiveWorker implements Callable<Boolean> {
 		this.queue = queue;
 		this.isFinalCheck = finalCheck;
 	}
-
+	
 	/**
 	 * Returns true iff an error has already been found.
 	 */
