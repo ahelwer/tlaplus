@@ -77,32 +77,13 @@ public class TraceExpressionSpecTest {
 	@Test
 	public void integrationTestSafetyViolationTESpec() {
 		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
-			//"-dfid 10",
 			"-workers 4",
 			"-tool"
 		}));
 		
 		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
 			assertTrue(integrationTestSafetyViolation("TESpecTest", "TESpecSafetyTest", args));
-		}
-	}
-
-	/**
-	 * Given a spec generating a simple safety violation error trace, tests
-	 * that the generated TE spec results in the same error trace.
-	 * Uses simulation state exploration method.
-	 * Iterates through subsets of possible CL arguments.
-	 */
-	//@Test
-	public void integrationTestSafetyViolationTESpecSimulation() {
-		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
-			"-workers 4",
-			"-tool"
-		}));
-		
-		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
-			String[] realArgs = append(args, "-simulate");
-			assertTrue(integrationTestSafetyViolationSimulation(realArgs));
+			assertTrue(integrationTestSafetyViolationSimulation("TESpecTest", "TESpecSafetyTest", args));
 		}
 	}
 
@@ -111,7 +92,7 @@ public class TraceExpressionSpecTest {
 	 * that the generated TE spec results in the same error trace.
 	 * Iterates through subsets of possible CL arguments.
 	 */
-	//@Test
+	@Test
 	public void integrationTestDeadlockViolationTESpec() {
 		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
 			"-workers 4",
@@ -120,7 +101,18 @@ public class TraceExpressionSpecTest {
 		
 		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
 			assertTrue(integrationTestSafetyViolation("TESpecDeadlockTest", "TESpecDeadlockTest", args));
+			assertTrue(integrationTestSafetyViolationSimulation("TESpecDeadlockTest", "TESpecDeadlockTest", args));
 		}
+	}
+	
+	/**
+	 * Given a spec where TLC encounters a runtime error during evaluation,
+	 * check that TLC generates a TE spec which produces the same trace.
+	 */
+	@Test
+	public void integrationTestTLCRuntimeEvaluationErrorTESpec() {
+		assertTrue(integrationTestSafetyViolation("TESpecRuntimeErrorTest", "TESpecRuntimeErrorTest"));
+		assertTrue(integrationTestSafetyViolationSimulation("TESpecRuntimeErrorTest", "TESpecRuntimeErrorTest"));
 	}
 	
 	/**
@@ -128,16 +120,16 @@ public class TraceExpressionSpecTest {
 	 * that the generated TE spec results in the same error trace.
 	 * Iterates through subsets of possible CL arguments.
 	 */
-	//@Test
+	@Test
 	public void integrationTestPlusCalAssertTESpec() {
 		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
-			//"-dfid 10",
 			"-workers 4",
 			"-tool"
 		}));
 		
 		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
 			assertTrue(integrationTestSafetyViolation("TESpecPlusCalTest", "TESpecPlusCalTest", args));
+			assertTrue(integrationTestSafetyViolationSimulation("TESpecPlusCalTest", "TESpecPlusCalTest", args));
 		}
 	}
 	
@@ -145,7 +137,7 @@ public class TraceExpressionSpecTest {
 	 * Given a spec generating a simple stuttering error trace, tests
 	 * that the generated TE spec results in the same error trace.
 	 */
-	//@Test
+	@Test
 	public void integrationTestStutteringTESpec() {
 		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
 			"-tool"
@@ -160,7 +152,7 @@ public class TraceExpressionSpecTest {
 	 * Given a spec generating a simple lasso error trace, tests
 	 * that the generated TE spec results in the same error trace.
 	 */
-	//@Test
+	@Test
 	public void integrationTestLassoTESpec() {
 		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
 			"-tool"
@@ -169,6 +161,154 @@ public class TraceExpressionSpecTest {
 		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
 			assertTrue(integrationTestLassoLivenessViolation(args));
 		}
+	}
+	
+	/**
+	 * Tests various cases in which a TE spec shouldn't be generated.
+	 */
+	@Test
+	public void integrationTestTESpecNotGenerated() {
+		final Path modelDir = Paths.get("test-model", "TESpecTest");
+		final Path tempDir = modelDir.resolve("temp");
+		final Path teDir = tempDir.resolve(UUID.randomUUID().toString());
+		final String teSpecName = TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION;
+		final Path teSpecPath = teDir.resolve(teSpecName);
+
+		// Tests TE spec not generated with -noGenerateTraceExpressionSpec flag
+		Path tlaPath = modelDir.resolve("TESpecTest" + TLAConstants.Files.TLA_EXTENSION);
+		Path cfgPath = modelDir.resolve("TESpecSafetyTest" + TLAConstants.Files.CONFIG_EXTENSION);
+		Path stateDir = tempDir.resolve(UUID.randomUUID().toString());
+		String[] searchDirs = new String[] { modelDir.toString() };
+		String[] args = new String[] {
+			"-noGenerateTraceExpressionSpec",
+			"-traceExpressionSpecOutDir", teDir.toString(),
+			"-metadir", stateDir.toString(),
+			"-config", cfgPath.toString(),
+			tlaPath.toString()
+		};
+		
+		IsolatedTLCRunner tlc = new IsolatedTLCRunner(printTLCConsoleOutput);
+		assertTrue(tlc.initialize(searchDirs, args));
+		Optional<MCError> ogError = tlc.run();
+		assertTrue(ogError.isPresent());
+		assertFalse(teSpecPath.toFile().exists());
+		
+		// Tests TE spec not generated when no invariant violation occurs
+		tlaPath = modelDir.resolve("TESpecNoErrorTest" + TLAConstants.Files.TLA_EXTENSION);
+		cfgPath = modelDir.resolve("TESpecNoErrorTest" + TLAConstants.Files.CONFIG_EXTENSION);
+		stateDir = tempDir.resolve(UUID.randomUUID().toString());
+		args = new String[] {
+			"-traceExpressionSpecOutDir", teDir.toString(),
+			"-metadir", stateDir.toString(),
+			"-config", cfgPath.toString(),
+			tlaPath.toString()
+		};
+		
+		tlc = new IsolatedTLCRunner(printTLCConsoleOutput);
+		assertTrue(tlc.initialize(searchDirs, args));
+		ogError = tlc.run();
+		assertFalse(ogError.isPresent());
+		assertFalse(teSpecPath.toFile().exists());
+	}
+	
+	/**
+	 * Tests that a TE spec is not generated with TLC encounters a runtime
+	 * error that is not an invariant violation.
+	 */
+	@Test
+	public void integrationTestTESpecNotGeneratedOnRuntimeError() {
+		final Path modelDir = Paths.get("test-model", "TESpecTest");
+		final Path tempDir = modelDir.resolve("temp");
+		final Path teDir = tempDir.resolve(UUID.randomUUID().toString());
+		final String teSpecName = TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION;
+		final Path teSpecPath = teDir.resolve(teSpecName);
+
+		// Tests error trace not generated when TLA file doesn't exist
+		Path tlaPath = modelDir.resolve("DoesNotExist" + TLAConstants.Files.TLA_EXTENSION);
+		Path cfgPath = modelDir.resolve("TESpecSafetyTest" + TLAConstants.Files.CONFIG_EXTENSION);
+		Path stateDir = tempDir.resolve(UUID.randomUUID().toString());
+		String[] searchDirs = new String[] { modelDir.toString() };
+		String[] args = new String[] {
+			"-traceExpressionSpecOutDir", teDir.toString(),
+			"-metadir", stateDir.toString(),
+			"-config", cfgPath.toString(),
+			tlaPath.toString()
+		};
+		
+		IsolatedTLCRunner tlc = new IsolatedTLCRunner(printTLCConsoleOutput);
+		assertTrue(tlc.initialize(searchDirs, args));
+		Optional<MCError> ogError = tlc.run();
+		assertFalse(ogError.isPresent());
+		assertFalse(teSpecPath.toFile().exists());
+		
+		// Tests error trace not generated with CFG file doesn't exist
+		tlaPath = modelDir.resolve("TESpecTest" + TLAConstants.Files.TLA_EXTENSION);
+		cfgPath = modelDir.resolve("DoesNotExist" + TLAConstants.Files.CONFIG_EXTENSION);
+		stateDir = tempDir.resolve(UUID.randomUUID().toString());
+		args = new String[] {
+			"-traceExpressionSpecOutDir", teDir.toString(),
+			"-metadir", stateDir.toString(),
+			"-config", cfgPath.toString(),
+			tlaPath.toString()
+		};
+		
+		tlc = new IsolatedTLCRunner(printTLCConsoleOutput);
+		assertTrue(tlc.initialize(searchDirs, args));
+		ogError = tlc.run();
+		assertFalse(ogError.isPresent());
+		assertFalse(teSpecPath.toFile().exists());
+		
+		// Tests error trace not generated with module dependency not found
+		tlaPath = modelDir.resolve("TESpecDependencyTest" + TLAConstants.Files.TLA_EXTENSION);
+		cfgPath = modelDir.resolve("TESpecDependencyTest" + TLAConstants.Files.CONFIG_EXTENSION);
+		stateDir = tempDir.resolve(UUID.randomUUID().toString());
+		args = new String[] {
+			"-traceExpressionSpecOutDir", teDir.toString(),
+			"-metadir", stateDir.toString(),
+			"-config", cfgPath.toString(),
+			tlaPath.toString()
+		};
+		
+		tlc = new IsolatedTLCRunner(printTLCConsoleOutput);
+		assertTrue(tlc.initialize(searchDirs, args));
+		ogError = tlc.run();
+		assertFalse(ogError.isPresent());
+		assertFalse(teSpecPath.toFile().exists());
+	}
+	
+	/**
+	 * Tests setting & getting the output directory of the TE generator.
+	 */
+	@Test
+	public void testSetOutputDirectory() {
+		Path expected = Paths.get("trace");
+		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
+		TraceExpressionSpec teSpec = new TraceExpressionSpec(expected, recorder);
+		assertEquals(expected, teSpec.getOutputDirectory());
+	}
+	
+	/**
+	 * Tests TE generation code handles exceptions correctly.
+	 */
+	@Test
+	public void testFileWriteExceptions() {
+		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
+
+		FakeStreamProvider stream = new FakeStreamProvider(null, null, ThrowException.TLA_FILENOTFOUND);
+		TraceExpressionSpec teSpec = new TraceExpressionSpec(stream, recorder);
+		assertFalse(teSpec.generate(null, null, null, null));
+
+		stream = new FakeStreamProvider(null, null, ThrowException.TLA_SECURITY);
+		teSpec = new TraceExpressionSpec(stream, recorder);
+		assertFalse(teSpec.generate(null, null, null, null));
+
+		stream = new FakeStreamProvider(null, null, ThrowException.CFG_FILENOTFOUND);
+		teSpec = new TraceExpressionSpec(stream, recorder);
+		assertFalse(teSpec.generate(null, null, null, null));
+
+		stream = new FakeStreamProvider(null, null, ThrowException.CFG_SECURITY);
+		teSpec = new TraceExpressionSpec(stream, recorder);
+		assertFalse(teSpec.generate(null, null, null, null));
 	}
 	
 	/**
@@ -212,7 +352,7 @@ public class TraceExpressionSpecTest {
 	 * that the generated TE spec results in the same error trace.
 	 * Runs TLC in simulation mode.
 	 */
-	public boolean integrationTestSafetyViolationSimulation(String... args) {
+	public boolean integrationTestSafetyViolationSimulation(String tla, String cfg, String... args) {
 		BiFunction<MCError, MCError, Boolean> eval = (originalError, teError) -> {
 			List<MCState> originalStates = originalError.getStates();
 			List<MCState> teStates = teError.getStates();
@@ -220,6 +360,8 @@ public class TraceExpressionSpecTest {
 			// Since simulation trace doesn't have to be most direct path to
 			// counterexample state, can only compare first & last states
 			// since TE trace will be shortest path.
+			assertTrue(originalStates.size() >= teStates.size());
+			
 			MCState ogInitState = originalStates.get(0);
 			MCState teInitState = teStates.get(0);
 			assertEquals(1, ogInitState.getStateNumber());
@@ -241,7 +383,7 @@ public class TraceExpressionSpecTest {
 			return true;
 		};
 
-		return teSpecTest("TESpecTest", "TESpecSafetyTest", eval, args);
+		return teSpecTest(tla, cfg, eval, append(args, "-simulate"));
 	}
 	
 	/**
@@ -386,41 +528,6 @@ public class TraceExpressionSpecTest {
 		return eval.apply(ogError.get(), teError.get());
 	}
 
-	/**
-	 * Tests setting & getting the output directory of the TE generator.
-	 */
-	@Test
-	public void testSetOutputDirectory() {
-		Path expected = Paths.get("trace");
-		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
-		TraceExpressionSpec teSpec = new TraceExpressionSpec(expected, recorder);
-		assertEquals(expected, teSpec.getOutputDirectory());
-	}
-	
-	/**
-	 * Tests TE generation code handles exceptions correctly.
-	 */
-	@Test
-	public void testFileWriteExceptions() {
-		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
-
-		FakeStreamProvider stream = new FakeStreamProvider(null, null, ThrowException.TLA_FILENOTFOUND);
-		TraceExpressionSpec teSpec = new TraceExpressionSpec(stream, recorder);
-		assertFalse(teSpec.generate(null, null, null, null));
-
-		stream = new FakeStreamProvider(null, null, ThrowException.TLA_SECURITY);
-		teSpec = new TraceExpressionSpec(stream, recorder);
-		assertFalse(teSpec.generate(null, null, null, null));
-
-		stream = new FakeStreamProvider(null, null, ThrowException.CFG_FILENOTFOUND);
-		teSpec = new TraceExpressionSpec(stream, recorder);
-		assertFalse(teSpec.generate(null, null, null, null));
-
-		stream = new FakeStreamProvider(null, null, ThrowException.CFG_SECURITY);
-		teSpec = new TraceExpressionSpec(stream, recorder);
-		assertFalse(teSpec.generate(null, null, null, null));
-	}
-	
 	/**
 	 * Helper class to inject IO exceptions into the TE generation code.
 	 */
