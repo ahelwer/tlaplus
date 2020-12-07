@@ -317,7 +317,7 @@ public class TestCommandLineOptions
 	@Test
 	public void testNoGenerateTraceExpressionSpecFlag()
 	{
-		String[] args = new String[]{"-noGenerateTraceExpressionSpec", "test.tla"};
+		String[] args = new String[]{"-noGenerateSpecTE", "test.tla"};
 		assertTrue(CommandLineOptions.parse(args).map(
 				parseFailure -> false,
 				helpRequest -> false,
@@ -365,7 +365,7 @@ public class TestCommandLineOptions
 	public void testTraceExpressionSpecFilePath()
 	{
 		final Path expected = Paths.get("some", "file", "path");
-		String[] args = new String[]{"-traceExpressionSpecOutDir", expected.toString(), "test.tla"};
+		String[] args = new String[]{"-teSpecOutDir", expected.toString(), "test.tla"};
 		assertTrue(CommandLineOptions.parse(args).map(
 				parseFailure -> false,
 				helpRequest -> false,
@@ -381,10 +381,10 @@ public class TestCommandLineOptions
 	@Test
 	public void testInvalidTraceExpressionSpecFilePath()
 	{
-		String[] args = new String[]{"test.tla", "-traceExpressionSpecOutDir"};
+		String[] args = new String[]{"test.tla", "-teSpecOutDir"};
 		assertTrue(CommandLineOptions.parse(args).map(
 				parseFailure -> {
-					assertTrue(parseFailure.errorMessage.contains("traceExpressionSpecOutDir"));
+					assertTrue(parseFailure.errorMessage.contains("teSpecOutDir"));
 					return true;
 				},
 				helpRequest -> false,

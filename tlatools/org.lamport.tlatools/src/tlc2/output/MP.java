@@ -1271,7 +1271,7 @@ public class MP
             
         /* ************************************************************************ */
         case EC.TLC_TE_SPEC_GENERATION_START:
-        	b.append("Generating trace expression spec reproducing error behavior (skip this with -noGenerateTraceExpressionSpec flag)");
+        	b.append("Generating trace expression spec reproducing error behavior (skip this with -noGenerateSpecTE flag)");
         	break;
         case EC.TLC_TE_SPEC_GENERATION_END:
         	b.append("Successfully generated trace expression spec in %1% directory");

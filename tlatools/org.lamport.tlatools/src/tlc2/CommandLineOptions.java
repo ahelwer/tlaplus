@@ -363,7 +363,7 @@ public class CommandLineOptions
 				{
 					index++;
 					options.useToolOutputFormatFlag = true;
-				} else if (args[index].equals("-noGenerateTraceExpressionSpec"))
+				} else if (args[index].equals("-noGenerateSpecTE"))
 				{
 					index++;
 					options.noGenerateTraceExpressionSpecFlag = true;
@@ -377,7 +377,7 @@ public class CommandLineOptions
 						options.noMonolithTraceExpressionSpecFlag = true;
 					}
 
-				} else if (args[index].equals("-traceExpressionSpecOutDir"))
+				} else if (args[index].equals("-teSpecOutDir"))
 				{
 					index++;
 					if (index < args.length)
@@ -389,13 +389,13 @@ public class CommandLineOptions
 							index++;
 						} catch (InvalidPathException e) {
 							throw new ParseException(
-									"Error: invalid path provided for -traceExpressionSpecOutDir: " + path,
+									"Error: invalid path provided for -teSpecOutDir: " + path,
 									index);
 						}
 					} else
 					{
 						throw new ParseException(
-								"Error: expected directory for -traceExpressionSpecOutDir option.",
+								"Error: expected directory for -teSpecOutDir option.",
 								index);
 					}
 				} else if (args[index].equals("-help") || args[index].equals("-h"))

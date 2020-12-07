@@ -1141,12 +1141,12 @@ public class TLC {
 														"a value in (0.0,1.0) representing the ratio of total\n"
 															+ "physical memory to devote to storing the fingerprints\n"
 															+ "of found states; defaults to 0.25", true));
-    	sharedArguments.add(new UsageGenerator.Argument("-noGenerateTraceExpressionSpec",
+    	sharedArguments.add(new UsageGenerator.Argument("-noGenerateSpecTE",
     													"Whether to skip generating a trace expression (TE) spec in\n"
     														+ "the event of TLC finding a state or behavior that does\n"
     														+ "not satisfy the invariants; TLC's default behavior is to\n"
     														+ "generate this spec.", true));
-    	sharedArguments.add(new UsageGenerator.Argument("-traceExpressionSpecOutDir", "some-dir-name",
+    	sharedArguments.add(new UsageGenerator.Argument("-teSpecOutDir", "some-dir-name",
     													"Directory to which to output the TE spec if TLC generates\n"
     														+ "an error trace. Can be a relative (to root spec dir)\n"
     														+ "or absolute path. By default the TE spec is output\n"

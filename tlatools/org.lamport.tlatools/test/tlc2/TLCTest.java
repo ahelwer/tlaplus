@@ -325,7 +325,7 @@ public class TLCTest {
 	{
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
-		final String[] args = new String[] {"-noGenerateTraceExpressionSpec", tlaFile};
+		final String[] args = new String[] {"-noGenerateSpecTE", tlaFile};
 		assertTrue(tlc.parseValidateTransformParameters(args));
 		assertFalse(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.getTraceExpressionOutputDirectory().isEmpty());
@@ -336,7 +336,7 @@ public class TLCTest {
 	{
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
-		final String[] args = new String[] {"-generateSpecTE", "-noGenerateTraceExpressionSpec", tlaFile};
+		final String[] args = new String[] {"-generateSpecTE", "-noGenerateSpecTE", tlaFile};
 		assertTrue(tlc.parseValidateTransformParameters(args));
 		assertFalse(tlc.willGenerateTraceExpressionSpec());
 		assertTrue(tlc.getTraceExpressionOutputDirectory().isEmpty());
@@ -348,7 +348,7 @@ public class TLCTest {
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
 		final Path expectedPath = Paths.get("some", "file", "path");
-		final String[] args = new String[] {"-traceExpressionSpecOutDir", expectedPath.toString(), tlaFile};
+		final String[] args = new String[] {"-teSpecOutDir", expectedPath.toString(), tlaFile};
 		assertFalse(tlc.getTraceExpressionOutputDirectory().isPresent());
 		assertTrue(tlc.parseValidateTransformParameters(args));
 		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());

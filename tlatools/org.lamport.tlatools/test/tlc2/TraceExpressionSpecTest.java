@@ -174,14 +174,14 @@ public class TraceExpressionSpecTest {
 		final String teSpecName = TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION;
 		final Path teSpecPath = teDir.resolve(teSpecName);
 
-		// Tests TE spec not generated with -noGenerateTraceExpressionSpec flag
+		// Tests TE spec not generated with -noGenerateSpecTE flag
 		Path tlaPath = modelDir.resolve("TESpecTest" + TLAConstants.Files.TLA_EXTENSION);
 		Path cfgPath = modelDir.resolve("TESpecSafetyTest" + TLAConstants.Files.CONFIG_EXTENSION);
 		Path stateDir = tempDir.resolve(UUID.randomUUID().toString());
 		String[] searchDirs = new String[] { modelDir.toString() };
 		String[] args = new String[] {
-			"-noGenerateTraceExpressionSpec",
-			"-traceExpressionSpecOutDir", teDir.toString(),
+			"-noGenerateSpecTE",
+			"-teSpecOutDir", teDir.toString(),
 			"-metadir", stateDir.toString(),
 			"-config", cfgPath.toString(),
 			tlaPath.toString()
@@ -198,7 +198,7 @@ public class TraceExpressionSpecTest {
 		cfgPath = modelDir.resolve("TESpecNoErrorTest" + TLAConstants.Files.CONFIG_EXTENSION);
 		stateDir = tempDir.resolve(UUID.randomUUID().toString());
 		args = new String[] {
-			"-traceExpressionSpecOutDir", teDir.toString(),
+			"-teSpecOutDir", teDir.toString(),
 			"-metadir", stateDir.toString(),
 			"-config", cfgPath.toString(),
 			tlaPath.toString()
@@ -229,7 +229,7 @@ public class TraceExpressionSpecTest {
 		Path stateDir = tempDir.resolve(UUID.randomUUID().toString());
 		String[] searchDirs = new String[] { modelDir.toString() };
 		String[] args = new String[] {
-			"-traceExpressionSpecOutDir", teDir.toString(),
+			"-teSpecOutDir", teDir.toString(),
 			"-metadir", stateDir.toString(),
 			"-config", cfgPath.toString(),
 			tlaPath.toString()
@@ -246,7 +246,7 @@ public class TraceExpressionSpecTest {
 		cfgPath = modelDir.resolve("DoesNotExist" + TLAConstants.Files.CONFIG_EXTENSION);
 		stateDir = tempDir.resolve(UUID.randomUUID().toString());
 		args = new String[] {
-			"-traceExpressionSpecOutDir", teDir.toString(),
+			"-teSpecOutDir", teDir.toString(),
 			"-metadir", stateDir.toString(),
 			"-config", cfgPath.toString(),
 			tlaPath.toString()
@@ -263,7 +263,7 @@ public class TraceExpressionSpecTest {
 		cfgPath = modelDir.resolve("TESpecDependencyTest" + TLAConstants.Files.CONFIG_EXTENSION);
 		stateDir = tempDir.resolve(UUID.randomUUID().toString());
 		args = new String[] {
-			"-traceExpressionSpecOutDir", teDir.toString(),
+			"-teSpecOutDir", teDir.toString(),
 			"-metadir", stateDir.toString(),
 			"-config", cfgPath.toString(),
 			tlaPath.toString()
@@ -496,7 +496,7 @@ public class TraceExpressionSpecTest {
 		// First run of TLC to generate error trace & TE spec
 		String[] searchDirs = new String[] { modelDir.toString() };
 		String[] baseArgs = new String[] {
-			"-traceExpressionSpecOutDir", teDir.toString(),
+			"-teSpecOutDir", teDir.toString(),
 			"-metadir", ogStateDir.toString(),
 			"-config", ogCfgPath.toString(),
 		};
