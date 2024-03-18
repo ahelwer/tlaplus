@@ -15,8 +15,6 @@
 
 package tla2sany.configuration;
 
-import java.io.File;
-
 import tla2sany.parser.Operator;
 import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
@@ -32,48 +30,23 @@ import util.UniqueString;
 public final class Configuration implements ConfigConstants {
 
   private static Errors         errors;
-  private static java.io.Reader input;
+  private static final java.io.Reader input = new java.io.StringReader(ConfigConstants.defaultConfig);
 
-  public static void displayDefinitions() {
-    ToolIO.out.println( defaultConfig );
-  }
-
-  public static void load (Errors errs ) throws AbortException {
+  public static void load(Errors errs) throws AbortException {
     /***********************************************************************
     * Called from drivers/SANY.java                                        *
     ***********************************************************************/
-    Configuration Parser;
+    Configuration.errors = errs;
+    Configuration config = new Configuration(Configuration.input);
     try {
-      errors = errs;
-      File source = new File( "config.src" );
-      String origin;
-
-      if ( source.exists() ) {
-//      java.io.OutputStream output;
-        input = new java.io.FileReader( source );
-        origin = " from local config.src file.";
-      } else {
-        input = new java.io.StringReader( defaultConfig );
-        origin = " from defaults.";
-      }
-      Parser = new Configuration( input );
-
-      try {
-        Parser.ConfigurationUnit();
-//      Operators.printTable();
-      } catch (ParseException e) {
-        errors.addAbort(Location.nullLoc,"\nConfiguration Parser:  Encountered errors during parse.  " 
-                        + e.getMessage(),true );
-      }
-
-    } catch (java.io.FileNotFoundException e) {
-      errors.addAbort(Location.nullLoc,"File not found.\n" + e,true);
+      config.ConfigurationUnit();
+    } catch (ParseException e) {
+      errors.addAbort(Location.nullLoc,"\nConfiguration Parser:  Encountered errors during parse.  " 
+                      + e.getMessage(),true );
     }
-  } // end load()
+  }
 
-
-
-  static final public void ConfigurationUnit() throws ParseException, AbortException {
+  public void ConfigurationUnit() throws ParseException, AbortException {
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -187,7 +160,8 @@ public final class Configuration implements ConfigConstants {
    } else {
      op = new Operator( UniqueString.uniqueStringOf(t.image), low, high, assoc, kind );
    }
-   Operators.addOperator( UniqueString.uniqueStringOf(s), op );
+   // This is initialized statically now.
+   //Operators.addOperator( UniqueString.uniqueStringOf(s), op );
   }
 
   static final public void OpSynonym() throws ParseException {
@@ -195,8 +169,9 @@ public final class Configuration implements ConfigConstants {
     jj_consume_token(SYNONYM);
     t1 = jj_consume_token(OPID);
     t2 = jj_consume_token(OPID);
-    Operators.addSynonym( UniqueString.uniqueStringOf(t1.image), 
-                          UniqueString.uniqueStringOf(t2.image) );
+    // This is initialized statically now.
+    //Operators.addSynonym( UniqueString.uniqueStringOf(t1.image), 
+    //                      UniqueString.uniqueStringOf(t2.image) );
   }
 
   static final public void OpNull(String s) throws ParseException {
