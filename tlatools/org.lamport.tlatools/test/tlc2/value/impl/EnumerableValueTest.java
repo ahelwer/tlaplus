@@ -51,10 +51,10 @@ public class EnumerableValueTest {
 
 			while (enumerator.hasNext()) {
 				final int index = enumerator.nextIndex();
-				assertTrue("Index %s out of bounds.", 0 <= index && index < n);
+				assertTrue(0 <= index && index < n, "Index %s out of bounds.");
 				indices.add(index);
 			}
-			assertEquals("Missing indices.", n, indices.size());
+			assertEquals(n, indices.size(), "Missing indices.");
 			indices.clear();
 		}
 	}

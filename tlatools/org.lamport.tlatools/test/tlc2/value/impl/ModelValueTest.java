@@ -28,8 +28,9 @@ package tlc2.value.impl;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 
-import util.Assertions.TLCRuntimeException;
+import util.Assert.TLCRuntimeException;
 import util.UniqueString;
 
 public class ModelValueTest {
@@ -148,63 +149,105 @@ public class ModelValueTest {
 		assertNotEquals(ModelValue.make("untyped"), ModelValue.make("A_a"));
 	}
 
-	@Test(expected = TLCRuntimeException.class)
+	@Test
 	public void testEqualsTwoTypedMVs() {
-		ModelValue.make("A_a").equals(ModelValue.make("B_b"));
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> ModelValue.make("A_a").equals(ModelValue.make("B_b"))
+		);
 	}
 	
-	@Test(expected = TLCRuntimeException.class)
+	@Test
 	public void testEqualsStringTypedMV() {
-		new StringValue("str").equals(ModelValue.make("B_b"));
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> new StringValue("str").equals(ModelValue.make("B_b"))
+		);
 	}
-	@Test(expected = TLCRuntimeException.class)
+	@Test
 	public void testEqualsTypedMVString() {
-		ModelValue.make("B_b").equals(new StringValue("str"));
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> ModelValue.make("B_b").equals(new StringValue("str"))
+		);
 	}
 	
-	@Test(expected = TLCRuntimeException.class)
+	@Test
 	public void testEqualsIntTypedMV() {
-		IntValue.gen(0).equals(ModelValue.make("B_b"));
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> IntValue.gen(0).equals(ModelValue.make("B_b"))
+		);
 	}
-	@Test(expected = TLCRuntimeException.class)
+	@Test
 	public void testEqualsTypedMVInt() {
-		ModelValue.make("B_b").equals(IntValue.gen(0));
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> ModelValue.make("B_b").equals(IntValue.gen(0))
+		);
 	}
 	
-	@Test(expected = TLCRuntimeException.class)
+	@Test
 	public void testEqualsBoolTypedMV() {
-		BoolValue.ValFalse.equals(ModelValue.make("B_b"));
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> BoolValue.ValFalse.equals(ModelValue.make("B_b"))
+		);
 	}
-	@Test(expected = TLCRuntimeException.class)
+	@Test
 	public void testEqualsTypedMVBool() {
-		ModelValue.make("B_b").equals(BoolValue.ValTrue);
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> ModelValue.make("B_b").equals(BoolValue.ValTrue)
+		);
 	}
 	
-	@Test(expected = TLCRuntimeException.class)
+	@Test
 	public void testEqualsIVTypedMV() {
-		new IntervalValue(0, 1).equals(ModelValue.make("B_b"));
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> new IntervalValue(0, 1).equals(ModelValue.make("B_b"))
+		);
 	}
-	@Test(expected = TLCRuntimeException.class)
+
+	@Test
 	public void testEqualsTypedMVIV() {
-		ModelValue.make("B_b").equals(new IntervalValue(0, 1));
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> ModelValue.make("B_b").equals(new IntervalValue(0, 1))
+		);
 	}
 	
-	@Test(expected = TLCRuntimeException.class)
+	@Test
 	public void testEqualsRcdTypedMV() {
-		new RecordValue(UniqueString.of("foo"), new StringValue("bar")).equals(ModelValue.make("B_b"));
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> new RecordValue(UniqueString.of("foo"), new StringValue("bar")).equals(ModelValue.make("B_b"))
+		);
 	}
-	@Test(expected = TLCRuntimeException.class)
+
+	@Test
 	public void testEqualsTypedMVRcd() {
-		ModelValue.make("B_b").equals(new RecordValue(UniqueString.of("foo"), new StringValue("bar")));
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> ModelValue.make("B_b").equals(new RecordValue(UniqueString.of("foo"), new StringValue("bar")))
+		);
 	}
 	
-	@Test(expected = TLCRuntimeException.class)
+	@Test
 	public void testEqualsTupeTypedMV() {
-		new TupleValue(new StringValue("foo")).equals(ModelValue.make("B_b"));
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> new TupleValue(new StringValue("foo")).equals(ModelValue.make("B_b"))
+		);
 	}
-	@Test(expected = TLCRuntimeException.class)
+
+	@Test
 	public void testEqualsTypedMVTupe() {
-		ModelValue.make("B_b").equals(new TupleValue(new StringValue("foo")));
+		Assertions.assertThrows(
+			TLCRuntimeException.class,
+			() -> ModelValue.make("B_b").equals(new TupleValue(new StringValue("foo")))
+		);
 	}
 
 	// ------- #compareTo typed MV ------- //

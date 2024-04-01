@@ -126,15 +126,17 @@ public class SubsetEnumeratorTest {
 				final List<Value> values = enumerable.elements(k).all();
 				
 				// Expected size.
-				Assertions.assertEquals(String.format("Failed for fraction: %s", fraction), k, values.size());
+				Assertions.assertEquals(k, values.size(), String.format("Failed for fraction: %s", fraction));
 
 				// Unique values.
-				Assertions.assertEquals(String.format("Failed for fraction: %s", fraction), values.size(),
-						new HashSet<Value>(values).size());
+				Assertions.assertEquals(
+					values.size(),
+					new HashSet<Value>(values).size(),
+					String.format("Failed for fraction: %s", fraction));
 
 				// Each value is actually a member of enumerable.
 				for (Value v : values) {
-					Assertions.assertTrue(String.format("Failed for fraction: %s", fraction), enumerable.member(v));
+					Assertions.assertTrue(enumerable.member(v), String.format("Failed for fraction: %s", fraction));
 				}
 			}
 		});
@@ -150,7 +152,7 @@ public class SubsetEnumeratorTest {
 				final Enumerable enumValue = enumerable.getRandomSubset(k);
 				
 				// Expected size.
-				assertEquals(String.format("Failed for fraction: %s", fraction), k, enumValue.size());
+				assertEquals(k, enumValue.size(), String.format("Failed for fraction: %s", fraction));
 
 				final Set<Value> values = new HashSet<>(enumValue.size());
 				
@@ -158,13 +160,15 @@ public class SubsetEnumeratorTest {
 				ValueEnumeration elements = enumValue.elements();
 				Value v = null;
 				while ((v = elements.nextElement()) != null) {
-					Assertions.assertTrue(String.format("Failed for fraction: %s", fraction), enumerable.member(v));
+					Assertions.assertTrue(enumerable.member(v), String.format("Failed for fraction: %s", fraction));
 					values.add(v);
 				}
 
 				// Unique values.
-				Assertions.assertEquals(String.format("Failed for fraction: %s", fraction), enumValue.size(),
-						new HashSet<Value>(values).size());
+				Assertions.assertEquals(
+					enumValue.size(),
+					new HashSet<Value>(values).size(),
+					String.format("Failed for fraction: %s", fraction));
 				
 			}
 		});
