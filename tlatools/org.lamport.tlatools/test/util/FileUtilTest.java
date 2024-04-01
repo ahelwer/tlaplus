@@ -3,7 +3,7 @@
 package util;
 
 import org.junit.After;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import tlc2.TLCGlobals;

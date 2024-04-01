@@ -5,7 +5,7 @@ package tlc2.tool.liveness;
 import org.junit.Test;
 import tlc2.output.EC;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Github702Test extends ModelCheckerTestCase {
 

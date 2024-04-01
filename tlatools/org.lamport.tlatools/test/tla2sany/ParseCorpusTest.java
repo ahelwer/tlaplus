@@ -7,7 +7,7 @@ import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.BuiltInLevel;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

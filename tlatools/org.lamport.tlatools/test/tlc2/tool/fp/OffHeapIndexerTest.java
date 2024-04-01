@@ -27,7 +27,7 @@ package tlc2.tool.fp;
 
 import java.rmi.RemoteException;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.Test;
 
 import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;

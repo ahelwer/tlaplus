@@ -26,7 +26,7 @@
  ******************************************************************************/
 package tlc2.value.impl;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,7 +36,7 @@ import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
 import java.util.stream.DoubleStream;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

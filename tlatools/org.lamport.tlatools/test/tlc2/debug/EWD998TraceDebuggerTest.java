@@ -25,8 +25,8 @@
  ******************************************************************************/
 package tlc2.debug;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.junit.Test;

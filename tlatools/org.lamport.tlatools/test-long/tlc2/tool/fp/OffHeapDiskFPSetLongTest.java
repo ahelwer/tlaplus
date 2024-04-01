@@ -1,8 +1,8 @@
 // Copyright (c) 2012 Markus Alexander Kuppe. All rights reserved.
 package tlc2.tool.fp;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Random;

@@ -1,16 +1,16 @@
 // Copyright (c) 2016 Markus Alexander Kuppe. All rights reserved.
 package tlc2.tool.fp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static tlc2.tool.fp.OffHeapDiskFPSet.EMPTY;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assume;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.Before;
 import org.junit.Test;
 

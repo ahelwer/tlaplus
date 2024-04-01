@@ -31,7 +31,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import org.junit.Assume;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.Before;
 
 import util.FilenameToStream;

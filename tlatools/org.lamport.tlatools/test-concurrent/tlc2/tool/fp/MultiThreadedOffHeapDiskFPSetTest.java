@@ -4,7 +4,7 @@ package tlc2.tool.fp;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import tlc2.tool.fp.generator.PartitionedFingerPrintGenerator;
 

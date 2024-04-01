@@ -10,7 +10,7 @@ import tla2sany.st.SyntaxTreeConstants;
 import util.ToolIO;
 import util.UniqueString;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

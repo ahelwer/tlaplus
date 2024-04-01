@@ -8,7 +8,7 @@ import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * An abstract syntax tree (AST) node defining a parse tree.

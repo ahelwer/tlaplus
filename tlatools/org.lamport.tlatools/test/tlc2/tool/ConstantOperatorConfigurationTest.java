@@ -6,7 +6,7 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ConstantOperatorConfigurationTest extends ModelCheckerTestCase {
 

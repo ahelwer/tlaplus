@@ -25,7 +25,7 @@
  ******************************************************************************/
 package tlc2.tool.liveness;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 

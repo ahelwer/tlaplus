@@ -29,7 +29,7 @@ package tlc2.module;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

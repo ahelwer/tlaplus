@@ -1,6 +1,6 @@
 package tlc2.model;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.Test;
 

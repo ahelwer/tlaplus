@@ -25,7 +25,7 @@
  ******************************************************************************/
 package tlc2.tool;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

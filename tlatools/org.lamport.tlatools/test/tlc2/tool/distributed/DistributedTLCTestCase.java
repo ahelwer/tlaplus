@@ -29,8 +29,8 @@ import java.security.Permission;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.Before;
 
 import tlc2.TestMPRecorder;

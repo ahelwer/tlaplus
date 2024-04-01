@@ -1,8 +1,8 @@
 package tlc2.tool.fp;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Assume;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.Before;
 import org.junit.Test;
 

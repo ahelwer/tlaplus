@@ -1,7 +1,7 @@
 // Copyright (c) 2016 Markus Alexander Kuppe. All rights reserved.
 package tlc2.tool.fp;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.IOException;

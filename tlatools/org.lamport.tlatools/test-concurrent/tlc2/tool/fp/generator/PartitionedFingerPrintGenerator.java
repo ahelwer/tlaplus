@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.MultiThreadedFPSetTest;

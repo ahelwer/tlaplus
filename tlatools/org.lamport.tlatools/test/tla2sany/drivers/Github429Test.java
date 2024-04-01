@@ -1,6 +1,6 @@
 package tla2sany.drivers;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 
