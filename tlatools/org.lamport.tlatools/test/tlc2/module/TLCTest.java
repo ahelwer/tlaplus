@@ -60,18 +60,18 @@ public class TLCTest {
 		final Value g = new TupleValue(new Value [] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3) });
 
 		final Value  combined = TLC.CombineFcn(f, g);
-		Assert.assertTrue(combined instanceof FcnRcdValue);
+		Assertions.assertTrue(combined instanceof FcnRcdValue);
 		final FcnRcdValue rcdVal = (FcnRcdValue) combined;
 		// Have to normalize to bring values/domain into natural order expected by assertions below
 		rcdVal.normalize();
 
 		// domain
-		Assert.assertEquals(3, rcdVal.domain.length);
-		Assert.assertArrayEquals(new Value [] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3) }, rcdVal.domain);
+		Assertions.assertEquals(3, rcdVal.domain.length);
+		Assertions.assertArrayEquals(new Value [] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3) }, rcdVal.domain);
 
 		// values
-		Assert.assertEquals(3, rcdVal.values.length);
-		Assert.assertArrayEquals(new Value [] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(11) }, rcdVal.values);
+		Assertions.assertEquals(3, rcdVal.values.length);
+		Assertions.assertArrayEquals(new Value [] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(11) }, rcdVal.values);
 	}
 
 	/**
@@ -84,40 +84,40 @@ public class TLCTest {
 		final Value g = new TupleValue(new Value [] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3), IntValue.gen(11) });
 
 		final Value  combined = TLC.CombineFcn(f, g);
-		Assert.assertTrue(combined instanceof FcnRcdValue);
+		Assertions.assertTrue(combined instanceof FcnRcdValue);
 		final FcnRcdValue rcdVal = (FcnRcdValue) combined;
 		// Have to normalize to bring values/domain into natural order expected by assertions below
 		rcdVal.normalize();
 		
 		// domain
-		Assert.assertEquals(4, rcdVal.domain.length);
-		Assert.assertArrayEquals(new Value [] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3), IntValue.gen(4) },
+		Assertions.assertEquals(4, rcdVal.domain.length);
+		Assertions.assertArrayEquals(new Value [] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3), IntValue.gen(4) },
 				rcdVal.domain);
 
 		// values
-		Assert.assertEquals(4, rcdVal.values.length);
-		Assert.assertArrayEquals(new Value [] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3), IntValue.gen(11) },
+		Assertions.assertEquals(4, rcdVal.values.length);
+		Assertions.assertArrayEquals(new Value [] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3), IntValue.gen(11) },
 				rcdVal.values);
 	}
 
 	@Test
 	public void testPermutations() {
 		final SetEnumValue in = (SetEnumValue) new IntervalValue(1, 5).toSetEnum();
-		Assert.assertEquals(5, in.size());
+		Assertions.assertEquals(5, in.size());
 		
 		final Value  permutations = TLC.Permutations(in);
-		Assert.assertTrue(permutations instanceof Enumerable);
-		Assert.assertEquals(120, permutations.size());
+		Assertions.assertTrue(permutations instanceof Enumerable);
+		Assertions.assertEquals(120, permutations.size());
 
 		final Set<Value > values = new HashSet<>(permutations.size());
 		
 		final ValueEnumeration elements = ((Enumerable) permutations).elements();
 		Value  val = null;
 		while ((val = elements.nextElement()) != null) {
-			Assert.assertEquals(in.size(), val.size());
+			Assertions.assertEquals(in.size(), val.size());
 			values.add(val);
 		}
 		
-		Assert.assertEquals(120, values.size());
+		Assertions.assertEquals(120, values.size());
 	}
 }

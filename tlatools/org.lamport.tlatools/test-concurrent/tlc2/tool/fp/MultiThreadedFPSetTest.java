@@ -98,7 +98,7 @@ public abstract class MultiThreadedFPSetTest extends AbstractFPSetTest {
 		// to skip all but FingerPrintGenerator test. Note that the name has to
 		// be prefixed with "_" to make it possible to skip
 		// "FingerPrintGenerator" itself.
-		Assume.assumeFalse(System.getProperty(MultiThreadedFPSetTest.class.getName() + ".excludes", "")
+		Assumptions.assumeFalse(System.getProperty(MultiThreadedFPSetTest.class.getName() + ".excludes", "")
 				.contains("_" + fpgClass.getSimpleName()));
 		System.out.println("Running test: " + fpgClass.getSimpleName());
 		

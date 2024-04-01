@@ -288,11 +288,11 @@ public class OperatorPrecedenceTests {
 				case POSTFIX: return String.format("A %s B %s", op1Symbol, op2Symbol);
 			}
 			case POSTFIX: switch (op2.Fix) {
-				case PREFIX: Assert.fail(); return "";
+				case PREFIX: Assertions.fail(); return "";
 				case INFIX: return String.format("A %s %s B", op1Symbol, op2Symbol);
 				case POSTFIX: return String.format("A %s %s", op1Symbol, op2Symbol);
 			}
-			default: Assert.fail(); return "";
+			default: Assertions.fail(); return "";
 		}
 	}
 	
@@ -328,7 +328,7 @@ public class OperatorPrecedenceTests {
 						: lowerPrecOpHeirs[0];
 			case SyntaxTreeConstants.N_PostfixExpr: return lowerPrecOpHeirs[0];
 		}
-		Assert.fail();
+		Assertions.fail();
 		return null;
 	}
 	
@@ -346,7 +346,7 @@ public class OperatorPrecedenceTests {
 			case SyntaxTreeConstants.N_InfixExpr: return opHeirs[1].getHeirs()[1].getImage();
 			case SyntaxTreeConstants.N_PostfixExpr: return opHeirs[1].getHeirs()[1].getImage();
 		}
-		Assert.fail();
+		Assertions.fail();
 		return null;
 	}
 	
@@ -372,18 +372,18 @@ public class OperatorPrecedenceTests {
 		String higherPrecOpSymbol = getOpImage(higherPrecOp);
 		if (op1 == op2) {
 			if (op1.Associative) {
-				Assert.assertEquals(lowerPrecOpSymbol, op2Symbol);
-				Assert.assertEquals(higherPrecOpSymbol, op1Symbol);
+				Assertions.assertEquals(lowerPrecOpSymbol, op2Symbol);
+				Assertions.assertEquals(higherPrecOpSymbol, op1Symbol);
 			} else {
-				Assert.assertEquals(lowerPrecOpSymbol, op1Symbol);
-				Assert.assertEquals(higherPrecOpSymbol, op2Symbol);
+				Assertions.assertEquals(lowerPrecOpSymbol, op1Symbol);
+				Assertions.assertEquals(higherPrecOpSymbol, op2Symbol);
 			}
 		} else if (op1.lowerPrecThan(op2) || FixKind.PREFIX == op2.Fix) {
-			Assert.assertEquals(lowerPrecOpSymbol, op1Symbol);
-			Assert.assertEquals(higherPrecOpSymbol, op2Symbol);
+			Assertions.assertEquals(lowerPrecOpSymbol, op1Symbol);
+			Assertions.assertEquals(higherPrecOpSymbol, op2Symbol);
 		} else {
-			Assert.assertEquals(lowerPrecOpSymbol, op2Symbol);
-			Assert.assertEquals(higherPrecOpSymbol, op1Symbol);
+			Assertions.assertEquals(lowerPrecOpSymbol, op2Symbol);
+			Assertions.assertEquals(higherPrecOpSymbol, op1Symbol);
 		}
 	}
 	
@@ -423,7 +423,7 @@ public class OperatorPrecedenceTests {
 						String inputString = String.format(pattern, expr);
 						TLAplusParser parser = buildParser(inputString);
 						boolean success = !op1.conflictsWith(op2);
-						Assert.assertEquals(expr, success, parser.parse());
+						Assertions.assertEquals(expr, success, parser.parse());
 						if (success) {
 							checkParsePrecedence(parser.ParseTree, op1, op1Symbol, op2, op2Symbol);
 						}
@@ -448,7 +448,7 @@ public class OperatorPrecedenceTests {
 					String expr = String.format("A %s B %s C", opSymbol1, opSymbol2);
 					String inputString = String.format(pattern, expr);
 					TLAplusParser parser = buildParser(inputString);
-					Assert.assertEquals(expr, op.Associative, parser.parse());
+					Assertions.assertEquals(expr, op.Associative, parser.parse());
 				}
 			}
 		}
@@ -465,8 +465,8 @@ public class OperatorPrecedenceTests {
 			String expected = op.Symbols[0];
 			for (String symbol : op.Symbols) {
 				UniqueString symbolUnique = UniqueString.uniqueStringOf(symbol);
-				Assert.assertTrue(Operators.existsOperator(symbolUnique));
-				Assert.assertEquals(expected, Operators.resolveSynonym(symbolUnique).toString());
+				Assertions.assertTrue(Operators.existsOperator(symbolUnique));
+				Assertions.assertEquals(expected, Operators.resolveSynonym(symbolUnique).toString());
 			}
 		}
 	}

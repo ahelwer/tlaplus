@@ -21,7 +21,7 @@ public class LongArraysTest {
 	
 	@Before
 	public void setup() {
-		Assume.assumeTrue(LongArray.isSupported());
+		Assumptions.assumeTrue(LongArray.isSupported());
 	}
 	
 	@Test

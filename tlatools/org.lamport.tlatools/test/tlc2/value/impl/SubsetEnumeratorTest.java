@@ -126,15 +126,15 @@ public class SubsetEnumeratorTest {
 				final List<Value> values = enumerable.elements(k).all();
 				
 				// Expected size.
-				Assert.assertEquals(String.format("Failed for fraction: %s", fraction), k, values.size());
+				Assertions.assertEquals(String.format("Failed for fraction: %s", fraction), k, values.size());
 
 				// Unique values.
-				Assert.assertEquals(String.format("Failed for fraction: %s", fraction), values.size(),
+				Assertions.assertEquals(String.format("Failed for fraction: %s", fraction), values.size(),
 						new HashSet<Value>(values).size());
 
 				// Each value is actually a member of enumerable.
 				for (Value v : values) {
-					Assert.assertTrue(String.format("Failed for fraction: %s", fraction), enumerable.member(v));
+					Assertions.assertTrue(String.format("Failed for fraction: %s", fraction), enumerable.member(v));
 				}
 			}
 		});
@@ -158,12 +158,12 @@ public class SubsetEnumeratorTest {
 				ValueEnumeration elements = enumValue.elements();
 				Value v = null;
 				while ((v = elements.nextElement()) != null) {
-					Assert.assertTrue(String.format("Failed for fraction: %s", fraction), enumerable.member(v));
+					Assertions.assertTrue(String.format("Failed for fraction: %s", fraction), enumerable.member(v));
 					values.add(v);
 				}
 
 				// Unique values.
-				Assert.assertEquals(String.format("Failed for fraction: %s", fraction), enumValue.size(),
+				Assertions.assertEquals(String.format("Failed for fraction: %s", fraction), enumValue.size(),
 						new HashSet<Value>(values).size());
 				
 			}

@@ -55,7 +55,7 @@ public class FingerPrintGenerator implements Runnable {
 			try {
 				// make sure set still contains predecessor
 				if (predecessor != 0L) {
-					Assert.assertTrue(fpSet.contains(predecessor));
+					Assertions.assertTrue(fpSet.contains(predecessor));
 				}
 
 				predecessor = rnd.nextLong();
@@ -66,7 +66,7 @@ public class FingerPrintGenerator implements Runnable {
 //					final Random verify = new Random(seed);
 //					long fp = verify.nextLong();
 //					while (fp != predecessor) {
-//						Assert.assertTrue(fpSet.contains(fp));
+//						Assertions.assertTrue(fpSet.contains(fp));
 //						fp = verify.nextLong();
 //					}
 //				}
@@ -79,7 +79,7 @@ public class FingerPrintGenerator implements Runnable {
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
-				Assert.fail("Unexpected");
+				Assertions.fail("Unexpected");
 			}
 		}
 		latch.countDown();

@@ -50,14 +50,14 @@ public class OffHeapIndexerTest {
 		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits);
 
 		// indexer spreads over all positions
-		Assert.assertEquals(0, indexer.getIdx(1, 0));
-		Assert.assertEquals(48, indexer.getIdx(((0xFFFFFFFFFFFFFFFFL >>> fpBits) / 2L)));
-		Assert.assertEquals(positions - 1, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits)));
+		Assertions.assertEquals(0, indexer.getIdx(1, 0));
+		Assertions.assertEquals(48, indexer.getIdx(((0xFFFFFFFFFFFFFFFFL >>> fpBits) / 2L)));
+		Assertions.assertEquals(positions - 1, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits)));
 		
 		// Correctly wraps around when end of array is reached
-		Assert.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), 1));
+		Assertions.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), 1));
 		// Correctly wraps around when end of array is reached twice
-		Assert.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), (int)positions+1));
+		Assertions.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), (int)positions+1));
 	}
 
 	@Test
@@ -68,14 +68,14 @@ public class OffHeapIndexerTest {
 		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits);
 
 		// indexer spreads over all positions
-		Assert.assertEquals(0, indexer.getIdx(1));
-		Assert.assertEquals(49, indexer.getIdx(((0xFFFFFFFFFFFFFFFFL >>> fpBits) / 2L)));
-		Assert.assertEquals(positions - 1, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits)));
+		Assertions.assertEquals(0, indexer.getIdx(1));
+		Assertions.assertEquals(49, indexer.getIdx(((0xFFFFFFFFFFFFFFFFL >>> fpBits) / 2L)));
+		Assertions.assertEquals(positions - 1, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits)));
 		
 		// Correctly wraps around when end of array is reached
-		Assert.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), 1));
+		Assertions.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), 1));
 		// Correctly wraps around when end of array is reached twice
-		Assert.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), (int)positions+1));
+		Assertions.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), (int)positions+1));
 	}
 
 	@Test
@@ -94,14 +94,14 @@ public class OffHeapIndexerTest {
 		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits);
 
 		// indexer spreads over all positions
-		Assert.assertEquals(0, indexer.getIdx(1));
-		Assert.assertEquals(48, indexer.getIdx(((0xFFFFFFFFFFFFFFFFL >>> fpBits) / 2L)));
-		Assert.assertEquals(95, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits)));
+		Assertions.assertEquals(0, indexer.getIdx(1));
+		Assertions.assertEquals(48, indexer.getIdx(((0xFFFFFFFFFFFFFFFFL >>> fpBits) / 2L)));
+		Assertions.assertEquals(95, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits)));
 		
 		// Correctly wraps around when end of array is reached
-		Assert.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), 1));
+		Assertions.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), 1));
 		// Correctly wraps around when end of array is reached twice
-		Assert.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), 97));
+		Assertions.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), 97));
 	}
 
 	@Test
@@ -112,14 +112,14 @@ public class OffHeapIndexerTest {
 		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits);
 
 		// indexer spreads over all positions
-		Assert.assertEquals(0, indexer.getIdx(1));
-		Assert.assertEquals(49, indexer.getIdx(((0xFFFFFFFFFFFFFFFFL >>> fpBits) / 2L)));
-		Assert.assertEquals(positions - 1, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits)));
+		Assertions.assertEquals(0, indexer.getIdx(1));
+		Assertions.assertEquals(49, indexer.getIdx(((0xFFFFFFFFFFFFFFFFL >>> fpBits) / 2L)));
+		Assertions.assertEquals(positions - 1, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits)));
 		
 		// Correctly wraps around when end of array is reached
-		Assert.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), 1));
+		Assertions.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), 1));
 		// Correctly wraps around when end of array is reached twice
-		Assert.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), (int)positions+1));
+		Assertions.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), (int)positions+1));
 	}
 
 	@Test
@@ -130,11 +130,11 @@ public class OffHeapIndexerTest {
 		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits, 11L);
 
 		// indexer spreads over all positions
-		Assert.assertEquals(0, indexer.getIdx(1));
-		Assert.assertEquals(10, indexer.getIdx(11));
+		Assertions.assertEquals(0, indexer.getIdx(1));
+		Assertions.assertEquals(10, indexer.getIdx(11));
 		
 		// Correctly wraps around when end of array is reached
-		Assert.assertEquals(0, indexer.getIdx(11, 1));
+		Assertions.assertEquals(0, indexer.getIdx(11, 1));
 	}
 	
 	@Test
@@ -143,20 +143,20 @@ public class OffHeapIndexerTest {
 		final long positions = 536870912L;
 		
 		final Indexer indexer = new OffHeapDiskFPSet.BitshiftingIndexer(positions, fpBits);
-		Assert.assertEquals(0, indexer.getIdx(9223371952792813846L, 5));
+		Assertions.assertEquals(0, indexer.getIdx(9223371952792813846L, 5));
 	}
 	
 	private void doTest(final int fpBits, final long positions, final int logPos, final Indexer indexer) {
-		Assert.assertTrue(Double.compare(Math.pow(2, logPos - fpBits), positions) == 0);
+		Assertions.assertTrue(Double.compare(Math.pow(2, logPos - fpBits), positions) == 0);
 		
-		Assert.assertEquals(fpBits, Long.numberOfLeadingZeros((positions << (Long.SIZE - logPos)) - 1));
+		Assertions.assertEquals(fpBits, Long.numberOfLeadingZeros((positions << (Long.SIZE - logPos)) - 1));
 		
 		for (long l = 0; l < positions; l++) {
 			final long fp = l << (Long.SIZE - logPos);
-			Assert.assertEquals(l, indexer.getIdx(fp));
+			Assertions.assertEquals(l, indexer.getIdx(fp));
 			final long fpNext = ((l+1L) << (Long.SIZE - logPos)) - 1;
-			Assert.assertEquals(l, indexer.getIdx(fpNext));
+			Assertions.assertEquals(l, indexer.getIdx(fpNext));
 		}
-		Assert.assertEquals(0, indexer.getIdx(positions << (Long.SIZE - logPos)));
+		Assertions.assertEquals(0, indexer.getIdx(positions << (Long.SIZE - logPos)));
 	}
 }

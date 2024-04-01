@@ -65,7 +65,7 @@ public abstract class DistributedTLCTestCase extends CommonTestCase {
     
 	@Before
 	public void setUp() {
-		Assume.assumeTrue("DistributedTLCTestCase broken with OffHeapDiskFPSet.", false);
+		Assumptions.assumeTrue("DistributedTLCTestCase broken with OffHeapDiskFPSet.", false);
 		// Remember the original security manager and have it replaced with this
 		// custom one. Contrary to the original, this security manager
 		// intercepts calls to System.exit(int) and throws an exception instead
@@ -126,7 +126,7 @@ public abstract class DistributedTLCTestCase extends CommonTestCase {
 		try {
 			latch.await();
 		} catch (InterruptedException e) {
-			Assert.fail();
+			Assertions.fail();
 		}
 	}
 	

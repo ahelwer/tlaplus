@@ -56,7 +56,7 @@ public class OffHeapDiskFPSetTest {
 	
 	@Before
 	public void setup() {
-		Assume.assumeTrue(TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86_64);
+		Assumptions.assumeTrue(TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86_64);
 	}
 
 //	@Test

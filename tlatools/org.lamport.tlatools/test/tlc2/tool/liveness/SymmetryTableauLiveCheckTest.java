@@ -106,7 +106,7 @@ public class SymmetryTableauLiveCheckTest {
 		nexts.put(u);
 		lc.addNextState(null, s, s.fingerPrint(), nexts);
 		
-		Assert.fail("finish incomplete test! Assertions below are partially bogus.");
+		Assertions.fail("finish incomplete test! Assertions below are partially bogus.");
 		
 		assertEquals(2, diskGraph.getNode(v.fingerPrint(), 0).succSize());
 		assertEquals(0, diskGraph.getNode(v.fingerPrint(), 1).succSize());
@@ -256,7 +256,7 @@ public class SymmetryTableauLiveCheckTest {
 		assertEquals(0, diskGraph.getNode(u.fingerPrint(), 1).succSize());
 		assertEquals(0, diskGraph.getNode(u.fingerPrint(), 2).succSize());
 		
-		Assert.fail("finish incomplete test! Assertions below are partially bogus.");
+		Assertions.fail("finish incomplete test! Assertions below are partially bogus.");
 		
 		//TODO GN are equals in terms of <<state, tidx>> but not necessarily transitions
 		assertEquals(diskGraph.getNode(s1.fingerPrint(), 0), diskGraph.getNode(s.fingerPrint(), 0));

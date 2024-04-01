@@ -156,18 +156,18 @@ public class BufferedRandomAccessFileTest {
 			raf.seek(0);
 
 			// data is buffered, so we don't see the new writes
-			Assert.assertEquals(1, raf.read());
-			Assert.assertEquals(2, raf.read());
+			Assertions.assertEquals(1, raf.read());
+			Assertions.assertEquals(2, raf.read());
 
 			// invalidate the buffer --> now we see the new writes
 			raf.invalidateBufferedData();
-			Assert.assertEquals(30, raf.read());
+			Assertions.assertEquals(30, raf.read());
 
 			// indeed, we can see *all* of them
 			raf.seek(0);
-			Assert.assertEquals(10, raf.read());
-			Assert.assertEquals(20, raf.read());
-			Assert.assertEquals(30, raf.read());
+			Assertions.assertEquals(10, raf.read());
+			Assertions.assertEquals(20, raf.read());
+			Assertions.assertEquals(30, raf.read());
 		}
 	}
 }

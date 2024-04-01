@@ -93,7 +93,7 @@ public class Github432Test extends ModelCheckerTestCase {
 		} catch (final Exception e) {
 			revertConfigFile();
 			
-			Assert.fail(e.getMessage());
+			Assertions.fail(e.getMessage());
 		}
 	}
 	
@@ -108,11 +108,11 @@ public class Github432Test extends ModelCheckerTestCase {
 	}
 	
 	private void compareToExpectedResults(final String[] array) {
-		Assert.assertNotNull("Reported parameters should not be null.", array);
-		Assert.assertEquals("Expected warnings should be the same cardinality of the reported parameters encountered.",
+		Assertions.assertNotNull("Reported parameters should not be null.", array);
+		Assertions.assertEquals("Expected warnings should be the same cardinality of the reported parameters encountered.",
 							expectedWarnings.length, array.length);
 		for (int i = 0; i < array.length; i++) {
-			Assert.assertEquals(expectedWarnings[i], array[i]);
+			Assertions.assertEquals(expectedWarnings[i], array[i]);
 		}
 	}
 	
@@ -121,7 +121,7 @@ public class Github432Test extends ModelCheckerTestCase {
 		if (expectedWarnings != null) {
 			compareToExpectedResults((String[])recorder.getRecords(EC.TLC_SYMMETRY_SET_TOO_SMALL).get(0));
 		} else {
-			Assert.assertFalse(recorder.recorded(EC.TLC_SYMMETRY_SET_TOO_SMALL));
+			Assertions.assertFalse(recorder.recorded(EC.TLC_SYMMETRY_SET_TOO_SMALL));
 		}
 	}
 	
@@ -130,7 +130,7 @@ public class Github432Test extends ModelCheckerTestCase {
 		if (expectedWarnings != null) {
 			compareToExpectedResults((String[])recorder.getRecords(EC.TLC_SYMMETRY_SET_TOO_SMALL).get(0));
 		} else {
-			Assert.assertFalse(recorder.recorded(EC.TLC_SYMMETRY_SET_TOO_SMALL));
+			Assertions.assertFalse(recorder.recorded(EC.TLC_SYMMETRY_SET_TOO_SMALL));
 		}
 	}
 	
@@ -139,7 +139,7 @@ public class Github432Test extends ModelCheckerTestCase {
 		if (expectedWarnings != null) {
 			compareToExpectedResults((String[])recorder.getRecords(EC.TLC_SYMMETRY_SET_TOO_SMALL).get(0));
 		} else {
-			Assert.assertFalse(recorder.recorded(EC.TLC_SYMMETRY_SET_TOO_SMALL));
+			Assertions.assertFalse(recorder.recorded(EC.TLC_SYMMETRY_SET_TOO_SMALL));
 		}
 	}
 	
@@ -148,7 +148,7 @@ public class Github432Test extends ModelCheckerTestCase {
 		if (expectedWarnings != null) {
 			compareToExpectedResults((String[])recorder.getRecords(EC.TLC_SYMMETRY_SET_TOO_SMALL).get(0));
 		} else {
-			Assert.assertFalse(recorder.recorded(EC.TLC_SYMMETRY_SET_TOO_SMALL));
+			Assertions.assertFalse(recorder.recorded(EC.TLC_SYMMETRY_SET_TOO_SMALL));
 		}
 	}
 	
@@ -157,14 +157,14 @@ public class Github432Test extends ModelCheckerTestCase {
 		final File backup = new File(BASE_DIR + File.separator + TEST_MODEL + CONFIG_FILE_BACKUP);
 		
 		if (backup.exists()) {
-			Assert.fail("Github432 test state is incoherent: the backup file already exists at "
+			Assertions.fail("Github432 test state is incoherent: the backup file already exists at "
 							+ backup.getAbsolutePath());
 		}
 		
 		try {
 			Files.move(configFile.toPath(), backup.toPath(), StandardCopyOption.ATOMIC_MOVE);
 		} catch (final IOException e) {
-			Assert.fail(e.getMessage());
+			Assertions.fail(e.getMessage());
 		}
 		
 		try {
@@ -203,7 +203,7 @@ public class Github432Test extends ModelCheckerTestCase {
 			
 			revertConfigFile();
 			
-			Assert.fail(e.getMessage());
+			Assertions.fail(e.getMessage());
 		}
 	}
 	
@@ -216,7 +216,7 @@ public class Github432Test extends ModelCheckerTestCase {
 			try {
 				Files.move(backup.toPath(), configFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			} catch (final IOException e) {
-				Assert.fail(e.getMessage());
+				Assertions.fail(e.getMessage());
 			}
 		}
 	}

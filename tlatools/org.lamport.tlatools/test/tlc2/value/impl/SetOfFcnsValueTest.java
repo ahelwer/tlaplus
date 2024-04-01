@@ -42,7 +42,7 @@ import org.junit.Test;
 
 import tlc2.util.FP64;
 import tlc2.value.impl.SetOfFcnsValue.SubsetEnumerator;
-import util.Assert.TLCRuntimeException;
+import util.Assertions.TLCRuntimeException;
 
 public class SetOfFcnsValueTest {
 

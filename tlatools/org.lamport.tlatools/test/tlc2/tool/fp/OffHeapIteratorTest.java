@@ -12,7 +12,7 @@ public class OffHeapIteratorTest {
 	
 	@Before
 	public void setup() {
-		Assume.assumeTrue(LongArray.isSupported());
+		Assumptions.assumeTrue(LongArray.isSupported());
 	}
 
 	@Test

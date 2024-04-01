@@ -58,7 +58,7 @@ public class FileClassLoader extends ClassLoader {
       System.err.println(c);
     }
     catch (Exception e) {
-      // Assert.printStack();
+      // Assertions.printStack();
       System.err.println("Error: " + e.getMessage());
     }
   }

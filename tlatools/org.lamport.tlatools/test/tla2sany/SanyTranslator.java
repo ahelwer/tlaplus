@@ -378,7 +378,7 @@ public class SanyTranslator {
 	 * @return The AST node equivalent to the given identifier.
 	 */
 	private static AstNode id(SyntaxTreeNode input) {
-		Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, input.getKind());
+		Assertions.assertEquals(TLAplusParserConstants.IDENTIFIER, input.getKind());
 		switch (input.getImage()) {
 			case "TRUE": return Kind.BOOLEAN.asNode();
 			case "FALSE": return Kind.BOOLEAN.asNode();
@@ -669,7 +669,7 @@ public class SanyTranslator {
 				throw new ParseException(String.format("Unhandled conversion from kind %d image %s", node.getKind(), node.getImage()), 0);
 			}
 		}
-		Assert.assertTrue(parser.isAtEnd());
+		Assertions.assertTrue(parser.isAtEnd());
 	}
 	
 	/**
@@ -707,10 +707,10 @@ public class SanyTranslator {
 				return module;
 			} case SyntaxTreeConstants.N_EndModule: { // ====
 				parser.consume(TLAplusParserConstants.END_MODULE);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.DOUBLE_LINE.asNode();
 			} case TLAplusParserConstants.SEPARATOR: { // ----
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.SINGLE_LINE.asNode();
 			} case SyntaxTreeConstants.N_ParamDeclaration: { // CONSTANTS x, f(_, _)
 				AstNode constants = Kind.CONSTANT_DECLARATION.asNode();
@@ -722,23 +722,23 @@ public class SanyTranslator {
 						SyntaxTreeConstants.N_InfixDecl,
 						SyntaxTreeConstants.N_PostfixDecl));
 				} while (parser.match(TLAplusParserConstants.COMMA));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return constants;
 			} case SyntaxTreeConstants.N_VariableDeclaration: { // VARIABLES x, y, z
 				AstNode variables = Kind.VARIABLE_DECLARATION.asNode();
 				parser.consume(TLAplusParserConstants.VARIABLE);
 				variables.addChildren(parseCommaSeparatedIds(parser));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return variables;
 			} case SyntaxTreeConstants.N_Instance: { // INSTANCE M, LOCAL INSTANCE N, etc.
 				if (parser.match(TLAplusParserConstants.LOCAL)) {
 					AstNode localDefn = Kind.LOCAL_DEFINITION.asNode();
 					localDefn.addChild(parser.translate(SyntaxTreeConstants.N_NonLocalInstance));
-					Assert.assertTrue(parser.isAtEnd());
+					Assertions.assertTrue(parser.isAtEnd());
 					return localDefn;
 				} else {
 					AstNode instance = parser.translate(SyntaxTreeConstants.N_NonLocalInstance);
-					Assert.assertTrue(parser.isAtEnd());
+					Assertions.assertTrue(parser.isAtEnd());
 					return instance;
 				}
 			} case SyntaxTreeConstants.N_NonLocalInstance: { // INSTANCE M WITH a <- b, c <- d
@@ -750,14 +750,14 @@ public class SanyTranslator {
 						instance.addChild(parser.translate(SyntaxTreeConstants.N_Substitution));
 					} while (parser.match(TLAplusParserConstants.COMMA));
 				}
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return instance;
 			} case SyntaxTreeConstants.N_ModuleDefinition: { // M == INSTANCE O WITH x <- y
 				AstNode moduleDefinition = Kind.MODULE_DEFINITION.asNode();
 				parser.flatTranslate(moduleDefinition, SyntaxTreeConstants.N_IdentLHS);
 				moduleDefinition.addChild(parser.translate(TLAplusParserConstants.DEF));
 				moduleDefinition.addChild(parser.translate(SyntaxTreeConstants.N_NonLocalInstance));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return moduleDefinition;
 			} case SyntaxTreeConstants.N_Substitution: { // x <- y
 				AstNode substitution = Kind.SUBSTITUTION.asNode();
@@ -768,10 +768,10 @@ public class SanyTranslator {
 						SyntaxTreeConstants.N_PostfixOp));
 				substitution.addChild(parser.translate(TLAplusParserConstants.SUBSTITUTE));
 				substitution.addChild(parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return substitution;
 			} case TLAplusParserConstants.SUBSTITUTE: { // <-
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.GETS.asNode();
 			} case SyntaxTreeConstants.N_OperatorDefinition: { // op(a, b) == expr
 				AstNode operatorDefinition = Kind.OPERATOR_DEFINITION.asNode();
@@ -782,7 +782,7 @@ public class SanyTranslator {
 						SyntaxTreeConstants.N_PostfixLHS);
 				operatorDefinition.addChild(parser.translate(TLAplusParserConstants.DEF));
 				operatorDefinition.addField("definition", parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return operatorDefinition;
 			} case SyntaxTreeConstants.N_IdentDecl: { // f, f(_, _), etc.
 				parser.consume(TLAplusParserConstants.IDENTIFIER);
@@ -796,7 +796,7 @@ public class SanyTranslator {
 					op.addField("parameter", parser.translate(TLAplusParserConstants.US));
 				} while (parser.match(TLAplusParserConstants.COMMA));
 				parser.consume(TLAplusParserConstants.RBR);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return op;
 			} case SyntaxTreeConstants.N_FunctionDefinition: { // f[x, y \in Nat, z \in Real] == ...
 				AstNode fn = Kind.FUNCTION_DEFINITION.asNode();
@@ -809,51 +809,51 @@ public class SanyTranslator {
 				parser.consume(TLAplusParserConstants.RSB);
 				fn.addChild(parser.translate(TLAplusParserConstants.DEF));
 				fn.addField("definition", parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return fn;
 			} case SyntaxTreeConstants.N_Recursive: { // RECURSIVE F(_, _), G(_)
 				AstNode recursiveDeclaration = Kind.RECURSIVE_DECLARATION.asNode();
 				parser.consume(TLAplusParserConstants.RECURSIVE);
 				recursiveDeclaration.addChildren(parseCommaSeparatedNodes(parser, "operator declaration"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return recursiveDeclaration;
 			} case TLAplusParserConstants.US: { // _
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.PLACEHOLDER.asNode();
 			} case TLAplusParserConstants.DEF: { // ==
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.DEF_EQ.asNode();
 			} case SyntaxTreeConstants.N_ConjList: { // Multi-line aligned conjunction list
 				AstNode conjList = Kind.CONJ_LIST.asNode();
 				do {
 					conjList.addChild(parser.translate(SyntaxTreeConstants.N_ConjItem));
 				} while (!parser.isAtEnd());
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return conjList;
 			} case SyntaxTreeConstants.N_ConjItem: { // /\ expr
 				AstNode conjItem = Kind.CONJ_ITEM.asNode();
 				conjItem.addChild(parser.translate(TLAplusParserConstants.AND));
 				conjItem.addChild(parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return conjItem;
 			} case TLAplusParserConstants.AND: { // /\
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.BULLET_CONJ.asNode();
 			} case SyntaxTreeConstants.N_DisjList: { // Multi-line aligned disjunction list
 				AstNode disjList = Kind.DISJ_LIST.asNode();
 				do {
 					disjList.addChild(parser.translate(SyntaxTreeConstants.N_DisjItem));
 				} while (!parser.isAtEnd());
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return disjList;
 			} case SyntaxTreeConstants.N_DisjItem: { // \/ expr
 				AstNode disjItem = Kind.DISJ_ITEM.asNode();
 				disjItem.addChild(parser.translate(TLAplusParserConstants.OR));
 				disjItem.addChild(parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return disjItem;
 			} case TLAplusParserConstants.OR: { // \/
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.BULLET_DISJ.asNode();
 			} case SyntaxTreeConstants.N_GeneralId: { // foo!bar!baz!x
 				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
@@ -861,7 +861,7 @@ public class SanyTranslator {
 					AstNode subexpr = Kind.SUBEXPRESSION.asNode();
 					subexpr.addChild(translate(prefix));
 					subexpr.addChild(Kind.SUBEXPR_TREE_NAV.asNode().addChild(translate(parser.previous())));
-					Assert.assertTrue(parser.isAtEnd());
+					Assertions.assertTrue(parser.isAtEnd());
 					return subexpr;
 				} else {
 					parser.consume(
@@ -873,7 +873,7 @@ public class SanyTranslator {
 						TLAplusParserConstants.ProofImplicitStepLexeme);
 				}
 				AstNode op = translate(parser.previous());
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				if (0 == prefix.getHeirs().length) {
 					return op;
 				}
@@ -885,7 +885,7 @@ public class SanyTranslator {
 				do {
 					subexpr.addChild(parser.translate(SyntaxTreeConstants.N_IdPrefixElement));
 				} while (!parser.isAtEnd());
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return subexpr;
 			} case SyntaxTreeConstants.N_IdPrefixElement: { // A!
 				AstNode component = null;
@@ -908,7 +908,7 @@ public class SanyTranslator {
 						args.addChild(argParser.translate("op or expression"));
 					} while (argParser.match(TLAplusParserConstants.COMMA));
 					argParser.consume(TLAplusParserConstants.RBR);
-					Assert.assertTrue(argParser.isAtEnd());
+					Assertions.assertTrue(argParser.isAtEnd());
 					component.addChild(args);
 				} else if (parser.match(SyntaxTreeConstants.N_StructOp)) {
 					component = Kind.SUBEXPR_TREE_NAV.asNode();
@@ -919,14 +919,14 @@ public class SanyTranslator {
 						TLAplusParserConstants.ProofImplicitStepLexeme);
 				}
 				parser.consume(TLAplusParserConstants.BANG);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return component;
 			} case SyntaxTreeConstants.N_StructOp: { // op!<<!>>!:!@
 				if (parser.match(SyntaxTreeConstants.N_Number)) {
-					Assert.assertTrue(parser.isAtEnd());
+					Assertions.assertTrue(parser.isAtEnd());
 					return Kind.CHILD_ID.asNode();
 				}
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				String image = node.getImage();
 				switch (image) {
 					case "<<": return Kind.LANGLE_BRACKET.asNode();
@@ -936,11 +936,11 @@ public class SanyTranslator {
 					default: throw new ParseException(String.format("Unknown subexpression tree nav symbol %s", image), parser.current);
 				}
 			} case TLAplusParserConstants.IDENTIFIER: { // ex. x
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return id(node);
 			} case SyntaxTreeConstants.N_Number: { // 1, 3, 100, etc.
 				String image = parser.consume(TLAplusParserConstants.NUMBER_LITERAL).image.toString();
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				if (image.matches("\\d+")) {
 					return Kind.NAT_NUMBER.asNode();
 				} else if (image.matches("\\\\[bB][0|1]+")) {
@@ -962,7 +962,7 @@ public class SanyTranslator {
 				parser.consume(TLAplusParserConstants.NUMBER_LITERAL);
 				parser.consume(TLAplusParserConstants.DOT);
 				parser.consume(TLAplusParserConstants.NUMBER_LITERAL);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.REAL_NUMBER.asNode();
 			} case SyntaxTreeConstants.N_String: { // ex. "foobar"
 				AstNode string = Kind.STRING.asNode();
@@ -978,7 +978,7 @@ public class SanyTranslator {
 						string.addChild(Kind.ESCAPE_CHAR.asNode());
 					}
 				}
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return string;
 			} case SyntaxTreeConstants.N_Tuple: { // ex. <<1, 2, 3>>
 				AstNode tuple = Kind.TUPLE_LITERAL.asNode();
@@ -987,16 +987,16 @@ public class SanyTranslator {
 					tuple.addChildren(parseCommaSeparatedNodes(parser, "expression"));
 				}
 				tuple.addChild(parser.translate(TLAplusParserConstants.RAB));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return tuple;
 			} case TLAplusParserConstants.LAB: { // <<
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.LANGLE_BRACKET.asNode();
 			} case TLAplusParserConstants.RAB: { // >>
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.RANGLE_BRACKET.asNode();
 			} case TLAplusParserConstants.ARAB: { // >>_
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.RANGLE_BRACKET_SUB.asNode();
 			} case SyntaxTreeConstants.N_SetEnumerate: { // {1, 3, 5}
 				AstNode setLiteral = Kind.FINITE_SET_LITERAL.asNode();
@@ -1005,7 +1005,7 @@ public class SanyTranslator {
 					setLiteral.addChildren(parseCommaSeparatedNodes(parser, "expression"));
 				}
 				parser.consume(TLAplusParserConstants.RBC);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return setLiteral;
 			} case SyntaxTreeConstants.N_SubsetOf: { // {x \in S : P(x)}
 				AstNode setFilter = Kind.SET_FILTER.asNode();
@@ -1024,7 +1024,7 @@ public class SanyTranslator {
 				parser.consume(TLAplusParserConstants.COLON);
 				setFilter.addField("filter", parser.translate("expression"));
 				parser.consume(TLAplusParserConstants.RBC);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return setFilter;
 			} case SyntaxTreeConstants.N_SetOfAll: { // {f(x) : x \in Nat}
 				AstNode setMap = Kind.SET_MAP.asNode();
@@ -1035,7 +1035,7 @@ public class SanyTranslator {
 					setMap.addField("generator", parser.translate(SyntaxTreeConstants.N_QuantBound));
 				} while (parser.match(TLAplusParserConstants.COMMA));
 				parser.consume(TLAplusParserConstants.RBC);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return setMap;
 			} case SyntaxTreeConstants.N_BoundQuant: { // \A x, y \in Nat, z \in Real: expr
 				AstNode quant = Kind.BOUNDED_QUANTIFICATION.asNode();
@@ -1059,7 +1059,7 @@ public class SanyTranslator {
 				} while (parser.match(TLAplusParserConstants.COMMA));
 				parser.consume(TLAplusParserConstants.COLON);
 				quant.addField("expression", parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return quant;
 			} case SyntaxTreeConstants.N_UnboundOrBoundChoose: { // CHOOSE x \in Nat : x > 0
 				AstNode choose = Kind.CHOOSE.asNode();
@@ -1072,19 +1072,19 @@ public class SanyTranslator {
 				parser.flatTranslate(choose, SyntaxTreeConstants.N_MaybeBound);
 				parser.consume(TLAplusParserConstants.COLON);
 				choose.addField("expression", parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return choose;
 			} case TLAplusParserConstants.EXISTS: { // \E
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.EXISTS.asNode();
 			} case TLAplusParserConstants.FORALL: { // \A
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.FORALL.asNode();
 			} case TLAplusParserConstants.T_FORALL: { // \AA
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.TEMPORAL_FORALL.asNode();
 			} case TLAplusParserConstants.T_EXISTS: { // \EE
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.TEMPORAL_EXISTS.asNode();
 			} case SyntaxTreeConstants.N_QuantBound: { // x, y \in Nat
 				AstNode quantBound = Kind.QUANTIFIER_BOUND.asNode();
@@ -1099,11 +1099,11 @@ public class SanyTranslator {
 				parser.consume(SyntaxTreeConstants.T_IN);
 				quantBound.addChild(Kind.SET_IN.asNode());
 				quantBound.addField("set", parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return quantBound;
 			} case SyntaxTreeConstants.N_IdentifierTuple: { // <<a, b, c>>
 				AstNode tuple = parseTupleOfIdentifiers(parser);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return tuple;
 			} case SyntaxTreeConstants.N_FcnConst: { // [n \in Nat |-> 2*n]
 				AstNode function = Kind.FUNCTION_LITERAL.asNode();
@@ -1114,10 +1114,10 @@ public class SanyTranslator {
 				function.addChild(parser.translate(TLAplusParserConstants.MAPTO));
 				function.addChild(parser.translate("expression"));
 				parser.consume(TLAplusParserConstants.RSB);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return function;
 			} case TLAplusParserConstants.MAPTO: { // |->
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.ALL_MAP_TO.asNode();
 			} case SyntaxTreeConstants.N_SetOfFcns: { // [S -> P]
 				AstNode setOfFunctions = Kind.SET_OF_FUNCTIONS.asNode();
@@ -1127,7 +1127,7 @@ public class SanyTranslator {
 				setOfFunctions.addChild(Kind.MAPS_TO.asNode());
 				setOfFunctions.addChild(parser.translate("expression"));
 				parser.consume(TLAplusParserConstants.RSB);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return setOfFunctions;
 			} case SyntaxTreeConstants.N_Except: { // [f EXCEPT ![x] = y]
 				AstNode except = Kind.EXCEPT.asNode();
@@ -1138,7 +1138,7 @@ public class SanyTranslator {
 					except.addChild(parser.translate(SyntaxTreeConstants.N_ExceptSpec));
 				} while (parser.match(TLAplusParserConstants.COMMA));
 				parser.consume(TLAplusParserConstants.RSB);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return except;
 			} case SyntaxTreeConstants.N_ExceptSpec: { // ![x] = y
 				AstNode update = Kind.EXCEPT_UPDATE.asNode();
@@ -1149,20 +1149,20 @@ public class SanyTranslator {
 				} while (!parser.match(SyntaxTreeConstants.T_EQUAL));
 				update.addField("update_specifier", updateSpec);
 				update.addField("new_val", parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return update;
 			} case SyntaxTreeConstants.N_ExceptComponent: { // [x]
 				if (parser.match(TLAplusParserConstants.LSB)) {
 					AstNode update = Kind.EXCEPT_UPDATE_FN_APPL.asNode();
 					update.addChildren(parseCommaSeparatedNodes(parser, "expression"));
 					parser.consume(TLAplusParserConstants.RSB);
-					Assert.assertTrue(parser.isAtEnd());
+					Assertions.assertTrue(parser.isAtEnd());
 					return update;
 				} else {
 					AstNode update = Kind.EXCEPT_UPDATE_RECORD_FIELD.asNode();
 					parser.consume(TLAplusParserConstants.DOT);
 					update.addChild(parser.translate(TLAplusParserConstants.IDENTIFIER));
-					Assert.assertTrue(parser.isAtEnd());
+					Assertions.assertTrue(parser.isAtEnd());
 					return update;
 				}
 			} case SyntaxTreeConstants.N_RcdConstructor: { // [foo |-> 1, bar |-> 2]
@@ -1172,7 +1172,7 @@ public class SanyTranslator {
 					parser.flatTranslate(record, SyntaxTreeConstants.N_FieldVal);
 				} while (parser.match(TLAplusParserConstants.COMMA));
 				parser.consume(TLAplusParserConstants.RSB);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return record;
 			} case SyntaxTreeConstants.N_SetOfRcds: { // [foo : Nat, bar : Real]
 				AstNode record = Kind.SET_OF_RECORDS.asNode();
@@ -1181,14 +1181,14 @@ public class SanyTranslator {
 					parser.flatTranslate(record, SyntaxTreeConstants.N_FieldSet);
 				} while (parser.match(TLAplusParserConstants.COMMA));
 				parser.consume(TLAplusParserConstants.RSB);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return record;
 			} case SyntaxTreeConstants.N_RecordComponent: { // foo.bar
 				AstNode record = Kind.RECORD_VALUE.asNode();
 				record.addChild(parser.translate("expression"));
 				parser.consume(TLAplusParserConstants.DOT);
 				record.addChild(parser.translate(TLAplusParserConstants.IDENTIFIER));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return record;
 			} case SyntaxTreeConstants.N_IfThenElse: { // IF x THEN y ELSE z
 				AstNode ite = Kind.IF_THEN_ELSE.asNode();
@@ -1198,7 +1198,7 @@ public class SanyTranslator {
 				ite.addField("then", parser.translate("expression"));
 				parser.consume(TLAplusParserConstants.ELSE);
 				ite.addField("else", parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return ite;
 			} case SyntaxTreeConstants.N_Case: { // CASE A -> B [] C -> D [] OTHER -> E
 				AstNode cases = Kind.CASE.asNode();
@@ -1208,7 +1208,7 @@ public class SanyTranslator {
 					cases.addChild(Kind.CASE_BOX.asNode());
 					cases.addChild(parser.translate(SyntaxTreeConstants.N_CaseArm, SyntaxTreeConstants.N_OtherArm));
 				}
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return cases;
 			} case SyntaxTreeConstants.N_CaseArm: { // P -> Q
 				AstNode caseArm = Kind.CASE_ARM.asNode();
@@ -1216,7 +1216,7 @@ public class SanyTranslator {
 				parser.consume(TLAplusParserConstants.ARROW);
 				caseArm.addChild(Kind.CASE_ARROW.asNode());
 				caseArm.addChild(parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return caseArm;
 			} case SyntaxTreeConstants.N_OtherArm: { // OTHER -> expr
 				AstNode otherArm = Kind.OTHER_ARM.asNode();
@@ -1224,7 +1224,7 @@ public class SanyTranslator {
 				parser.consume(TLAplusParserConstants.ARROW);
 				otherArm.addChild(Kind.CASE_ARROW.asNode());
 				otherArm.addChild(parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return otherArm;
 			} case SyntaxTreeConstants.N_ActionExpr: { // [expr]_subexpr or <<expr>>_subexpr
 				AstNode actionExpr = null;
@@ -1240,7 +1240,7 @@ public class SanyTranslator {
 					actionExpr.addChild(parser.translate(TLAplusParserConstants.ARAB));
 					actionExpr.addChild(parser.translate("subscript expression"));
 				}
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return actionExpr;
 			} case SyntaxTreeConstants.N_FairnessExpr: { // WF_x(action)
 				AstNode fairness = Kind.FAIRNESS.asNode();
@@ -1249,7 +1249,7 @@ public class SanyTranslator {
 				parser.consume(TLAplusParserConstants.LBR);
 				fairness.addChild(parser.translate("expression"));
 				parser.consume(TLAplusParserConstants.RBR);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return fairness;
 			} case SyntaxTreeConstants.N_LetIn: { // LET f == x IN expr
 				AstNode letIn = Kind.LET_IN.asNode();
@@ -1257,14 +1257,14 @@ public class SanyTranslator {
 				parser.flatTranslate(letIn, SyntaxTreeConstants.N_LetDefinitions);
 				parser.consume(TLAplusParserConstants.LETIN);
 				letIn.addField("expression", parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return letIn;
 			} case SyntaxTreeConstants.N_ParenExpr: { // ( expr )
 				AstNode paren = Kind.PARENTHESES.asNode();
 				parser.consume(TLAplusParserConstants.LBR);
 				paren.addChild(parser.translate("expression"));
 				parser.consume(TLAplusParserConstants.RBR);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return paren;
 			} case SyntaxTreeConstants.N_Times: { // S \X P \X Q
 				List<AstNode> exprs = new ArrayList<AstNode>();
@@ -1280,7 +1280,7 @@ public class SanyTranslator {
 					op.addField("rhs", exprs.get(i));
 					lhs = op;
 				}
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return lhs;
 			} case SyntaxTreeConstants.N_FcnAppl: { // f[x,y,z]
 				AstNode functionEvaluation = Kind.FUNCTION_EVALUATION.asNode();
@@ -1288,7 +1288,7 @@ public class SanyTranslator {
 				parser.consume(TLAplusParserConstants.LSB);
 				functionEvaluation.addChildren(parseCommaSeparatedNodes(parser, "expression"));
 				parser.consume(TLAplusParserConstants.RSB);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return functionEvaluation;
 			} case SyntaxTreeConstants.N_OpApplication: { // f(a, b, c) or nonfix op
 				SyntaxTreeNode id = parser.consume(SyntaxTreeConstants.N_GeneralId);
@@ -1299,7 +1299,7 @@ public class SanyTranslator {
 						SyntaxTreeConstants.N_NonExpPrefixOp,
 						SyntaxTreeConstants.N_InfixOp,
 						SyntaxTreeConstants.N_PostfixOp);
-				Assert.assertTrue(idParser.isAtEnd());
+				Assertions.assertTrue(idParser.isAtEnd());
 				AstNode op = null;
 				switch (nameOrSymbol.kind) {
 					case IDENTIFIER_REF: {
@@ -1315,7 +1315,7 @@ public class SanyTranslator {
 					}
 				}
 				parser.flatTranslate(op, SyntaxTreeConstants.N_OpArgs);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				if (prefix.getHeirs().length > 0) {
 					AstNode prefixedOp = Kind.PREFIXED_OP.asNode();
 					prefixedOp.addField("prefix", translate(prefix));
@@ -1328,7 +1328,7 @@ public class SanyTranslator {
 				AstNode op = Kind.OPERATOR_DECLARATION.asNode();
 				op.addField("name", parser.translate(SyntaxTreeConstants.N_NonExpPrefixOp));
 				op.addChild(parser.translate(TLAplusParserConstants.US));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return op;
 			} case SyntaxTreeConstants.N_PrefixExpr: { // Prefix op application, full expression ex. SUBSET x
 				AstNode boundPrefixOp = Kind.BOUND_PREFIX_OP.asNode();
@@ -1339,31 +1339,31 @@ public class SanyTranslator {
 					boundPrefixOp.addField("symbol", parser.translate(SyntaxTreeConstants.N_GenPrefixOp));
 				}
 				boundPrefixOp.addField("rhs", parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return boundPrefixOp;
 			} case SyntaxTreeConstants.N_GenPrefixOp: { // Prefix op application, just operator ex. SUBSET
 				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
 				// ID prefix is holdover from TLA+ v1, not used in v2; superseded by nonfix ops
-				Assert.assertEquals(0, prefix.getHeirs().length);
+				Assertions.assertEquals(0, prefix.getHeirs().length);
 				SyntaxTreeNode op = parser.consume(SyntaxTreeConstants.N_PrefixOp);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return prefixOpFromString(op.getImage());
 			} case SyntaxTreeConstants.N_GenNonExpPrefixOp: { // Prefix op as higher-order op parameter
 				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
-				Assert.assertEquals(0, prefix.getHeirs().length);
+				Assertions.assertEquals(0, prefix.getHeirs().length);
 				AstNode op = parser.translate(SyntaxTreeConstants.N_NonExpPrefixOp);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return op;
 			} case SyntaxTreeConstants.N_NonExpPrefixOp: { // Prefix op symbol; declaration, nonfix, or ref
 				AstNode op = Kind.PREFIX_OP_SYMBOL.asNode();
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return op.addChild(prefixOpFromString(node.image.toString()));
 			} case SyntaxTreeConstants.N_InfixDecl: { // _ + _, _ - _
 				AstNode op = Kind.OPERATOR_DECLARATION.asNode();
 				op.addChild(parser.translate(TLAplusParserConstants.US));
 				op.addField("name", parser.translate(SyntaxTreeConstants.N_InfixOp));
 				op.addChild(parser.translate(TLAplusParserConstants.US));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return op;
 			} case SyntaxTreeConstants.N_InfixExpr: { // Infix op application, full expression ex. 1 + 2
 				AstNode boundInfixOp = Kind.BOUND_INFIX_OP.asNode();
@@ -1373,30 +1373,30 @@ public class SanyTranslator {
 				SyntaxTreeNode genOp = parser.consume(SyntaxTreeConstants.N_GenInfixOp);
 				SanyReparser genOpParser = new SanyReparser(genOp.getHeirs());
 				SyntaxTreeNode prefix = genOpParser.consume(SyntaxTreeConstants.N_IdPrefix);
-				Assert.assertEquals(0, prefix.getHeirs().length);
+				Assertions.assertEquals(0, prefix.getHeirs().length);
 				SyntaxTreeNode op = genOpParser.consume(SyntaxTreeConstants.N_InfixOp, SyntaxTreeConstants.T_IN);
-				Assert.assertTrue(genOpParser.isAtEnd());
+				Assertions.assertTrue(genOpParser.isAtEnd());
 				boundInfixOp.addField("symbol", infixOpFromString(op.getImage()));
 				boundInfixOp.addField("rhs", parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return boundInfixOp;
 			} case SyntaxTreeConstants.N_GenInfixOp: { // Infix op application, just the symbol ex. +
 				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
 				// ID prefix is holdover from TLA+ v1, not used in v2; superseded by nonfix ops
-				Assert.assertEquals(0, prefix.getHeirs().length);
+				Assertions.assertEquals(0, prefix.getHeirs().length);
 				// Sometimes \in appears as N_InfixOp, and sometimes it appears as T_IN
 				AstNode op = parser.translate(SyntaxTreeConstants.N_InfixOp, SyntaxTreeConstants.T_IN);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return op;
 			} case SyntaxTreeConstants.N_InfixOp: { // Infix op symbol; declaration, nonfix, or ref
 				AstNode op = Kind.INFIX_OP_SYMBOL.asNode();
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return op.addChild(infixOpFromString(node.image.toString()));
 			} case SyntaxTreeConstants.N_PostfixDecl: { // _ ', _ ^+
 				AstNode op = Kind.OPERATOR_DECLARATION.asNode();
 				op.addChild(parser.translate(TLAplusParserConstants.US));
 				op.addField("name", parser.translate(SyntaxTreeConstants.N_PostfixOp));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return op;
 			} case SyntaxTreeConstants.N_PostfixExpr: { // Postfix op application, full expression ex. x^+
 				AstNode boundPostfixOp = Kind.BOUND_POSTFIX_OP.asNode();
@@ -1406,25 +1406,25 @@ public class SanyTranslator {
 				SyntaxTreeNode genOp = parser.consume(SyntaxTreeConstants.N_GenPostfixOp);
 				SanyReparser genOpParser = new SanyReparser(genOp.getHeirs());
 				SyntaxTreeNode prefix = genOpParser.consume(SyntaxTreeConstants.N_IdPrefix);
-				Assert.assertEquals(0, prefix.getHeirs().length);
+				Assertions.assertEquals(0, prefix.getHeirs().length);
 				SyntaxTreeNode op = genOpParser.consume(SyntaxTreeConstants.N_PostfixOp);
-				Assert.assertTrue(genOpParser.isAtEnd());
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(genOpParser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				boundPostfixOp.addField("symbol", postfixOpFromString(op.getImage()));
 				return boundPostfixOp;
 			} case SyntaxTreeConstants.N_GenPostfixOp: { // Postfix op reference, just the symbol ex. ^+
 				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
 				// ID prefix is holdover from TLA+ v1, not used in v2; superseded by nonfix ops
-				Assert.assertEquals(0, prefix.getHeirs().length);
+				Assertions.assertEquals(0, prefix.getHeirs().length);
 				AstNode op = parser.translate(SyntaxTreeConstants.N_PostfixOp);
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return op;
 			} case SyntaxTreeConstants.N_PostfixOp: { // Postfix op symbol; declaration, nonfix, or ref
 				AstNode op = Kind.POSTFIX_OP_SYMBOL.asNode();
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return op.addChild(postfixOpFromString(node.image.toString()));
 			} case SyntaxTreeConstants.T_IN: { // \in as an infix operator
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return Kind.IN.asNode();
 			} case SyntaxTreeConstants.N_Assumption: {
 				AstNode assumption = Kind.ASSUMPTION.asNode();
@@ -1435,7 +1435,7 @@ public class SanyTranslator {
 					assumption.addChild(Kind.DEF_EQ.asNode());
 				}
 				assumption.addChild(parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return assumption;
 			} case SyntaxTreeConstants.N_Lambda: {
 				AstNode lambda = Kind.LAMBDA.asNode();
@@ -1446,7 +1446,7 @@ public class SanyTranslator {
 				} while (parser.match(TLAplusParserConstants.COMMA));
 				parser.consume(TLAplusParserConstants.COLON);
 				lambda.addChild(parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return lambda;
 			} case SyntaxTreeConstants.N_Theorem: { // THEOREM name == ...
 				AstNode theorem = Kind.THEOREM.asNode();
@@ -1460,7 +1460,7 @@ public class SanyTranslator {
 				if (!parser.isAtEnd()) {
 					theorem.addField("proof", parser.translate("proof"));
 				}
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return theorem;
 			} case SyntaxTreeConstants.N_TerminalProof: { // PROOF BY DEF >
 				AstNode proof = Kind.TERMINAL_PROOF.asNode();
@@ -1471,7 +1471,7 @@ public class SanyTranslator {
 				parser.consume(TLAplusParserConstants.BY);
 				parser.match(TLAplusParserConstants.ONLY);
 				proof.addChild(parseUseBody(parser));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return proof;
 			} case SyntaxTreeConstants.N_Proof: { // A series of proof steps
 				AstNode proof = Kind.NON_TERMINAL_PROOF.asNode();
@@ -1484,7 +1484,7 @@ public class SanyTranslator {
 						proof.addChild(translate(parser.previous()));
 					}
 				}
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return proof;
 			} case SyntaxTreeConstants.N_ProofStep: { // <1>a. HAVE x > y
 				AstNode proofStep = Kind.PROOF_STEP.asNode();
@@ -1498,7 +1498,7 @@ public class SanyTranslator {
 				if (!parser.isAtEnd()) {
 					proofStepStatement.addChild(parser.translate("proof"));
 				}
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return proofStep;
 			}
 			case TLAplusParserConstants.ProofStepLexeme: // <1>a (statement or reference)
@@ -1515,37 +1515,37 @@ public class SanyTranslator {
 				do {
 					proof.addChild(parser.translate("expression"));
 				} while (!parser.isAtEnd());
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return proof;
 			} case SyntaxTreeConstants.N_HaveStep: { // HAVE x > y
 				AstNode proof = Kind.HAVE_PROOF_STEP.asNode();
 				parser.consume(TLAplusParserConstants.HAVE);
 				proof.addChild(parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return proof;
 			} case SyntaxTreeConstants.N_WitnessStep: { // WITNESS x > y, y > z, ...
 				AstNode proof = Kind.WITNESS_PROOF_STEP.asNode();
 				parser.consume(TLAplusParserConstants.WITNESS);
 				proof.addChildren(parseCommaSeparatedNodes(parser, "definition or expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return proof;
 			} case SyntaxTreeConstants.N_TakeStep: { // TAKE x, y \in Nat, z \in Real
 				AstNode proof = Kind.TAKE_PROOF_STEP.asNode();
 				parser.consume(TLAplusParserConstants.TAKE);
 				proof.addChildren(parseBoundListOrIdentifierList(parser));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return proof;
 			} case SyntaxTreeConstants.N_AssertStep: { // SUFFICES x \in Real
 				AstNode proof = Kind.SUFFICES_PROOF_STEP.asNode();
 				parser.match(TLAplusParserConstants.SUFFICES);
 				proof.addChild(parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return proof;
 			} case SyntaxTreeConstants.N_CaseStep: { // CASE y < 0
 				AstNode proof = Kind.CASE_PROOF_STEP.asNode();
 				parser.consume(TLAplusParserConstants.CASE);
 				proof.addChild(parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return proof;
 			} case SyntaxTreeConstants.N_PickStep: { // PICK x \in Nat : x > 0
 				AstNode proof = Kind.PICK_PROOF_STEP.asNode();
@@ -1553,13 +1553,13 @@ public class SanyTranslator {
 				proof.addChildren(parseBoundListOrIdentifierList(parser));
 				parser.consume(TLAplusParserConstants.COLON);
 				proof.addChild(parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return proof;
 			} case SyntaxTreeConstants.N_UseOrHide: { // USE A, B DEFS MODULE M, +
 				AstNode proof = Kind.USE_OR_HIDE.asNode();
 				parser.consume(TLAplusParserConstants.USE, TLAplusParserConstants.HIDE);
 				proof.addChild(parseUseBody(parser));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return proof;
 			} case SyntaxTreeConstants.N_AssumeProve: { // ASSUME P PROVE Q
 				AstNode assumeProve = Kind.ASSUME_PROVE.asNode();
@@ -1572,7 +1572,7 @@ public class SanyTranslator {
 						inner.addChild(Kind.IDENTIFIER.asNode());
 						inner.addChild(innerParser.translate(TLAplusParserConstants.COLONCOLON));
 						inner.addChild(innerParser.translate(SyntaxTreeConstants.N_AssumeProve));
-						Assert.assertTrue(innerParser.isAtEnd());
+						Assertions.assertTrue(innerParser.isAtEnd());
 						assumeProve.addField("assumption", inner);
 					} else {
 						assumeProve.addField("assumption", parser.translate("expression or new statement"));
@@ -1603,7 +1603,7 @@ public class SanyTranslator {
 					newStatement.addChild(Kind.SET_IN.asNode());
 					newStatement.addChild(parser.translate("expression"));
 				}
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return newStatement;
 			} case SyntaxTreeConstants.N_Label: { // lbl(a, b) :: expr
 				AstNode label = Kind.LABEL.asNode();
@@ -1616,7 +1616,7 @@ public class SanyTranslator {
 				}
 				label.addChild(parser.translate(TLAplusParserConstants.COLONCOLON));
 				label.addField("expression", parser.translate("expression"));
-				Assert.assertTrue(parser.isAtEnd());
+				Assertions.assertTrue(parser.isAtEnd());
 				return label;
 			} case TLAplusParserConstants.COLONCOLON: { // ::
 				return Kind.LABEL_AS.asNode();

@@ -37,7 +37,7 @@ public class LongVecFingerPrintGenerator extends FingerPrintGenerator {
 				// Make sure set still contains predecessors
 				if (initialized) {
 					final BitVector bitVector = fpSet.containsBlock(predecessors);
-					Assert.assertEquals(batch, batch - bitVector.trueCnt());
+					Assertions.assertEquals(batch, batch - bitVector.trueCnt());
 				}
 
 				// Fill new fingerprints and sort them
@@ -53,7 +53,7 @@ public class LongVecFingerPrintGenerator extends FingerPrintGenerator {
 				collisions += (batch - bitVector.trueCnt());
 			} catch (IOException e) {
 				e.printStackTrace();
-				Assert.fail("Unexpected");
+				Assertions.fail("Unexpected");
 			}
 		}
 		latch.countDown();

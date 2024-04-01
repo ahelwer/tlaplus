@@ -174,29 +174,29 @@ public class MultiFPSetTest {
 		printBinaryString("b00...1", b);
 		
 		FPSet aFPSet = mfps.getFPSet(a);
-		Assert.assertTrue(aFPSet == mfps.getFPSet(b));
+		Assertions.assertTrue(aFPSet == mfps.getFPSet(b));
 		
 		// Initially neither a nor b are in the set.
-		Assert.assertFalse(aFPSet.contains(a));
+		Assertions.assertFalse(aFPSet.contains(a));
 		
-		Assert.assertFalse(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
 
 		// Add a to the set and verify it's in the
 		// set and b isn't.
-		Assert.assertFalse(mfps.put(a));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.put(a));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
 
 		// Add b to the set as well. Now both
 		// are supposed to be set members.
-		Assert.assertFalse(mfps.put(b));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
+		Assertions.assertFalse(mfps.put(b));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
 
-		Assert.assertTrue(aFPSet.contains(a));
-		Assert.assertTrue(aFPSet.contains(b));
-		Assert.assertEquals(2, aFPSet.size());
+		Assertions.assertTrue(aFPSet.contains(a));
+		Assertions.assertTrue(aFPSet.contains(b));
+		Assertions.assertEquals(2, aFPSet.size());
 		
 		// Get the other FPSet
 		FPSet[] fpSets = mfps.getFPSets();
@@ -207,11 +207,11 @@ public class MultiFPSetTest {
 		s.remove(aFPSet);
 		FPSet bFPSet = (FPSet) s.toArray()[0];
 		
-		Assert.assertFalse(bFPSet.contains(a));
-		Assert.assertFalse(bFPSet.contains(b));
-		Assert.assertEquals(0, bFPSet.size());
+		Assertions.assertFalse(bFPSet.contains(a));
+		Assertions.assertFalse(bFPSet.contains(b));
+		Assertions.assertEquals(0, bFPSet.size());
 		
-		Assert.assertTrue(mfps.checkInvariant());
+		Assertions.assertTrue(mfps.checkInvariant());
 	}
 
 	@Test
@@ -234,52 +234,52 @@ public class MultiFPSetTest {
 		
 		FPSet aFPSet = mfps.getFPSet(a);
 		FPSet bFPSet = mfps.getFPSet(b);
-		Assert.assertTrue(aFPSet != bFPSet);
+		Assertions.assertTrue(aFPSet != bFPSet);
 		
 		// Initially neither a nor b are in the set.
-		Assert.assertFalse(aFPSet.contains(a));
-		Assert.assertFalse(bFPSet.contains(b));
+		Assertions.assertFalse(aFPSet.contains(a));
+		Assertions.assertFalse(bFPSet.contains(b));
 		
-		Assert.assertFalse(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
 		// Add a to the set and verify it's in the
 		// set and b isn't.
-		Assert.assertFalse(mfps.put(a));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(a));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
 		// Add b to the set as well. Now both
 		// are supposed to be set members.
-		Assert.assertFalse(mfps.put(b));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(b));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(c));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertTrue(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(c));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertTrue(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 		
-		Assert.assertFalse(mfps.put(d));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertTrue(mfps.contains(c));
-		Assert.assertTrue(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(d));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertTrue(mfps.contains(c));
+		Assertions.assertTrue(mfps.contains(d));
 		
 		for (FPSet fpSet : mfps.getFPSets()) {
-			Assert.assertEquals(2, fpSet.size());
+			Assertions.assertEquals(2, fpSet.size());
 			// Expect to have two buckets
-			Assert.assertEquals(2, ((FPSetStatistic) fpSet).getTblLoad());
+			Assertions.assertEquals(2, ((FPSetStatistic) fpSet).getTblLoad());
 		}
 		
-		Assert.assertTrue(mfps.checkInvariant());
+		Assertions.assertTrue(mfps.checkInvariant());
 	}
 	
 	@Test
@@ -308,65 +308,65 @@ public class MultiFPSetTest {
 		s.add(cFPSet);
 		final FPSet dFPSet = mfps.getFPSet(d);
 		s.add(dFPSet);
-		Assert.assertEquals(4, s.size());
+		Assertions.assertEquals(4, s.size());
 		
-		Assert.assertFalse(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(a));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(a));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(b));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(b));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(c));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertTrue(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(c));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertTrue(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(d));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertTrue(mfps.contains(c));
-		Assert.assertTrue(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(d));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertTrue(mfps.contains(c));
+		Assertions.assertTrue(mfps.contains(d));
 		
 		for (FPSet fpSet : s) {
-			Assert.assertEquals(1, fpSet.size());
+			Assertions.assertEquals(1, fpSet.size());
 			// Expect to have two buckets
-			Assert.assertEquals(1, ((FPSetStatistic) fpSet).getTblLoad());
+			Assertions.assertEquals(1, ((FPSetStatistic) fpSet).getTblLoad());
 		}
 		
 		// a & c and b & d have collisions at the individual DiskFPSet level.
-		Assert.assertTrue(aFPSet.contains(a));
-		Assert.assertFalse(aFPSet.contains(b));
-		Assert.assertTrue(aFPSet.contains(c)); // expected collision
-		Assert.assertFalse(aFPSet.contains(d));
+		Assertions.assertTrue(aFPSet.contains(a));
+		Assertions.assertFalse(aFPSet.contains(b));
+		Assertions.assertTrue(aFPSet.contains(c)); // expected collision
+		Assertions.assertFalse(aFPSet.contains(d));
 		
-		Assert.assertTrue(bFPSet.contains(b));
-		Assert.assertFalse(bFPSet.contains(a));
-		Assert.assertFalse(bFPSet.contains(c));
-		Assert.assertTrue(bFPSet.contains(d)); // expected collision
+		Assertions.assertTrue(bFPSet.contains(b));
+		Assertions.assertFalse(bFPSet.contains(a));
+		Assertions.assertFalse(bFPSet.contains(c));
+		Assertions.assertTrue(bFPSet.contains(d)); // expected collision
 
-		Assert.assertTrue(cFPSet.contains(c));
-		Assert.assertFalse(cFPSet.contains(b));
-		Assert.assertTrue(cFPSet.contains(a)); // expected collision
-		Assert.assertFalse(cFPSet.contains(d));
+		Assertions.assertTrue(cFPSet.contains(c));
+		Assertions.assertFalse(cFPSet.contains(b));
+		Assertions.assertTrue(cFPSet.contains(a)); // expected collision
+		Assertions.assertFalse(cFPSet.contains(d));
 
-		Assert.assertTrue(dFPSet.contains(d));
-		Assert.assertTrue(dFPSet.contains(b)); // expected collision
-		Assert.assertFalse(dFPSet.contains(c));
-		Assert.assertFalse(dFPSet.contains(a));
+		Assertions.assertTrue(dFPSet.contains(d));
+		Assertions.assertTrue(dFPSet.contains(b)); // expected collision
+		Assertions.assertFalse(dFPSet.contains(c));
+		Assertions.assertFalse(dFPSet.contains(a));
 
-		Assert.assertTrue(mfps.checkInvariant());
+		Assertions.assertTrue(mfps.checkInvariant());
 	}
 
 	@Test
@@ -384,29 +384,29 @@ public class MultiFPSetTest {
 		printBinaryString("b01", b);
 		
 		FPSet aFPSet = mfps.getFPSet(a);
-		Assert.assertTrue(aFPSet == mfps.getFPSet(b));
+		Assertions.assertTrue(aFPSet == mfps.getFPSet(b));
 		
 		// Initially neither a nor b are in the set.
-		Assert.assertFalse(aFPSet.contains(a));
+		Assertions.assertFalse(aFPSet.contains(a));
 		
-		Assert.assertFalse(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
 
 		// Add a to the set and verify it's in the
 		// set and b isn't.
-		Assert.assertFalse(mfps.put(a));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.put(a));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
 
 		// Add b to the set as well. Now both
 		// are supposed to be set members.
-		Assert.assertFalse(mfps.put(b));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
+		Assertions.assertFalse(mfps.put(b));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
 
-		Assert.assertTrue(aFPSet.contains(a));
-		Assert.assertTrue(aFPSet.contains(b));
-		Assert.assertEquals(2, aFPSet.size());
+		Assertions.assertTrue(aFPSet.contains(a));
+		Assertions.assertTrue(aFPSet.contains(b));
+		Assertions.assertEquals(2, aFPSet.size());
 		
 		// Get the other FPSet
 		FPSet[] fpSets = mfps.getFPSets();
@@ -417,11 +417,11 @@ public class MultiFPSetTest {
 		s.remove(aFPSet);
 		FPSet bFPSet = (FPSet) s.toArray()[0];
 		
-		Assert.assertFalse(bFPSet.contains(a));
-		Assert.assertFalse(bFPSet.contains(b));
-		Assert.assertEquals(0, bFPSet.size());
+		Assertions.assertFalse(bFPSet.contains(a));
+		Assertions.assertFalse(bFPSet.contains(b));
+		Assertions.assertEquals(0, bFPSet.size());
 
-		Assert.assertTrue(mfps.checkInvariant());
+		Assertions.assertTrue(mfps.checkInvariant());
 	}
 
 	@Test
@@ -440,28 +440,28 @@ public class MultiFPSetTest {
 		
 		FPSet aFPSet = mfps.getFPSet(a);
 		FPSet bFPSet = mfps.getFPSet(b);
-		Assert.assertTrue(aFPSet != bFPSet);
+		Assertions.assertTrue(aFPSet != bFPSet);
 		
 		// Initially neither a nor b are in the set.
-		Assert.assertFalse(aFPSet.contains(a));
-		Assert.assertFalse(bFPSet.contains(b));
+		Assertions.assertFalse(aFPSet.contains(a));
+		Assertions.assertFalse(bFPSet.contains(b));
 		
-		Assert.assertFalse(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
 
 		// Add a to the set and verify it's in the
 		// set and b isn't.
-		Assert.assertFalse(mfps.put(a));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.put(a));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
 
 		// Add b to the set as well. Now both
 		// are supposed to be set members.
-		Assert.assertFalse(mfps.put(b));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
+		Assertions.assertFalse(mfps.put(b));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
 
-		Assert.assertTrue(mfps.checkInvariant());
+		Assertions.assertTrue(mfps.checkInvariant());
 	}
 	
 	@Test
@@ -490,63 +490,63 @@ public class MultiFPSetTest {
 		s.add(cFPSet);
 		final FPSet dFPSet = mfps.getFPSet(d);
 		s.add(dFPSet);
-		Assert.assertEquals(4, s.size());
+		Assertions.assertEquals(4, s.size());
 		
-		Assert.assertFalse(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(a));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(a));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(b));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(b));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(c));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertTrue(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(c));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertTrue(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(d));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertTrue(mfps.contains(c));
-		Assert.assertTrue(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(d));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertTrue(mfps.contains(c));
+		Assertions.assertTrue(mfps.contains(d));
 		
 		for (FPSet fpSet : s) {
-			Assert.assertEquals(1, fpSet.size());
+			Assertions.assertEquals(1, fpSet.size());
 		}
 		
 		// a & c and b & d have collisions at the individual DiskFPSet level.
-		Assert.assertTrue(aFPSet.contains(a));
-		Assert.assertFalse(aFPSet.contains(b));
-		Assert.assertTrue(aFPSet.contains(c)); // expected collision
-		Assert.assertFalse(aFPSet.contains(d));
+		Assertions.assertTrue(aFPSet.contains(a));
+		Assertions.assertFalse(aFPSet.contains(b));
+		Assertions.assertTrue(aFPSet.contains(c)); // expected collision
+		Assertions.assertFalse(aFPSet.contains(d));
 		
-		Assert.assertTrue(bFPSet.contains(b));
-		Assert.assertFalse(bFPSet.contains(a));
-		Assert.assertFalse(bFPSet.contains(c));
-		Assert.assertTrue(bFPSet.contains(d)); // expected collision
+		Assertions.assertTrue(bFPSet.contains(b));
+		Assertions.assertFalse(bFPSet.contains(a));
+		Assertions.assertFalse(bFPSet.contains(c));
+		Assertions.assertTrue(bFPSet.contains(d)); // expected collision
 
-		Assert.assertTrue(cFPSet.contains(c));
-		Assert.assertFalse(cFPSet.contains(b));
-		Assert.assertTrue(cFPSet.contains(a)); // expected collision
-		Assert.assertFalse(cFPSet.contains(d));
+		Assertions.assertTrue(cFPSet.contains(c));
+		Assertions.assertFalse(cFPSet.contains(b));
+		Assertions.assertTrue(cFPSet.contains(a)); // expected collision
+		Assertions.assertFalse(cFPSet.contains(d));
 
-		Assert.assertTrue(dFPSet.contains(d));
-		Assert.assertTrue(dFPSet.contains(b)); // expected collision
-		Assert.assertFalse(dFPSet.contains(c));
-		Assert.assertFalse(dFPSet.contains(a));
+		Assertions.assertTrue(dFPSet.contains(d));
+		Assertions.assertTrue(dFPSet.contains(b)); // expected collision
+		Assertions.assertFalse(dFPSet.contains(c));
+		Assertions.assertFalse(dFPSet.contains(a));
 
-		Assert.assertTrue(mfps.checkInvariant());
+		Assertions.assertTrue(mfps.checkInvariant());
 	}
 	
 	@Test
@@ -569,29 +569,29 @@ public class MultiFPSetTest {
 		printBinaryString("b00...1", b);
 		
 		FPSet aFPSet = mfps.getFPSet(a);
-		Assert.assertTrue(aFPSet == mfps.getFPSet(b));
+		Assertions.assertTrue(aFPSet == mfps.getFPSet(b));
 		
 		// Initially neither a nor b are in the set.
-		Assert.assertFalse(aFPSet.contains(a));
+		Assertions.assertFalse(aFPSet.contains(a));
 		
-		Assert.assertFalse(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
 
 		// Add a to the set and verify it's in the
 		// set and b isn't.
-		Assert.assertFalse(mfps.put(a));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.put(a));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
 
 		// Add b to the set as well. Now both
 		// are supposed to be set members.
-		Assert.assertFalse(mfps.put(b));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
+		Assertions.assertFalse(mfps.put(b));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
 
-		Assert.assertTrue(aFPSet.contains(a));
-		Assert.assertTrue(aFPSet.contains(b));
-		Assert.assertEquals(2, aFPSet.size());
+		Assertions.assertTrue(aFPSet.contains(a));
+		Assertions.assertTrue(aFPSet.contains(b));
+		Assertions.assertEquals(2, aFPSet.size());
 		
 		// Get the other FPSet
 		FPSet[] fpSets = mfps.getFPSets();
@@ -602,11 +602,11 @@ public class MultiFPSetTest {
 		s.remove(aFPSet);
 		FPSet bFPSet = (FPSet) s.toArray()[0];
 		
-		Assert.assertFalse(bFPSet.contains(a));
-		Assert.assertFalse(bFPSet.contains(b));
-		Assert.assertEquals(0, bFPSet.size());
+		Assertions.assertFalse(bFPSet.contains(a));
+		Assertions.assertFalse(bFPSet.contains(b));
+		Assertions.assertEquals(0, bFPSet.size());
 		
-		Assert.assertTrue(mfps.checkInvariant());
+		Assertions.assertTrue(mfps.checkInvariant());
 	}
 
 	@Test
@@ -634,52 +634,52 @@ public class MultiFPSetTest {
 		
 		FPSet aFPSet = mfps.getFPSet(a);
 		FPSet bFPSet = mfps.getFPSet(b);
-		Assert.assertTrue(aFPSet != bFPSet);
+		Assertions.assertTrue(aFPSet != bFPSet);
 		
 		// Initially neither a nor b are in the set.
-		Assert.assertFalse(aFPSet.contains(a));
-		Assert.assertFalse(bFPSet.contains(b));
+		Assertions.assertFalse(aFPSet.contains(a));
+		Assertions.assertFalse(bFPSet.contains(b));
 		
-		Assert.assertFalse(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
 		// Add a to the set and verify it's in the
 		// set and b isn't.
-		Assert.assertFalse(mfps.put(a));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(a));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
 		// Add b to the set as well. Now both
 		// are supposed to be set members.
-		Assert.assertFalse(mfps.put(b));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(b));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(c));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertTrue(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(c));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertTrue(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 		
-		Assert.assertFalse(mfps.put(d));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertTrue(mfps.contains(c));
-		Assert.assertTrue(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(d));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertTrue(mfps.contains(c));
+		Assertions.assertTrue(mfps.contains(d));
 		
 		for (FPSet fpSet : mfps.getFPSets()) {
-			Assert.assertEquals(2, fpSet.size());
+			Assertions.assertEquals(2, fpSet.size());
 			// Expect to have two buckets
-			Assert.assertEquals(2, ((FPSetStatistic) fpSet).getTblLoad());
+			Assertions.assertEquals(2, ((FPSetStatistic) fpSet).getTblLoad());
 		}
 		
-		Assert.assertTrue(mfps.checkInvariant());
+		Assertions.assertTrue(mfps.checkInvariant());
 	}
 	
 	@Test
@@ -713,65 +713,65 @@ public class MultiFPSetTest {
 		s.add(cFPSet);
 		final FPSet dFPSet = mfps.getFPSet(d);
 		s.add(dFPSet);
-		Assert.assertEquals(4, s.size());
+		Assertions.assertEquals(4, s.size());
 		
-		Assert.assertFalse(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(a));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertFalse(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(a));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertFalse(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(b));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertFalse(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(b));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertFalse(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(c));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertTrue(mfps.contains(c));
-		Assert.assertFalse(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(c));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertTrue(mfps.contains(c));
+		Assertions.assertFalse(mfps.contains(d));
 
-		Assert.assertFalse(mfps.put(d));
-		Assert.assertTrue(mfps.contains(a));
-		Assert.assertTrue(mfps.contains(b));
-		Assert.assertTrue(mfps.contains(c));
-		Assert.assertTrue(mfps.contains(d));
+		Assertions.assertFalse(mfps.put(d));
+		Assertions.assertTrue(mfps.contains(a));
+		Assertions.assertTrue(mfps.contains(b));
+		Assertions.assertTrue(mfps.contains(c));
+		Assertions.assertTrue(mfps.contains(d));
 		
 		for (FPSet fpSet : s) {
-			Assert.assertEquals(1, fpSet.size());
+			Assertions.assertEquals(1, fpSet.size());
 			// Expect to have two buckets
-			Assert.assertEquals(1, ((FPSetStatistic) fpSet).getTblLoad());
+			Assertions.assertEquals(1, ((FPSetStatistic) fpSet).getTblLoad());
 		}
 		
 		// a & c and b & d have collisions at the individual DiskFPSet level.
-		Assert.assertTrue(aFPSet.contains(a));
-		Assert.assertFalse(aFPSet.contains(b));
-		Assert.assertTrue(aFPSet.contains(c)); // expected collision
-		Assert.assertFalse(aFPSet.contains(d));
+		Assertions.assertTrue(aFPSet.contains(a));
+		Assertions.assertFalse(aFPSet.contains(b));
+		Assertions.assertTrue(aFPSet.contains(c)); // expected collision
+		Assertions.assertFalse(aFPSet.contains(d));
 		
-		Assert.assertTrue(bFPSet.contains(b));
-		Assert.assertFalse(bFPSet.contains(a));
-		Assert.assertFalse(bFPSet.contains(c));
-		Assert.assertTrue(bFPSet.contains(d)); // expected collision
+		Assertions.assertTrue(bFPSet.contains(b));
+		Assertions.assertFalse(bFPSet.contains(a));
+		Assertions.assertFalse(bFPSet.contains(c));
+		Assertions.assertTrue(bFPSet.contains(d)); // expected collision
 
-		Assert.assertTrue(cFPSet.contains(c));
-		Assert.assertFalse(cFPSet.contains(b));
-		Assert.assertTrue(cFPSet.contains(a)); // expected collision
-		Assert.assertFalse(cFPSet.contains(d));
+		Assertions.assertTrue(cFPSet.contains(c));
+		Assertions.assertFalse(cFPSet.contains(b));
+		Assertions.assertTrue(cFPSet.contains(a)); // expected collision
+		Assertions.assertFalse(cFPSet.contains(d));
 
-		Assert.assertTrue(dFPSet.contains(d));
-		Assert.assertTrue(dFPSet.contains(b)); // expected collision
-		Assert.assertFalse(dFPSet.contains(c));
-		Assert.assertFalse(dFPSet.contains(a));
+		Assertions.assertTrue(dFPSet.contains(d));
+		Assertions.assertTrue(dFPSet.contains(b)); // expected collision
+		Assertions.assertFalse(dFPSet.contains(c));
+		Assertions.assertFalse(dFPSet.contains(a));
 
-		Assert.assertTrue(mfps.checkInvariant());
+		Assertions.assertTrue(mfps.checkInvariant());
 	}
 
 	private void printBinaryString(final String id, final long a) {

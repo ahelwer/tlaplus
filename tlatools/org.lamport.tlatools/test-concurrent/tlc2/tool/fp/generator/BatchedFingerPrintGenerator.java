@@ -36,7 +36,7 @@ public class BatchedFingerPrintGenerator extends FingerPrintGenerator {
 				if (initialized) {
 					for (int i = 0; i < predecessors.length; i++) {
 						long predecessor = predecessors[i];
-						Assert.assertTrue(fpSet.contains(predecessor));
+						Assertions.assertTrue(fpSet.contains(predecessor));
 					}
 				}
 
@@ -59,7 +59,7 @@ public class BatchedFingerPrintGenerator extends FingerPrintGenerator {
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
-				Assert.fail("Unexpected");
+				Assertions.fail("Unexpected");
 			}
 		}
 		latch.countDown();

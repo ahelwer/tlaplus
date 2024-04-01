@@ -26,7 +26,7 @@ public class Github429Test {
 			SANY.frontEndParse(moduleSpec, ToolIO.out);
 			SANY.frontEndSemanticAnalysis(moduleSpec, ToolIO.out, false);
 		} catch (final Exception e) {
-			Assert.fail("No exception should occur during parse. Instead encountered [" + e.getClass()
+			Assertions.fail("No exception should occur during parse. Instead encountered [" + e.getClass()
 								+ "] with message: " + e.getMessage());
 		}
 	}

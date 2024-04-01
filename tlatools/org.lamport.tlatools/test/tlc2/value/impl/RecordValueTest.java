@@ -86,19 +86,19 @@ public class RecordValueTest {
 
 		try{
 			recVal.apply(new StringValue("b"), 0);
-		} catch(util.Assert.TLCRuntimeException ex){
+		} catch(util.Assertions.TLCRuntimeException ex){
 			assertTrue(ex.getMessage().contains("Attempted to access nonexistent field 'b' of record\n[a |-> \"aVal\"]"));
 		}
 
 		try{
 			recVal.apply(IntValue.gen(0), 0);
-		} catch(util.Assert.TLCRuntimeException ex){
+		} catch(util.Assertions.TLCRuntimeException ex){
 			assertTrue(ex.getMessage().contains("Attempted to access record by a non-string argument: 0"));
 		}
 
 		try{
 			recVal.select(IntValue.gen(0));
-		} catch(util.Assert.TLCRuntimeException ex){
+		} catch(util.Assertions.TLCRuntimeException ex){
 			assertTrue(ex.getMessage().contains("Attempted to access record by a non-string argument: 0"));
 		}
 	}

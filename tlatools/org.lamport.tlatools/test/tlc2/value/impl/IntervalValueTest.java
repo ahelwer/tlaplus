@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.Test;
 
-import util.Assert.TLCRuntimeException;
+import util.Assertions.TLCRuntimeException;
 
 public class IntervalValueTest {
 

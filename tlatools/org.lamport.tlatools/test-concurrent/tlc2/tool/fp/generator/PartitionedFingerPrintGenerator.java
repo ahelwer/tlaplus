@@ -66,7 +66,7 @@ public class PartitionedFingerPrintGenerator extends FingerPrintGenerator {
 			try {
 				if (fp != 0L) {
 					if (fpSet.put(fp) != false) {
-						Assert.fail("Linear fill-up should not cause a collision");
+						Assertions.fail("Linear fill-up should not cause a collision");
 					}
 					// In case PartitionedFingerPrintGenerator and
 					// FingerPrintGenerator are used in performance tests, burn
@@ -79,7 +79,7 @@ public class PartitionedFingerPrintGenerator extends FingerPrintGenerator {
 				fp += increment;
 			} catch (IOException e) {
 				e.printStackTrace();
-				Assert.fail("Unexpected");
+				Assertions.fail("Unexpected");
 			}
 		}
 		latch.countDown();

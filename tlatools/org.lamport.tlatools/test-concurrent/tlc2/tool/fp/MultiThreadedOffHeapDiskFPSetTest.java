@@ -26,6 +26,6 @@ public class MultiThreadedOffHeapDiskFPSetTest extends MultiThreadedFPSetTest {
 			throws IOException, InterruptedException, NoSuchMethodException, SecurityException, InstantiationException,
 			IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		final OffHeapDiskFPSet fpSet = (OffHeapDiskFPSet) doTest(PartitionedFingerPrintGenerator.class);
-		Assert.assertEquals(0, fpSet.getBucketCapacity()); // bucket capacity is actually reprobe which expected to be zero.
+		Assertions.assertEquals(0, fpSet.getBucketCapacity()); // bucket capacity is actually reprobe which expected to be zero.
 	}
 }

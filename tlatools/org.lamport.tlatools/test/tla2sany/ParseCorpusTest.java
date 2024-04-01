@@ -76,7 +76,7 @@ public class ParseCorpusTest {
 						corpusTestFile.path,
 						corpusTest.name,
 						corpusTest.tlaplusInput);
-				Assert.assertTrue(testSummary, parser.parse());
+				Assertions.assertTrue(testSummary, parser.parse());
 				System.out.println(String.format("Expect: %s", corpusTest.expectedAst));
 				AstNode actual = SanyTranslator.toAst(parser);
 				System.out.println(String.format("Actual: %s", actual));
@@ -97,6 +97,6 @@ public class ParseCorpusTest {
 		List<AstNode.Kind> unused = AstNode.Kind.getUnused();
 		System.out.println(String.format("Total unused node kinds: %d", unused.size()));
 		System.out.println(unused);
-		Assert.assertEquals(0, unused.size());
+		Assertions.assertEquals(0, unused.size());
 	}
 }

@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.Test;
 
-import util.Assert.TLCRuntimeException;
+import util.Assertions.TLCRuntimeException;
 import util.UniqueString;
 
 public class ModelValueTest {

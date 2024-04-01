@@ -501,13 +501,13 @@ public class AstNode {
 	 * @param other The AST node to test for equality.
 	 */
 	public void testEquality(AstNode other) {
-		Assert.assertEquals(this.kind, other.kind);
-		Assert.assertEquals(this.children.size(), other.children.size());
+		Assertions.assertEquals(this.kind, other.kind);
+		Assertions.assertEquals(this.children.size(), other.children.size());
 		for (int i = 0; i < this.children.size(); i++) {
 			AstNode thisChild = this.children.get(i);
 			AstNode otherChild = other.children.get(i);
 			if (this.fieldNames.containsKey(thisChild)) {
-				Assert.assertEquals(this.fieldNames.get(thisChild), other.fieldNames.get(otherChild));
+				Assertions.assertEquals(this.fieldNames.get(thisChild), other.fieldNames.get(otherChild));
 			}
 			thisChild.testEquality(otherChild);
 		}

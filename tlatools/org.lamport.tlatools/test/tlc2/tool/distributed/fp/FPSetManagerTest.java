@@ -95,12 +95,12 @@ public class FPSetManagerTest {
 		}
 
 		// Index uses LSBs
-		Assert.assertEquals(0, manager.getFPSetIndex(0));
-		Assert.assertEquals(1, manager.getFPSetIndex(1));
-		Assert.assertEquals(0, manager.getFPSetIndex(2));
-		Assert.assertEquals(1, manager.getFPSetIndex(3));
-		Assert.assertEquals(0, manager.getFPSetIndex((1L << 63) + 2L));
-		Assert.assertEquals(1, manager.getFPSetIndex((1L << 63) + 1L));
+		Assertions.assertEquals(0, manager.getFPSetIndex(0));
+		Assertions.assertEquals(1, manager.getFPSetIndex(1));
+		Assertions.assertEquals(0, manager.getFPSetIndex(2));
+		Assertions.assertEquals(1, manager.getFPSetIndex(3));
+		Assertions.assertEquals(0, manager.getFPSetIndex((1L << 63) + 2L));
+		Assertions.assertEquals(1, manager.getFPSetIndex((1L << 63) + 1L));
 
 		final Set<Long> fps = new HashSet<Long>();
 		// fps.add(0L); // Not accepted by nested FPSets
@@ -141,17 +141,17 @@ public class FPSetManagerTest {
 		for (Long fp : fps) {
 			// Unseen fingerprints must not be in set.
 			for (Long unseenFP : unseen) {
-				Assert.assertFalse(manager.contains(unseenFP));
+				Assertions.assertFalse(manager.contains(unseenFP));
 			}
-			Assert.assertTrue(unseen.remove(fp));
+			Assertions.assertTrue(unseen.remove(fp));
 
-			Assert.assertFalse(printBinaryString("", fp), manager.put(fp));
-			Assert.assertTrue(printBinaryString("", fp), manager.contains(fp));
+			Assertions.assertFalse(printBinaryString("", fp), manager.put(fp));
+			Assertions.assertTrue(printBinaryString("", fp), manager.contains(fp));
 		}
 
-		Assert.assertEquals(fps.size(), manager.size());
+		Assertions.assertEquals(fps.size(), manager.size());
 
-		Assert.assertTrue(manager.checkInvariant());
+		Assertions.assertTrue(manager.checkInvariant());
 	}
 
 	private String printBinaryString(final String id, final long a) {

@@ -87,7 +87,7 @@ public abstract class TTraceModelCheckerTestCase extends ModelCheckerTestCase {
 		//TODO Assume that the generated file exist.
 		Path sourcePath = Paths
 				.get(BASE_PATH + path + File.separator + spec);
-		Assume.assumeTrue("No TE spec was generated, please run test with original spec", sourcePath.toFile().isFile());
+		Assumptions.assumeTrue("No TE spec was generated, please run test with original spec", sourcePath.toFile().isFile());
 
 		super.setUp();
 	}
