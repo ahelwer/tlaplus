@@ -529,7 +529,7 @@
 					<include name="tlc2/tool/distributed/**/*Test*.java" />
 					<!-- These fail for some reason. -->
 					<exclude name="**/DistributedTLCTestCase.java" />
-					<exclude name="**/TLCServerTestCase.java" />
+					<!-- exclude name="**/TLCServerTestCase.java" / -->
 				</fileset>
 			</batchtest>
 		</junit>
