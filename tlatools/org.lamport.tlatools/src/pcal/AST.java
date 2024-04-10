@@ -124,6 +124,10 @@ public class AST
       * If the object was not inserted by macro expansion, then macroLine  *
       * equals -1.                                                         *
       *********************************************************************/
+    public boolean unicode = false;
+      /*********************************************************************
+      * Whether the symbols are & should be unicode instead of ASCII.
+      *********************************************************************/
     
     /**
      * If this AST is a statement that is the first statement resulting from
@@ -223,12 +227,12 @@ public class AST
 
 
     public static class Uniprocess extends AST
-      { public String  name   = "" ;
-        public Vector  decls  = null ; // of VarDecl 
-        public TLAExpr defs   = null ;
-        public Vector  macros = null ; // of Macro
-        public Vector  prcds  = null ; // of Procedure
-        public Vector  body   = null ; // of LabeledStmt
+      { public String                name   = "" ;
+        public Vector<AST.VarDecl>   decls  = null ; // of VarDecl 
+        public TLAExpr               defs   = null ;
+        public Vector<AST.Macro>     macros = null ; // of Macro
+        public Vector<AST.Procedure> prcds  = null ; // of Procedure
+        public Vector<AST>           body   = null ; // of LabeledStmt
         public Uniprocess() {};
         public String toString() 
           { return
@@ -261,12 +265,12 @@ public class AST
       }
 
     public static class Multiprocess extends AST
-      { public String  name   = "" ;
-        public Vector  decls  = null ; // of VarDecl 
-        public TLAExpr defs   = null ;
-        public Vector  macros = null ; // of Macro
-        public Vector  prcds  = null ; // of Procedure
-        public Vector  procs  = null ; // of Process
+      { public String                name   = "" ;
+        public Vector<AST.VarDecl>   decls  = null ; // of VarDecl 
+        public TLAExpr               defs   = null ;
+        public Vector<AST.Macro>     macros = null ; // of Macro
+        public Vector<AST.Procedure> prcds  = null ; // of Procedure
+        public Vector<AST.Process>   procs  = null ; // of Process
         public Multiprocess() {} ;
         public String  toString() 
           { return

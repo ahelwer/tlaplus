@@ -48,44 +48,44 @@ public class PcalTranslate {
      * Routines for constructing snippets of +cal code                       *
      *************************************************************************/
 
-    public static Vector DiscardLastElement(Vector v) {
+    public static <T> Vector<T> DiscardLastElement(Vector<T> v) {
         if (v.size() > 0) v.remove(v.size() - 1);
         return v;
     }
 
-    public static Vector Singleton(Object obj) {
+    public static <T> Vector<T> Singleton(T obj) {
         /*********************************************************************
          * If we think of a vector as a sequence, then this returns <<obj>>. *
          *********************************************************************/
-        Vector result = new Vector() ;
+        Vector<T> result = new Vector<T>() ;
         result.addElement(obj) ;
         return result; 
     }
  
-    public static Vector Pair(Object obj1, Object obj2) {
+    public static <T> Vector<T> Pair(T obj1, T obj2) {
         /*********************************************************************
          * If we think of a vector as a sequence, then this returns          *
          * << obj1,  obj2 >>.                                                *
          *********************************************************************/
-        Vector result = new Vector() ;
+        Vector<T> result = new Vector<T>() ;
         result.addElement(obj1) ;
         result.addElement(obj2) ;
         return result; 
     }
 
-    public static Vector Triple(Object obj1, Object obj2, Object obj3) {
+    public static <T> Vector<T> Triple(T obj1, T obj2, T obj3) {
         /*********************************************************************
          * If we think of a vector as a sequence, then this returns          *
          * << obj1,  obj2, obj3 >>.                                          *
          *********************************************************************/
-        Vector result = new Vector() ;
+        Vector<T> result = new Vector<T>() ;
         result.addElement(obj1) ;
         result.addElement(obj2) ;
         result.addElement(obj3) ;
         return result; 
     }
 
-    public static Vector Singleton2(Object obj) {
+    public static <T> Vector<Vector<T>> Singleton2(T obj) {
         /*********************************************************************
          * If we think of a vector as a sequence, then this returns          *
          * << <<obj>> >>.                                                    *
@@ -168,18 +168,18 @@ public class PcalTranslate {
         return result ;
     }
 
-    public static TLAExpr TokVectorToExpr(Vector vec, int spaces)
+    public static TLAExpr TokVectorToExpr(Vector<TLAToken> vec, int spaces)
       /*********************************************************************
       * If vec is a vector of TLAToken objects, then this method returns   *
       * a TLAExpr describing a one-line expression composed of clones of   *
       * the tokens in vec separated by `spaces' spaces.                    *
       * Called only by PcalTranslate.CheckPC.                              *
       *********************************************************************/
-      { Vector firstLine = new Vector() ;
+      { Vector<TLAToken> firstLine = new Vector<TLAToken>() ;
         int nextCol = 0 ;
         int i = 0 ;
         while (i < vec.size())
-          { TLAToken tok = new TLAToken((TLAToken) vec.elementAt(i));
+          { TLAToken tok = new TLAToken(vec.elementAt(i));
             tok.column = nextCol ;
             firstLine.addElement(tok) ;
             nextCol = nextCol + tok.getWidth() + spaces ;
@@ -207,7 +207,7 @@ public class PcalTranslate {
                 TLAToken tok = ((TLAToken) line.elementAt(j));
                 tok.column = nextCol;
                 nextCol = nextCol + tok.getWidth();
-                if (tok.type == TLAToken.BUILTIN && tok.string.equals("|->")) {
+                if (tok.type == TLAToken.BUILTIN && (tok.string.equals("|->") || tok.string.equals("↦"))) {
                     tok.column = tok.column + 1;
                     if (tok.column < 16) tok.column = 16;
                     nextCol = tok.column + 5;
@@ -351,9 +351,7 @@ public class PcalTranslate {
         newast.setOrigin(ast.getOrigin()) ;
         i = 0;
         while (i < ast.prcds.size()) {
-            newast.prcds.addElement(
-                                    ExplodeProcedure((AST.Procedure)
-                                                     ast.prcds.elementAt(i)));
+            newast.prcds.addElement(ExplodeProcedure(ast.prcds.elementAt(i)));
             i = i + 1;
         }
         i = 0;
@@ -400,14 +398,13 @@ public class PcalTranslate {
         i = 0;
         newast.procs = new Vector(ast.procs.size(), 10);
         while (i < ast.procs.size()) {
-            newast.procs.addElement( ExplodeProcess((AST.Process)
-                                                   ast.procs.elementAt(i)));
+            newast.procs.addElement(ExplodeProcess(ast.procs.elementAt(i)));
             i = i + 1;
         }
         return newast;
     }
 
-    private static AST ExplodeProcedure (AST.Procedure ast) throws PcalTranslateException {
+    private static AST.Procedure ExplodeProcedure (AST.Procedure ast) throws PcalTranslateException {
         /*********************************************************************
         * Generate new AST.Procedure with exploded labeled statements.       *
         *********************************************************************/
@@ -439,7 +436,7 @@ public class PcalTranslate {
         return newast;
     }
         
-    private static AST ExplodeProcess(AST.Process ast) throws PcalTranslateException {
+    private static AST.Process ExplodeProcess(AST.Process ast) throws PcalTranslateException {
         /*********************************************************************
         * Generate new AST.Process with exploded labeled statements.         *
         *********************************************************************/

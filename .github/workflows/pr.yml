@@ -93,9 +93,10 @@ jobs:
           - unicode: true
           - unicode: false
     env:
-      EXAMPLES_DIR: examples
-      SCRIPT_DIR: examples/.github/scripts
-      DEPS_DIR: examples/deps
+      EXAMPLES_DIR: "examples"
+      SCRIPT_DIR: "examples/.github/scripts"
+      DEPS_DIR: "examples/deps"
+      DIST_DIR: "tlatools/org.lamport.tlatools/dist"
     steps:
     - name: Clone tlaplus/tlaplus
       uses: actions/checkout@v4
@@ -130,6 +131,11 @@ jobs:
         python "$SCRIPT_DIR/unicode_number_set_shim.py" \
           --ts_path "$DEPS_DIR/tree-sitter-tlaplus"     \
           --manifest_path "$EXAMPLES_DIR/manifest.json"
+    - name: Translate PlusCal
+      run: |
+        python $SCRIPT_DIR/translate_pluscal.py         \
+          --tools_jar_path "$DIST_DIR/tla2tools.jar"    \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"
     - name: Parse tlaplus/examples modules
       run: |
         # Need to have a nonempty list to pass as a skip parameter
@@ -146,11 +152,11 @@ jobs:
             "specifications/SpecifyingSystems/RealTime/MCRealTimeHourClock.tla"
           )
         fi
-        python "$SCRIPT_DIR/parse_modules.py"                               \
-          --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
-          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                        \
-          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"    \
-          --manifest_path "$EXAMPLES_DIR/manifest.json"                     \
+        python "$SCRIPT_DIR/parse_modules.py"                             \
+          --tools_jar_path "$DIST_DIR/tla2tools.jar"                      \
+          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
+          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"                   \
           --skip "${SKIP[@]}"
     - name: Model-check small tlaplus/examples models
       run: |
@@ -160,21 +166,21 @@ jobs:
           # This redefines Real so cannot be shimmed
           SKIP+=("specifications/SpecifyingSystems/RealTime/MCRealTimeHourClock.cfg")
         fi
-        python "$SCRIPT_DIR/check_small_models.py"                          \
-          --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
-          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                        \
-          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"    \
-          --manifest_path "$EXAMPLES_DIR/manifest.json"                     \
+        python "$SCRIPT_DIR/check_small_models.py"                        \
+          --tools_jar_path "$DIST_DIR/tla2tools.jar"                      \
+          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
+          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"                   \
           --skip "${SKIP[@]}"
     - name: Smoke-test large tlaplus/examples models
       run: |
         # SimKnuthYao requires certain number of states to have been generated
         # before termination or else it fails. This makes it not amenable to
         # smoke testing.
-        python "$SCRIPT_DIR/smoke_test_large_models.py"                     \
-          --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
-          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                        \
-          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"    \
-          --manifest_path "$EXAMPLES_DIR/manifest.json"                     \
+        python "$SCRIPT_DIR/smoke_test_large_models.py"                   \
+          --tools_jar_path "$DIST_DIR/tla2tools.jar"                      \
+          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
+          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"                   \
           --skip "specifications/KnuthYao/SimKnuthYao.cfg"
 

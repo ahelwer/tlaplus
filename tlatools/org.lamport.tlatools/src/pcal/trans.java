@@ -3,11 +3,12 @@ package pcal;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -1296,7 +1297,7 @@ class trans {
     ***********************************************************************/
     {
     	// TODO use Apache Commons for this
-        try (final BufferedWriter fileW = new BufferedWriter(new FileWriter(fileName))) {
+        try (final BufferedWriter fileW = new BufferedWriter(new FileWriter(fileName, StandardCharsets.UTF_8))) {
             // I have no idea what Java does if you try to write a new version
             // of a read-only file. On Windows, it's happy to write it. Who
             // the hell knows what it does on other operating systems? So, something
@@ -1327,27 +1328,18 @@ class trans {
     * element is a line of the file.                                       *
     ***********************************************************************/
     {
-        final List<String> inputVec = new ArrayList<>(100);
-    	// TODO use Apache Commons for this
-        try (final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)))) {
-            String nextLine = bufferedReader.readLine();
-            while (nextLine != null) {
-                inputVec.add(nextLine);
-                nextLine = bufferedReader.readLine();
-            }
-        } catch (FileNotFoundException e) {
-            /**************************************************************
-            * Input file could not be found.                              *
-            **************************************************************/
-            throw new FileToStringVectorException("Input file " + fileName + " not found.");
+        Path inputFilePath = Path.of(fileName);
+		if (!Files.exists(inputFilePath)) {
+			throw new FileToStringVectorException("Input file " + fileName + " not found.");
+		}
+        try {
+        	return Files.readAllLines(inputFilePath);
         } catch (IOException e) {
             /*********************************************************
             * Error while reading input file.                        *
             *********************************************************/
             throw new FileToStringVectorException("Error reading file " + fileName + ".");
         }
-        
-        return inputVec;
     }
 
     /********************* PROCESSING THE COMMAND LINE ***********************/

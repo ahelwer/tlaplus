@@ -416,6 +416,11 @@ public class Tokenize
       * Upon return, this equals the token following the expression.       *
       *********************************************************************/
 
+    public static boolean Unicode = false;
+      /*****************************************************************
+      * Whether non-ASCII unicode characters have been encountered.
+      *****************************************************************/
+
       /*********************************************************************
       * The hash tables above are used only to remember the keys; there    *
       * is no value attached to them.  However, the Hashtable class        *
@@ -432,19 +437,19 @@ public class Tokenize
     * Note: This use of static fields makes the class totally thread       *
     * unsafe.                                                              *
     ***********************************************************************/
-    private static Vector vspec = null ;
+    private static Vector<Vector<TLAToken>> vspec = null ;
           /*****************************************************************
           * vspec is a vector of vectors in which the TokenizedSpec is     *
           * constructed.  At the end, it is turned into an array.          *
           *****************************************************************/
 
-    private static Vector linev = new Vector(30, 30) ;
+    private static Vector<TLAToken> linev = new Vector<TLAToken>(30, 30) ;
           /*****************************************************************
           * Vector linev contains the tokens found so far on the current   *
           * line.                                                          *
           *****************************************************************/
 
-    private static char nextChar ;
+    private static int nextChar ;
           /*****************************************************************
           * nextChar is the next input character to be processed.          *
           *****************************************************************/
@@ -593,7 +598,7 @@ public class Tokenize
       * Appends nextChar to token, sets nextChar to the next character in  *
       * the input stream, and sets ncol to its column.                     *
       *********************************************************************/
-      { token = token + nextChar ;
+      { token = token + Character.toString(nextChar) ;
         skipNextChar() ;
       } ;
 
@@ -726,7 +731,9 @@ public class Tokenize
                    * Set inQuantifier if necessary.                        *
                    ********************************************************/
                    if (    (   token.equals("\\A")
-                            || token.equals("\\E"))
+                            || token.equals("∀")
+                            || token.equals("\\E")
+                            || token.equals("∃"))
                         && (parenDepth == 0))
                      { inQuantifier = true ;} ;
                    if (    inQuantifier
@@ -746,12 +753,12 @@ public class Tokenize
                      * non-comment tokens with empty strings, so the test  *
                      * seems harmless.                                     *
                      ******************************************************/
-                	   /**
-                	    * Line number argument added by LL for TLA-PCal mapping.
-                	    * Experiment shows that it seems to do the right thing.
-                	    * See the declaration of getLineCorrection for an explanation
-                	    * of its use.
-                	    */
+                       /**
+                        * Line number argument added by LL for TLA-PCal mapping.
+                        * Experiment shows that it seems to do the right thing.
+                        * See the declaration of getLineCorrection for an explanation
+                        * of its use.
+                        */
                      { linev.addElement(new TLAToken(token, col, type, 
                              reader.getLineNumber() + getLineCorrection )); } ;   
                    /********************************************************
@@ -790,10 +797,12 @@ public class Tokenize
                 || tok.equals("do")
                 || tok.equals("then")
                 || tok.equals(":=")
+                || tok.equals("≔")
                 || tok.equals("begin")
                 || tok.equals("variable")
                 || tok.equals("variables")
                 || tok.equals("||")
+                || tok.equals("‖")
 
          // The following are added to improve error reporting
          // and to make possible the omission of some final ";"s. 
@@ -835,7 +844,7 @@ public class Tokenize
       * whenever a \n character is removed from the input stream.          *
       *********************************************************************/
       { vspec.addElement(linev)    ;
-        linev = new Vector(30, 30) ;
+        linev = new Vector<TLAToken>(30, 30) ;
         col = 0 ;
       }
 
@@ -852,7 +861,7 @@ public class Tokenize
         return exp ; }
 
     public static String GetAlgorithmToken(PcalCharReader charReader) throws TokenizerException
-      { TLAExpr exp = InnerTokenize(charReader, false) ;
+      { InnerTokenize(charReader, false) ;
         return Delimiter ; }
 
     public static TLAExpr InnerTokenize(PcalCharReader charReader, 
@@ -876,7 +885,7 @@ public class Tokenize
         col  = ncol ;
         parseExpression = isExpr ;
         prevToken = " ";
-        vspec = new Vector(4) ;
+        vspec = new Vector<Vector<TLAToken>>(4) ;
           // Changed by LL on 13 Dec 2011 from new Vector(1000, 1000) ;
           // I don't know why such a large vector was being used
         reader = charReader ;
@@ -885,7 +894,7 @@ public class Tokenize
            * (private) methods.                                            *
            ****************************************************************/
 
-        linev = new Vector() ;
+        linev = new Vector<TLAToken>() ;
           /*****************************************************************
           * I don't know where linev is initialized, but adding this       *
           * initialization doesn't seem to make any difference.            *
@@ -896,6 +905,10 @@ public class Tokenize
           /*****************************************************************
           * Initialize nextChar.                                           *
           *****************************************************************/
+        if (nextChar >= 128) {
+        	Unicode = true;
+        }
+
         // See declaration of getLineCorrection for an explanation of:
         if (nextChar == '\n') {
             getLineCorrection = -1 ;
@@ -927,15 +940,21 @@ public class Tokenize
               * optimizations that are local to a particular case clause.  *
               *************************************************************/
               { case START :
-                  if (Misc.IsSpace(nextChar))
+                  if (' ' == nextChar || '\f' == nextChar || '\r' == nextChar)
                     { skipNextChar() ;
                       gotoStart(); 
                     }
-                  else if (Misc.IsLetter(nextChar))
+                  else if ( Character.isLetter(nextChar) || '_' == nextChar)
                     { addNextChar();
                       state = ID;  
                     }
-                  else if (Misc.IsDigit(nextChar))
+                  else if ( 'ℕ' == nextChar
+                         || 'ℤ' == nextChar
+                         || 'ℝ' == nextChar)
+                    { TokenOut(Token.IDENT) ;
+                      gotoStart(); 
+                    }
+                  else if (Character.isDigit(nextChar))
                     { addNextChar();
                       state = NUM_OR_ID; 
                     }
@@ -963,7 +982,7 @@ public class Tokenize
                       startNewLine() ;
                       gotoStart(); 
                     }
-                  else if (PcalBuiltInSymbols.IsBuiltInPrefix("" + nextChar))
+                  else if (PcalBuiltInSymbols.IsBuiltInPrefix(Character.toString(nextChar)))
                     { addNextChar();
                       state = BUILT_IN ;
                     }
@@ -986,7 +1005,7 @@ public class Tokenize
                     { TokenOut(Token.BUILTIN) ;
                       gotoStart(); 
                     }
-                  else if (Misc.IsLetter(nextChar) || Misc.IsDigit(nextChar))
+                  else if ( Character.isLetter(nextChar) || Character.isDigit(nextChar) || '_' == nextChar)
                     { addNextChar();
                       // state = ID ;
                     }  
@@ -1004,11 +1023,11 @@ public class Tokenize
                   break;          
 
                 case NUM_OR_ID :
-                  if (Misc.IsDigit(nextChar))
+                  if (Character.isDigit(nextChar))
                     { addNextChar();
                       state = NUM_OR_ID; 
                     }
-                  else if (Misc.IsLetter(nextChar))
+                  else if (Character.isLetter(nextChar))
                     { addNextChar();
                       state = ID; 
                     }
@@ -1028,7 +1047,7 @@ public class Tokenize
                     { addNextChar();
                       state = NUM_OR_BI ;
                     }
-                  else if (Misc.IsLetter(nextChar))
+                  else if (Character.isLetter(nextChar) || '_' == nextChar)
                     { state = BSBUILT_IN ; 
                     }
                   else if (nextChar == '*')
@@ -1042,7 +1061,7 @@ public class Tokenize
                   break;
 
                 case NUM_OR_BI :
-                  if (Misc.IsDigit(nextChar))
+                  if (Character.isDigit(nextChar))
                     { state = NUM;
                     }
                   else 
@@ -1051,11 +1070,11 @@ public class Tokenize
                   break;
 
                 case NUM :
-                  if (Misc.IsDigit(nextChar))
+                  if (Character.isDigit(nextChar))
                     { addNextChar();
                       state = NUM;
                     }
-                  else if (Misc.IsLetter(nextChar))
+                  else if (Character.isLetter(nextChar) || '_' == nextChar)
                     { addNextChar();
                       if (token.charAt(0) == '\\')
                        { TokenizingError("Illegal lexeme");
@@ -1071,9 +1090,7 @@ public class Tokenize
                   break;
 
                 case BSBUILT_IN :
-                  if (Misc.IsLetter(nextChar) && (nextChar != '_'))
-                        // added test for /= '_' on 21 Feb 2004
-                        // to correct bug
+                  if (Character.isLetter(nextChar))
                     { addNextChar();
                       state = BSBUILT_IN;
                     }
@@ -1087,7 +1104,7 @@ public class Tokenize
                    break;
 
                 case BUILT_IN :
-                  if (PcalBuiltInSymbols.IsBuiltInPrefix(token + nextChar))
+                  if (PcalBuiltInSymbols.IsBuiltInPrefix(token + Character.toString(nextChar)))
                     { addNextChar();
                       // state = BUILT_IN;
                     }
@@ -1236,7 +1253,7 @@ public class Tokenize
                       TokenOut(Token.STRING) ;
                       gotoStart();
                     }
-                  else if (PcalBuiltInSymbols.IsStringChar(nextChar))
+                  else if (PcalBuiltInSymbols.IsStringChar(Character.toString(nextChar)))
                     { addNextChar();
                       state = STRING ;
                     }
@@ -1486,7 +1503,7 @@ public class Tokenize
                     { addNextChar();
                       // state = PROLOG_SPACES;
                     }
-                  else if (Misc.IsLetter(nextChar))  
+                  else if (Character.isLetter(nextChar) || '_' == nextChar)
                     { token3 = token;
                       col3   = ncol ;
                       token  = "" ;
@@ -1498,9 +1515,9 @@ public class Tokenize
                       state  = PROLOG ;
                     }
                   break;
-	      
+          
                 case PROLOG_ID :
-                  if (Misc.IsLetter(nextChar))  
+                  if (Character.isLetter(nextChar) || '_' == nextChar)
                     { addNextChar();
                       // state = PROLOG_ID ;
                     }

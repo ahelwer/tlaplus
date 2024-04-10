@@ -106,6 +106,7 @@
 ***************************************************************************/
 package pcal;
 
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -138,9 +139,9 @@ public class ParseAlgorithm
     * current process or procedure with + or - modifiers, respectively.
     * Added in Version 1.5.
     */
-   public static Vector plusLabels;
+   public static Vector<String> plusLabels;
    
-   public static Vector minusLabels;
+   public static Vector<String> minusLabels;
    
    /**
     * proceduresCalled is the vector of distinct names of 
@@ -169,7 +170,7 @@ public class ParseAlgorithm
    public static boolean omitPC;
    public static boolean omitStutteringWhenDone;
    
-   public static Vector proceduresCalled;
+   public static Vector<String> proceduresCalled;
    
    public static boolean hasDefaultInitialization;
      /**********************************************************************
@@ -194,7 +195,7 @@ public class ParseAlgorithm
      * uniprocess algorithm.                                               *
      **********************************************************************/
 
-   public static Hashtable allLabels;
+   public static Hashtable<String, String> allLabels;
      /**********************************************************************
      * Set by GetStmtSeq to a table of String objects containing all the   *
      * algorithm's (user-typed) labels.  The strings are the keys, the     *
@@ -218,14 +219,14 @@ public class ParseAlgorithm
    * the i-th added label and the location of the statement to which it    *
    * was added.                                                            *
    ************************************************************************/
-   public static Vector addedLabels;
-   public static Vector addedLabelsLocs;
+   public static Vector<String> addedLabels;
+   public static Vector<String> addedLabelsLocs;
 
    /**********************************************************************
     * Is set to the sequence of procedures.  It's easier making this a    *
     * global variable than passing it as a parameter.                     *
     **********************************************************************/
-   public static Vector procedures;
+   public static Vector<AST.Procedure> procedures;
 
    /**********************************************************************
     * One of these booleans will be set true when we discover which       *
@@ -244,15 +245,15 @@ public class ParseAlgorithm
    public static void Init(PcalCharReader charR) 
    { 
     // initialization moved 
-    addedLabels = new Vector(); 
-    addedLabelsLocs = new Vector();
+    addedLabels = new Vector<String>(); 
+    addedLabelsLocs = new Vector<String>();
     nextLabelNum = 1;
     charReader = charR;
-    allLabels = new Hashtable();       
+    allLabels = new Hashtable<String, String>();
     hasLabel = false;
     hasDefaultInitialization = false;
     currentProcedure = null;
-    procedures = new Vector();
+    procedures = new Vector<AST.Procedure>();
     
     pSyntax = false;
     cSyntax = false; 
@@ -261,9 +262,9 @@ public class ParseAlgorithm
     // never hurt.
     // The following initializations are redundant, but a little redundancy
     // never hurt.
-    plusLabels = new Vector(0);
-    minusLabels = new Vector(0);
-    proceduresCalled = new Vector(0);
+    plusLabels = new Vector<String>(0);
+    minusLabels = new Vector<String>(0);
+    proceduresCalled = new Vector<String>(0);
     
     gotoUsed = false;
     gotoDoneUsed = false;
@@ -329,7 +330,7 @@ public class ParseAlgorithm
          { cSyntax = true ;
            MustGobbleThis("{") ; } 
        else {pSyntax = true ; } ;
-       Vector vdecls = new Vector() ;
+       Vector<AST.VarDecl> vdecls = new Vector<AST.VarDecl>() ;
        if ( PeekAtAlgToken(1).equals("variable")
            || PeekAtAlgToken(1).equals("variables"))
          { vdecls = GetVarDecls() ; } ;
@@ -345,7 +346,7 @@ public class ParseAlgorithm
              { GobbleThis("}") ; } ;
            GobbleThis(";") ; 
          }
-       Vector macros = new Vector() ;
+       Vector<AST.Macro> macros = new Vector<AST.Macro>() ;
        while (PeekAtAlgToken(1).equals("macro"))
          { macros.addElement(GetMacro(macros)) ; } ;
        while (PeekAtAlgToken(1).equals("procedure"))
@@ -370,7 +371,7 @@ public class ParseAlgorithm
            multiproc.defs   = defs ;
            multiproc.macros = macros ;
            multiproc.prcds  = procedures ;
-           multiproc.procs  = new Vector() ;
+           multiproc.procs  = new Vector<AST.Process>() ;
            while (PeekAtAlgToken(1).equals("fair") ||
         		   PeekAtAlgToken(1).equals("process"))
              { int fairness = AST.UNFAIR_PROC;
@@ -456,6 +457,7 @@ public class ParseAlgorithm
            }
            multiproc.setOrigin(new Region(multiprocBegin, 
                    GetLastLocationEnd())) ;
+           multiproc.unicode = Tokenize.Unicode;
            return multiproc ;
          }
        else
@@ -544,6 +546,7 @@ public class ParseAlgorithm
            }
            uniproc.setOrigin(new Region(uniprocBegin, 
                              GetLastLocationEnd())) ;
+           uniproc.unicode = Tokenize.Unicode;
            return uniproc ;
          }
        } catch (final RuntimeException e) {
@@ -802,7 +805,7 @@ public class ParseAlgorithm
        return pv ;
      }
 
-   public static Vector GetVarDecls() throws ParseAlgorithmException
+   public static Vector<AST.VarDecl> GetVarDecls() throws ParseAlgorithmException
      /**********************************************************************
      * Parses a <VarDecls> as a Vector of AST.VarDecl objects.             *
      **********************************************************************/
@@ -811,7 +814,7 @@ public class ParseAlgorithm
          { MustGobbleThis("variables") ; } 
        else 
          { GobbleThis("variable") ; } ;
-       Vector result = new Vector() ;
+       Vector<AST.VarDecl> result = new Vector<AST.VarDecl>();
 
        /********************************************************************
        * The <VarDecls> nonterminal appears in two places:                 *
@@ -842,7 +845,8 @@ public class ParseAlgorithm
        pv.col  = lastTokCol ;
        pv.line = lastTokLine ;
        if (   PeekAtAlgToken(1).equals("=")
-           || PeekAtAlgToken(1).equals("\\in"))
+           || PeekAtAlgToken(1).equals("\\in")
+           || PeekAtAlgToken(1).equals("∈"))
          { pv.isEq = GobbleEqualOrIf() ;
            pv.val = GetExpr() ; 
            endLoc = pv.val.getOrigin().getEnd() ;
@@ -1030,7 +1034,7 @@ public class ParseAlgorithm
        return nextLabel;
      }     
 
-   public static Vector GetStmtSeq() throws ParseAlgorithmException 
+   public static Vector<AST> GetStmtSeq() throws ParseAlgorithmException 
      /**********************************************************************
      * Parses a sequence of <Stmt>s and returns the result as a Vector of  *
      * <Stmt> nodes.  It detects the end of the sequence by the            *
@@ -1040,7 +1044,7 @@ public class ParseAlgorithm
      *                                                                     *
      * in the p-syntax or "}" in the c-syntax.                             *
      **********************************************************************/
-     { Vector result = new Vector() ;
+     { Vector<AST> result = new Vector<AST>() ;
        String tok = PeekAtAlgToken(1) ;
        while (! (    (    pSyntax
                       && (   tok.equals("end")
@@ -1098,7 +1102,7 @@ public class ParseAlgorithm
        return GetAssign() ;
      }
 
-   public static Vector GetCStmtSeq(String lbl) throws ParseAlgorithmException 
+   public static Vector<AST> GetCStmtSeq(String lbl) throws ParseAlgorithmException 
      /**********************************************************************
      * Gets a c-syntax StmtSeq (enclosed in curly braces) that has a       *
      * label lbl.                                                          *
@@ -1111,17 +1115,17 @@ public class ParseAlgorithm
 	    */
 	   PCalLocation lblLocation = getLabelLocation ;
 	   MustGobbleThis("{") ;
-       Vector sseq = GetStmtSeq() ;
+       Vector<AST> sseq = GetStmtSeq() ;
        GobbleThis("}") ;
        GobbleThis(";") ;
        if (! lbl.equals(""))
          { /********************************************************
            * There entire StmtSeq is labeled.                      *
            ********************************************************/
-           if ( ! ((AST) sseq.elementAt(0)).lbl.equals(""))
+           if ( ! (sseq.elementAt(0)).lbl.equals(""))
              { throw new ParseAlgorithmException("Duplicate labeling of statement",
-                                        (AST) sseq.elementAt(0)) ; };
-            AST firstStmt = (AST) sseq.elementAt(0) ;
+                                        sseq.elementAt(0)) ; };
+            AST firstStmt = sseq.elementAt(0) ;
             firstStmt.lbl = lbl ;
             firstStmt.lblLocation = lblLocation ;
         } ;
@@ -1415,7 +1419,7 @@ public class ParseAlgorithm
          ******************************************************************/
        result.ass = new Vector() ;
        result.ass.addElement(GetSingleAssign()) ;
-       while (PeekAtAlgToken(1).equals("||"))
+       while (PeekAtAlgToken(1).equals("||") || PeekAtAlgToken(1).equals("‖"))
          { String throwAway = GetAlgToken() ;
            try {
            result.ass.addElement(GetSingleAssign()) ;
@@ -1440,7 +1444,7 @@ public class ParseAlgorithm
          * PeekAtAlgToken(1), so LAT[0] contains the next token.           *
          ******************************************************************/
        result.lhs = GetLhs() ;
-       GobbleThis(":=") ; 
+       GobbleThis(":=", "≔") ; 
        result.rhs = GetExpr() ;
        if (result.rhs.tokens.size() == 0)
          { ParsingError("Empty right-hand side of assignment at ") ;} ;
@@ -3416,9 +3420,9 @@ public class ParseAlgorithm
        return ;
      }
 
-   public static void GobbleThis(String str) throws ParseAlgorithmException
+   public static void GobbleThis(String... str) throws ParseAlgorithmException
      { /********************************************************************
-       * If the next token is not str, then report an error.  Otherwise,   *
+       * If the next token is not in str, then report an error. Otherwise, *
        * just move past the token.  However, if str is a semicolon and     *
        * the next token indicates that the input is missing an obviously   *
        * unnecessary semicolon, then don't report an error--for example,   *
@@ -3445,7 +3449,7 @@ public class ParseAlgorithm
        * error.  The case is still tested for and a different error        *
        * message produced that might be more helpful.                      *
        ********************************************************************/
-       if ( str.equals(";") )
+       if ( str[0].equals(";") )
          { String nxt = PeekAtAlgToken(1) ;
            if (    nxt.equals("end")
                 || nxt.equals("begin")
@@ -3486,9 +3490,14 @@ public class ParseAlgorithm
              };                   
          } ;
        String tok = GetAlgToken(); 
-       if (! tok.equals(str) )
-         { ParsingError("Expected \"" + str + "\" but found \""
-                            + tok + "\"") ; } ;
+       for (String expected : str) {
+    	   if (tok.equals(expected)) {
+    		   return;
+    	   }
+       }
+
+       String strs = Arrays.toString(str);
+       ParsingError(String.format("Expected %s but found \"%s\"", strs, tok));
      }
 
 	public static void MustGobbleThis(final String str) throws ParseAlgorithmException {
@@ -3511,7 +3520,7 @@ public class ParseAlgorithm
      { String tok = GetAlgToken() ;
        if (tok.equals("="))
          { return true ; } ;
-       if (tok.equals("\\in"))
+       if (tok.equals("\\in") || tok.equals("∈"))
          { return false ; }
        ParsingError("Expected \"=\" or \"\\in\"  but found \""
                                  + tok + "\"") ; 
