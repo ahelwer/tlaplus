@@ -3,10 +3,8 @@ package pcal;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -1296,8 +1294,7 @@ class trans {
     * each element of inputVec written on a new line.                      *
     ***********************************************************************/
     {
-    	// TODO use Apache Commons for this
-        try (final BufferedWriter fileW = new BufferedWriter(new FileWriter(fileName, StandardCharsets.UTF_8))) {
+        try (final BufferedWriter fileW = Files.newBufferedWriter(Path.of(fileName))) {
             // I have no idea what Java does if you try to write a new version
             // of a read-only file. On Windows, it's happy to write it. Who
             // the hell knows what it does on other operating systems? So, something
@@ -1329,11 +1326,11 @@ class trans {
     ***********************************************************************/
     {
         Path inputFilePath = Path.of(fileName);
-		if (!Files.exists(inputFilePath)) {
-			throw new FileToStringVectorException("Input file " + fileName + " not found.");
-		}
+        if (!Files.exists(inputFilePath)) {
+            throw new FileToStringVectorException("Input file " + fileName + " not found.");
+        }
         try {
-        	return Files.readAllLines(inputFilePath);
+            return Files.readAllLines(inputFilePath);
         } catch (IOException e) {
             /*********************************************************
             * Error while reading input file.                        *
@@ -1694,7 +1691,7 @@ class trans {
                     {
                         throw new NumberFormatException();
                     }
-                    int a = new Integer(args[nextArg]).intValue();
+                    int a = Integer.valueOf(args[nextArg]);
                     if (a < 60)
                     {
                         throw new NumberFormatException();
