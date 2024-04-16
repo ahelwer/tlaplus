@@ -142,7 +142,6 @@ public final class Misc
   * breaking the string at spaces into separate lines.                     *
   *************************************************************************/
   { String restOfString = str ;
-    String nextLine = "" ;
     boolean done = false ;
     boolean cut = false ;
     while (   (!done) 
@@ -364,7 +363,20 @@ public final class Misc
                  || ( ('A' <= c ) && (c <= 'Z') )
                  || ( c == '_' ) ;} ;
 
-                 
+    /**
+     * IsLetter function implemented for Unicode codepoints.
+     * 
+     * @param c The codepoint to check.
+     * @return Whether the given codepoint is a letter.
+     */
+    public static boolean IsLetter(int c) {
+        if (c >= 128) {
+            return false;
+        } else {
+            return IsLetter((char)c);
+        }
+    }
+
     public static boolean hasLetter(String str) {
        boolean notFound = true ;
        int i = 0 ;
@@ -383,6 +395,20 @@ public final class Misc
       *********************************************************************/
       { return ('0' <= c ) && (c <= '9'); } ;
 
+    /**
+     * IsDigit function implemented for Unicode codepoints.
+     * 
+     * @param c The codepoint to check.
+     * @return Whether the given codepoint is a digit.
+     */
+    public static boolean IsDigit(int c) {
+        if (c >= 128) {
+            return false;
+        } else {
+            return IsDigit((char)c);
+        }
+    }
+
     public static boolean IsSpace(char c) 
       /*********************************************************************
       * True iff c is a space character--that is, one of the following:    *
@@ -390,6 +416,19 @@ public final class Misc
       *********************************************************************/
       { return  (c == ' ')  | (c == '\f') | (c == '\r') ; } ;
 
+    /**
+     * IsSpace function implemented for Unicode codepoints.
+     * 
+     * @param c The codepoint to check.
+     * @return Whether the given codepoint is a space.
+     */
+    public static boolean IsSpace(int c) {
+        if (c >= 128) {
+            return false;
+        } else {
+            return IsSpace((char)c);
+        }
+    }
 
   public static boolean isBlank(String str) 
     /***********************************************************************
