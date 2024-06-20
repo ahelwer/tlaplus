@@ -439,7 +439,7 @@ public class MP
             break;
         /* ----------------------------------------------------------------- */
         case EC.TLC_VERSION:
-            b.append("TLC2 %1%");
+            b.append("TLC %1%");
             break;
 
         case EC.TLC_PP_FORMATING_VALUE:

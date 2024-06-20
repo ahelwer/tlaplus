@@ -52,7 +52,7 @@ public class UsageGenerator {
 		ps.println();
 		ps.println(generateSectionHeader(NAME));
 		ps.println('\t' + commandName + " - " + commandShortSummary
-						+ ((version != null) ? (" - " + version) : "") + "\n\n");
+						+ ((version != null) ? ("\n\tVersion " + version) : "") + "\n");
 
 		
 		final String boldName = markupWord(commandName, true);

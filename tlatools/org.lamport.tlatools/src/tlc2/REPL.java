@@ -230,7 +230,7 @@ public class REPL {
 			reader.setVariable(LineReader.HISTORY_FILE, HISTORY_PATH);
 
 			System.out.println("Welcome to the TLA+ REPL!");
-            MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC);
+            MP.printMessage(EC.TLC_VERSION, TLCGlobals.getVersionWithRevision());
         	System.out.println("Enter a constant-level TLA+ expression.");
 
             repl.runREPL(reader);

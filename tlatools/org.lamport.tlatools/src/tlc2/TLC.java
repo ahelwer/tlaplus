@@ -1455,11 +1455,7 @@ public class TLC {
         if (!this.welcomePrinted) 
         {
             this.welcomePrinted = true;
-            if (TLCGlobals.getRevision() == null) {
-            	MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC);
-            } else {
-            	MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC + " (rev: " + TLCGlobals.getRevision() + ")");
-            }
+            MP.printMessage(EC.TLC_VERSION, TLCGlobals.getVersionWithRevision());
         }
     }
     
@@ -1695,7 +1691,7 @@ public class TLC {
         tips.add("When using more than one worker, the reported depth might differ across runs. For small models, "
                     + "use a single worker. For large models, the diameter will almost always appear deterministic.");
     	
-    	UsageGenerator.displayUsage(ToolIO.out, "TLC", TLCGlobals.versionOfTLC,
+    	UsageGenerator.displayUsage(ToolIO.out, "TLC", TLCGlobals.getVersionWithRevision(),
     								"provides model checking and simulation of TLA+ specifications",
     								Messages.getString("TLCDescription"),
     								commandVariants, tips, ' ');

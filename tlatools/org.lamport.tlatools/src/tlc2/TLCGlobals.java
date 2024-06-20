@@ -30,7 +30,7 @@ public class TLCGlobals
 	public static final int DEFAULT_CHECKPOINT_DURATION = (30 * 60 * 1000) + 42;
 
 	// The current version of TLC
-    public static String versionOfTLC = "Version 2.18 of Day Month 20??";
+    public static String versionOfTLC = "1.8.0-alpha";
     
     // The bound for set enumeration, used for pretty printing
     public static int enumBound = 2000;
@@ -196,6 +196,15 @@ public class TLCGlobals
 	}
 	
 	public static boolean expand = true;
+	
+	public static String getVersionWithRevision() {
+		String revision = TLCGlobals.getRevision();
+		if (revision == null || revision.isBlank()) {
+			return TLCGlobals.versionOfTLC;
+		} else {
+			return String.format("%s (rev: %s)", TLCGlobals.versionOfTLC, revision);
+		}
+	}
 	
 	public static String getRevision() {
 		return getManifestValue("X-Git-ShortRevision");
