@@ -1426,7 +1426,7 @@ public class TlaPlusParserOutputTranslator {
 				return Kind.IN.asNode();
 			} case SyntaxTreeConstants.N_Assumption: {
 				AstNode assumption = Kind.ASSUMPTION.asNode();
-				parser.consume(TLAplusParserConstants.ASSUME);
+				parser.consume(TLAplusParserConstants.ASSUME, TLAplusParserConstants.ASSUMPTION);
 				if (parser.match(TLAplusParserConstants.IDENTIFIER)) {
 					assumption.addField("name", Kind.IDENTIFIER.asNode());
 					parser.consume(TLAplusParserConstants.DEF);

@@ -79,6 +79,7 @@ public class TlaPlusSyntaxCorpusTests {
 	@Test
 	public void testAll() throws ParseException {
 		SanyParserTestTarget parser = new SanyParserTestTarget();
+		//SyntaxCorpusRunner.debugSingleTest(corpus, parser, "Terminating Open Parentheses");
 		SyntaxCorpusRunner.run(corpus, parser);
 	}
 

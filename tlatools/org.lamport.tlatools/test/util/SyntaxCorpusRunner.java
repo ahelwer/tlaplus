@@ -13,72 +13,98 @@ import org.junit.Assert;
  */
 public class SyntaxCorpusRunner {
 
-	/**
-	 * A parser can implement this interface to be subjected to a corpus of
-	 * syntax tests.
-	 */
-	public interface IParserTestTarget {
-		
-		/**
-		 * Performs parsing. Returns null in case of parse error. Returns
-		 * standardized AST if successful. Throws ParseException if process
-		 * of translating to standardized AST encounters an error.
-		 * 
-		 * @param input The input to be parsed.
-		 * @return Null if parse error, AST if successful.
-		 * @throws ParseException If translation to standardized AST fails.
-		 */
-		public AstNode parse(String input) throws ParseException;
-	}
-	
-	/**
-	 * 
-	 * @param corpus
-	 * @param parser
-	 * @throws ParseException
-	 */
-	public static void run(List<CorpusTestFile> corpus, IParserTestTarget parser) throws ParseException {
-		int testCount = 0;
-		for (CorpusTestFile corpusTestFile : corpus) {
-			System.out.println(corpusTestFile.path);
-			for (CorpusTest corpusTest : corpusTestFile.tests) {
-				// Sometimes you just want to run a single test so you can
-				// trace it in the debugger; to do that, put its name in the
-				// if-statement then uncomment the continue statement.
-				// Keeping this here because it was very useful during
-				// development of the translate function.
-				if (!corpusTest.name.equals("Subexpression Tree Navigation")) {
-					//continue;
-				}
+  /**
+   * A parser can implement this interface to be subjected to a corpus of
+   * syntax tests.
+   */
+  public interface IParserTestTarget {
 
-				System.out.println(corpusTest.name);
+    /**
+     * Performs parsing. Returns null in case of parse error. Returns
+     * standardized AST if successful. Throws ParseException if process
+     * of translating to standardized AST encounters an error.
+     *
+     * @param input The input to be parsed.
+     * @return Null if parse error, AST if successful.
+     * @throws ParseException If translation to standardized AST fails.
+     */
+    public AstNode parse(String input) throws ParseException;
+  }
 
-				if (corpusTest.attributes.contains(CorpusTest.Attribute.SKIP)) {
-					System.out.println("Skipped.");
-					continue;
-				}
+  /**
+   * Runs a single test from the corpus in order to debug it.
+   *
+   * @param corpus A set of corpus test files, each containing some tests.
+   * @param parser A parser target to subject to testing.
+   * @param testName The name of the test to run.
+   * @throws ParseException If translating parse output fails.
+   */
+  public static void debugSingleTest(List<CorpusTestFile> corpus, IParserTestTarget parser, String testName) throws ParseException {
+    // This makes the parser print out messages on entry & exit to each rule.
+    System.setProperty("TLA-StackTrace", "on");
+    for (CorpusTestFile corpusTestFile : corpus) {
+      for (CorpusTest corpusTest : corpusTestFile.tests) {
+        if (corpusTest.name.equals(testName)) {
+          String testSummary = String.format(
+            "%s/%s\n%s",
+            corpusTestFile.path,
+            corpusTest.name,
+            corpusTest.tlaplusInput);
+          AstNode actual = parser.parse(corpusTest.tlaplusInput);
+          if (corpusTest.attributes.contains(CorpusTest.Attribute.ERROR)) {
+            System.out.println("Expecting failure.");
+            Assert.assertNull(testSummary, actual);
+          } else {
+            Assert.assertNotNull(testSummary, actual);
+            System.out.println(String.format("Expect: %s", corpusTest.expectedAst));
+            System.out.println(String.format("Actual: %s", actual));
+            corpusTest.expectedAst.testEquality(actual);
+          }
+        }
+      }
+    }
+  }
 
-				testCount++;
+  /**
+   * Runs the given test corpus against the given parser target.
+   *
+   * @param corpus A set of corpus test files, each containing some tests.
+   * @param parser A parser target to subject to testing.
+   * @throws ParseException If translating parse output fails.
+   */
+  public static void run(List<CorpusTestFile> corpus, IParserTestTarget parser) throws ParseException {
+    int testCount = 0;
+    for (CorpusTestFile corpusTestFile : corpus) {
+      System.out.println(corpusTestFile.path);
+      for (CorpusTest corpusTest : corpusTestFile.tests) {
+        System.out.println(corpusTest.name);
 
-				String testSummary = String.format(
-						"%s/%s\n%s",
-						corpusTestFile.path,
-						corpusTest.name,
-						corpusTest.tlaplusInput);
-				AstNode actual = parser.parse(corpusTest.tlaplusInput);
-				if (corpusTest.attributes.contains(CorpusTest.Attribute.ERROR)) {
-					System.out.println("Expecting failure.");
-					Assert.assertNull(testSummary, actual);
-				} else {
-					Assert.assertNotNull(testSummary, actual);
-					System.out.println(String.format("Expect: %s", corpusTest.expectedAst));
-					System.out.println(String.format("Actual: %s", actual));
-					corpusTest.expectedAst.testEquality(actual);
-				}
-			}
-		}
+        if (corpusTest.attributes.contains(CorpusTest.Attribute.SKIP)) {
+          System.out.println("Skipped.");
+          continue;
+        }
 
-		Assert.assertTrue(testCount > 0);
-		System.out.println(String.format("Total corpus test count: %d", testCount));
-	}
+        testCount++;
+
+        String testSummary = String.format(
+            "%s/%s\n%s",
+            corpusTestFile.path,
+            corpusTest.name,
+            corpusTest.tlaplusInput);
+        AstNode actual = parser.parse(corpusTest.tlaplusInput);
+        if (corpusTest.attributes.contains(CorpusTest.Attribute.ERROR)) {
+          System.out.println("Expecting failure.");
+          Assert.assertNull(testSummary, actual);
+        } else {
+          Assert.assertNotNull(testSummary, actual);
+          System.out.println(String.format("Expect: %s", corpusTest.expectedAst));
+          System.out.println(String.format("Actual: %s", actual));
+          corpusTest.expectedAst.testEquality(actual);
+        }
+      }
+    }
+
+    Assert.assertTrue(testCount > 0);
+    System.out.println(String.format("Total corpus test count: %d", testCount));
+  }
 }
