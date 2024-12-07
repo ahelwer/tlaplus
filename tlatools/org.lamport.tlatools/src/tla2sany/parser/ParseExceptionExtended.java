@@ -32,8 +32,48 @@ public class ParseExceptionExtended extends ParseException {
       tok = tok.next;
     }
     retval += "\" at line " + e.currentToken.next.beginLine + ", column " + e.currentToken.next.beginColumn
-        + " and token \"" + e.add_escapes(e.currentToken.image != null ? e.currentToken.image : "") + "\" ";
+        + " and token \"" + escape(e.currentToken.image != null ? e.currentToken.image : "") + "\" ";
     return retval;
   }
+  
+  private static String escape(String str) {
+      StringBuffer retval = new StringBuffer();
+      char ch;
+      for (int i = 0; i < str.length(); i++) {
+        switch (str.charAt(i))
+        {
+           case 0 :
+              continue;
+           case '\b':
+              retval.append("\\b");
+              continue;
+           case '\t':
+              retval.append("\\t");
+              continue;
+           case '\n':
+              retval.append("\\n");
+              continue;
+           case '\f':
+              retval.append("\\f");
+              continue;
+           case '\r':
+              retval.append("\\r");
+              continue;
+           case '\"':
+              retval.append("\\\"");
+              continue;
+           case '\'':
+              retval.append("\\\'");
+              continue;
+           case '\\':
+              retval.append("\\\\");
+              continue;
+           default:
+              retval.append(str.charAt(i));
+              continue;
+        }
+      }
+      return retval.toString();
+   }
 }
 
