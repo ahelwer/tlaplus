@@ -14,14 +14,11 @@
   <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 
-	<!-- Create a manual dependency towards the tlatools project. It creates 
-		the tla2tools.jar that is signed here. Without the dependency, a concurrent 
-		build will fail to sign when tlatools is built after this pom. -->
 	<dependencies>
 		<dependency>
-			<groupId>tlatoolbox</groupId>
-			<artifactId>org.lamport.tlatools</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<groupId>org.lamport</groupId>
+			<artifactId>tla2tools</artifactId>
+			<version>1.8.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
   
@@ -98,6 +95,12 @@
 								<version>1.0.0-SNAPSHOT</version>
 								<type>jar</type>
 								<outputDirectory>${project.build.directory}/disttlc/plugins</outputDirectory>
+							</artifactItem>
+							<artifactItem>
+								<groupId>org.lamport</groupId>
+								<artifactId>tla2tools</artifactId>
+								<version>1.8.0-SNAPSHOT</version>
+								<type>jar</type>
 							</artifactItem>
 						</artifactItems>
 						<outputDirectory>${project.build.directory}/disttlc</outputDirectory>

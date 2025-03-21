@@ -25,11 +25,20 @@
 		<tag>HEAD</tag>
 	</scm>
 
-	<modules>
-		<!-- non-OSGi jars -->
-		<module>tlatools/org.lamport.tlatools</module>
+  <repositories>
+    <repository>
+      <id>oss-sonatype</id>
+      <name>oss-sonatype</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
+	<modules>
 		<!-- OSGi based multi invocation worker (model check > 1 spec in a single runtime -->
+		<module>tlatools/org.lamport.tlatools</module>
 		<module>tlatools/org.lamport.tlatools.api</module>
 		<module>tlatools/org.lamport.tlatools.impl.distributed</module>
 		<module>tlatools/org.lamport.tlatools.consumer.distributed</module>
