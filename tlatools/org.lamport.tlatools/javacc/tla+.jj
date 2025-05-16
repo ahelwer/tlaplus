@@ -1017,9 +1017,9 @@ TOKEN: {
 | < ELSE: "ELSE" >
 // | < ENDPROOF: "ENDPROOF" | "EndProof" | "Endproof" >
 | < EXCEPT: "EXCEPT" >
-| < EXISTS: "\\E" | "\\exists" | "∃" >
+| < EXISTS: "\\E" | "\\exists" | "∃" | "any" >
 | < EXTENDS: "EXTENDS" >
-| < FORALL: "\\A" | "\\forall" | "∀" >
+| < FORALL: "\\A" | "\\forall" | "∀" | "all" >
 // | < FUNCTION: "FUNCTION" | "FCN" | "FUNCTIONS" | "FCNS" >
 | < IF: "IF" >
 // | < IN: "\\in" > will become a backslash op.
@@ -1137,10 +1137,10 @@ TOKEN: {
   op_115 : "UNION" > | <
   op_116 : "DOMAIN" > | < // infix ->
   op_1 : "//" > | <
-  AND : "/\\" | "∧" > | < //  op_2 : "/\" > | <
-  op_3 : "/=" > | <
+  AND : "/\\" | "∧" | "&&" > | < //  op_2 : "/\" > | <
+  op_3 : "/=" | "!=" > | <
   op_4 : "/" > | <
-  OR : "\\/" | "∨" > | <  //  op_5 : "\/" > | <
+  OR : "\\/" | "||" | "∨" > | <  //  op_5 : "\/" > | <
   op_6 : "\\approx" > | <
   op_7 : "\\asymp" > | <
   op_8 : "\\bigcirc" > | <
@@ -1155,7 +1155,7 @@ TOKEN: {
   op_17 : "\\equiv" > | <
   op_18 : "\\geq" > | <
   op_19 : "\\gg" > | <
-  IN : "\\in" | "∈" > | <
+  IN : "\\in" | "∈" | "in" > | <
   op_21 : "\\intersect" > | <
   op_22 : "\\union" > | <
   op_23 : "\\land" > | <
@@ -1215,11 +1215,9 @@ TOKEN: {
   op_87 : ">" > | <
   op_88 : "..." > | <
   op_89 : ".." > | <
-  op_90 : "||" > | <
   op_91 : "|" > | <
   op_92 : "|-" > | <
   op_93 : "|=" > | <
-  op_94 : "&&" > | <
   op_95 : "&" > | <
   op_96 : "$$" > | <
   op_97 : "$" > | <
@@ -1397,6 +1395,7 @@ PrefixOpToken() : {
  ( t = <op_26>
  | t = <op_29>
  | t = <op_58>
+ | t = <BANG>
  | t = <CASESEP>
  | t = <op_61>
  | t = <op_112>
@@ -1513,11 +1512,9 @@ InfixOpToken() : {
  | t =  <op_87>
  | t =  <op_88>
  | t =  <op_89>
- | t =  <op_90>
  | t =  <op_91>
  | t =  <op_92>
  | t =  <op_93>
- | t =  <op_94>
  | t =  <op_95>
  | t =  <op_96>
  | t =  <op_97>
