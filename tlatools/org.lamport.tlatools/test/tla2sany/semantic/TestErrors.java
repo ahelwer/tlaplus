@@ -53,21 +53,21 @@ public class TestErrors {
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test warning message";
-    log.addWarning(ErrorCode.INTERNAL_ERROR, loc1, message1);
+    log.addWarning(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc1, message1);
     final String expected1 = loc1.toString() + "\n\n" + message1;
-    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc1, message1));
+    expectedDetails.add(new ErrorDetails(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is another test warning message";
-    log.addWarning(ErrorCode.INTERNAL_ERROR, loc2, message2);
+    log.addWarning(ErrorCode.INSTANCED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc2, message2);
     final String expected2 = loc2.toString() + "\n\n" + message2;
-    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc2, message2));
+    expectedDetails.add(new ErrorDetails(ErrorCode.INSTANCED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test warning message";
-    log.addWarning(ErrorCode.INTERNAL_ERROR, null, message3);
+    log.addWarning(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, null, message3);
     final String expected3 = loc3.toString() + "\n\n" + message3;
-    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc3, message3));
+    expectedDetails.add(new ErrorDetails(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getWarnings();

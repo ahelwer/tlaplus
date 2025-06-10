@@ -23,7 +23,9 @@ package tla2sany.semantic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import tla2sany.semantic.ErrorCode.ErrorLevel;
 import tla2sany.st.Location;
 
 public class Errors {
@@ -71,40 +73,118 @@ public class Errors {
     }
   }
 
-  private List<ErrorDetails> warnings = new ArrayList<ErrorDetails>();
-  private List<ErrorDetails> errors   = new ArrayList<ErrorDetails>();
-  private List<ErrorDetails> aborts   = new ArrayList<ErrorDetails>();
+  private List<ErrorDetails> messages = new ArrayList<ErrorDetails>();
+  
+  private static boolean atLeastLevel(ErrorCode code, ErrorLevel base) {
+    return code.getSeverityLevel().compareTo(base) >= 0;
+  }
 
-  /*************************************************************************
-  * The following methods to return the warnings, errors, and aborts in a  *
-  * sane way were added by LL on 12 May 2008.                              *
-  *************************************************************************/
-  public String[] getAborts()   { return this.aborts.stream().map(ErrorDetails::toString).toArray(String[]::new); }
-  public String[] getErrors()   { return this.errors.stream().map(ErrorDetails::toString).toArray(String[]::new); }
-  public String[] getWarnings() { return this.warnings.stream().map(ErrorDetails::toString).toArray(String[]::new); }
+  public List<ErrorDetails> getMessagesOfLevel(ErrorLevel level) {
+    return this.messages.stream().filter(
+        msg -> msg.getCode().getSeverityLevel().equals(level)
+      ).collect(Collectors.toList());
+  }
+  
+  public List<ErrorDetails> getMessagesOfAtLeastLevel(ErrorLevel level) {
+    return this.messages.stream().filter(
+        msg -> Errors.atLeastLevel(msg.getCode(), level)
+      ).collect(Collectors.toList());
+  }
 
-  public List<ErrorDetails> getAbortDetails()   { return new ArrayList<ErrorDetails>(this.aborts); }
-  public List<ErrorDetails> getErrorDetails()   { return new ArrayList<ErrorDetails>(this.errors); }
-  public List<ErrorDetails> getWarningDetails() { return new ArrayList<ErrorDetails>(this.warnings); }
+  public List<ErrorDetails> getAbortDetails() {
+    return this.getMessagesOfLevel(ErrorLevel.ABORT);
+  }
 
-  public final void addWarning(ErrorCode code, Location loc, String str) {
-    if (loc == null) {
-      loc = Location.nullLoc;
-    }
-    final ErrorDetails error = new ErrorDetails(code, loc, str);
-    if (!this.warnings.contains(error)) {
-      this.warnings.add(error);
+  public String[] getAborts() {
+    return this.getAbortDetails().stream()
+        .map(ErrorDetails::toString).toArray(String[]::new);
+  }
+
+  public List<ErrorDetails> getErrorDetails() {
+    return this.getMessagesOfLevel(ErrorLevel.ERROR);
+  }
+
+  public String[] getErrors() {
+    return this.getErrorDetails().stream()
+        .map(ErrorDetails::toString).toArray(String[]::new);
+  }
+
+  public List<ErrorDetails> getWarningDetails() {
+    return this.getMessagesOfLevel(ErrorLevel.WARNING);
+  }
+
+  public String[] getWarnings() {
+    return this.getWarningDetails().stream()
+        .map(ErrorDetails::toString).toArray(String[]::new);
+  }
+
+  public List<ErrorDetails> getLintDetails() {
+    return this.getMessagesOfLevel(ErrorLevel.LINT);
+  }
+
+  public String[] getLint() {
+    return this.getLintDetails().stream()
+        .map(ErrorDetails::toString).toArray(String[]::new);
+  }
+
+  /**
+   * Ensures the given error code is of the expected level, and throws an
+   * illegal argument exception if not. Ideally in the future this method
+   * will not be necessary as all logging shifts to use addMessage() instead
+   * of level-specific methods; currently the error level information is
+   * duplicated in both the {@link ErrorCode} and choice of method.
+   *
+   * @param code The code associated with the message under consideration.
+   * @param expected The expected code level.
+   */
+  private void validateLevel(ErrorCode code, ErrorLevel expected) {
+    if (!code.getSeverityLevel().equals(expected)) {
+      throw new IllegalArgumentException(
+        "Expected message of level " + expected.toString()
+        + " but received message of level " + code.getSeverityLevel().toString()
+      );
     }
   }
 
+  /**
+   * Whether to record the message in the log. To avoid unnecessary memory
+   * usage, {@link ErrorLevel.DEBUG} and {@link ErrorLevel.INFO} messages are
+   * not logged; only messages of {@link ErrorLevel.LINT} and higher are
+   * logged for later retrieval.
+   *
+   * @param code The code associated with the message under consideration.
+   * @return Whether to store the message in the log.
+   */
+  private boolean shouldRecordMessage(ErrorCode code) {
+    return code.getSeverityLevel().compareTo(ErrorLevel.LINT) >= 0;
+  }
+
+  /**
+   * Append a message to the log. The message will only be recorded if it is
+   * {@link ErrorLevel.LINT} level or higher. If location is null, the value
+   * {@link Location.nullLoc} is assigned. Idempotent; will not append the
+   * same message to the log multiple times.
+   *
+   * @param code The standardized error code associated with the message.
+   * @param loc A spec location associated with the message.
+   * @param str A human-readable message.
+   */
+  public final void addMessage(ErrorCode code, Location loc, String str) {
+    loc = null == loc ? Location.nullLoc : loc;
+    final ErrorDetails message = new ErrorDetails(code, loc, str);
+    if (shouldRecordMessage(code) && !this.messages.contains(message)) {
+      this.messages.add(message);
+    }
+  }
+
+  public final void addWarning(ErrorCode code, Location loc, String str) {
+    validateLevel(code, ErrorLevel.WARNING);
+    this.addMessage(code, loc, str);
+  }
+
   public final void addError(ErrorCode code, Location loc, String str) {
-    if (loc == null) {
-      loc = Location.nullLoc;
-    }
-    final ErrorDetails error = new ErrorDetails(code, loc, str);
-    if (!this.errors.contains(error)) {
-      this.errors.add(error);
-    }
+    validateLevel(code, ErrorLevel.ERROR);
+    this.addMessage(code, loc, str);
   }
 
   public final void addAbort(
@@ -113,44 +193,59 @@ public class Errors {
       String str,
       boolean abort
   ) throws AbortException {
-    if (loc == null) {
-      loc = Location.nullLoc;
-    }
-    final ErrorDetails error = new ErrorDetails(code, loc, str);
-    if (!this.aborts.contains(error)) {
-      this.aborts.add(error);
-    }
-
+    validateLevel(code, ErrorLevel.ABORT);
+    this.addMessage(code, loc, str);
     if (abort){
       throw new AbortException();
     }
   }
 
-  public final boolean isSuccess()             { return this.aborts.isEmpty() && this.errors.isEmpty(); }
 
-  public final boolean isFailure()             { return !this.isSuccess(); }
+  public final boolean isSuccess() {
+    return this.getAbortDetails().isEmpty()
+        && this.getErrorDetails().isEmpty();
+  }
 
-  public final int     getNumErrors()          { return this.errors.size(); }
+  public final boolean isFailure() {
+    return !this.isSuccess();
+  }
 
-  public final int     getNumAbortsAndErrors() { return this.aborts.size() + this.errors.size(); }
+  public final int getNumErrors() {
+    return this.getErrorDetails().size();
+  }
 
-  public final int     getNumMessages()        { return this.aborts.size() + this.errors.size() + this.warnings.size(); }
+  public final int getNumAbortsAndErrors() {
+    return this.getAbortDetails().size() + this.getErrorDetails().size();
+  }
 
-  public final String  toString()  {
+  public final int getNumMessages() {
+    return this.messages.size();
+  }
+
+  public final String toString()  {
     StringBuffer ret = new StringBuffer("");
 
-    ret.append((this.aborts.size() > 0) ? "*** Abort messages: " + this.aborts.size() + "\n\n" : "");
-    for (final ErrorDetails error : this.aborts)   {
+    final List<ErrorDetails> aborts = this.getAbortDetails();
+    ret.append((aborts.size() > 0) ? "*** Abort messages: " + aborts.size() + "\n\n" : "");
+    for (final ErrorDetails error : aborts)   {
       ret.append(error.toString() + "\n\n\n");
     }
 
-    ret.append((this.errors.size() > 0) ? "*** Errors: " + this.errors.size() + "\n\n" : "");
-    for (final ErrorDetails error : this.errors)   {
+    final List<ErrorDetails> errors = this.getErrorDetails();
+    ret.append((errors.size() > 0) ? "*** Errors: " + errors.size() + "\n\n" : "");
+    for (final ErrorDetails error : errors)   {
       ret.append(error.toString() + "\n\n\n");
     }
 
-    ret.append((this.warnings.size() > 0) ? "*** Warnings: " + this.warnings.size() + "\n\n" : "");
-    for (final ErrorDetails error : this.warnings) {
+    final List<ErrorDetails> warnings = this.getWarningDetails();
+    ret.append((warnings.size() > 0) ? "*** Warnings: " + warnings.size() + "\n\n" : "");
+    for (final ErrorDetails error : warnings) {
+      ret.append(error.toString() + "\n\n\n");
+    }
+
+    final List<ErrorDetails> lint = this.getWarningDetails();
+    ret.append((lint.size() > 0) ? "*** Lint: " + lint.size() + "\n\n" : "");
+    for (final ErrorDetails error : lint) {
       ret.append(error.toString() + "\n\n\n");
     }
 

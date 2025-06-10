@@ -63,7 +63,7 @@ public enum ErrorCode {
    * never be reached since the semantic checking process will have failed
    * before those points.
    */
-  SUSPECTED_UNREACHABLE_CHECK (4004, ErrorLevel.UNDEFINED),
+  SUSPECTED_UNREACHABLE_CHECK (4004, ErrorLevel.ERROR),
 
   /**
    * SANY contains some code handling language features that are either not
@@ -79,7 +79,7 @@ public enum ErrorCode {
    * Subexpressions are one prominent category of language feature tagged
    * with this error code.
    */
-  UNSUPPORTED_LANGUAGE_FEATURE (4005, ErrorLevel.UNDEFINED),
+  UNSUPPORTED_LANGUAGE_FEATURE (4005, ErrorLevel.ERROR),
 
   /**
    * Standardized errors. These should cause a parse failure. They are
@@ -163,17 +163,26 @@ public enum ErrorCode {
   /**
    * Standardized warnings. These should not cause a parse failure.
    */
-  EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY (4800, ErrorLevel.WARNING),
-  INSTANCED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY (4801, ErrorLevel.WARNING),
-  RECORD_CONSTRUCTOR_FIELD_NAME_CLASH (4802, ErrorLevel.WARNING);
+  EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY (4600, ErrorLevel.WARNING),
+  INSTANCED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY (4601, ErrorLevel.WARNING),
+
+  /**
+   * Standardized linter messages. These use heuristics to identify possible
+   * issues and should be considered less severe than warnings. Should not
+   * cause a parse failure.
+   */
+  RECORD_CONSTRUCTOR_FIELD_NAME_CLASH (4800, ErrorLevel.LINT);
 
   /**
    * The error's level of seriousness.
    */
   public static enum ErrorLevel {
-    UNDEFINED,
+    DEBUG,
+    INFO,
+    LINT,
     WARNING,
-    ERROR
+    ERROR,
+    ABORT
   }
 
   /**
