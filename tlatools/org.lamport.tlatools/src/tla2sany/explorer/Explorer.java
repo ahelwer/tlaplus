@@ -9,8 +9,8 @@ package tla2sany.explorer;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -22,7 +22,6 @@ import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.OpDefOrDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
-import tla2sany.utilities.Vector;
 import util.UniqueString;
 
 /*
@@ -111,54 +110,43 @@ public class Explorer {
 
 	private void lookUpAndPrintSyntaxTree(String symbName) {
 
-		Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
+		List<SymbolNode> symbolVect = new ArrayList<>(8); // Initial room for 8 symbols with same name
 
 		// Collect in Vector symbols all SymbolNodes in the semNodesTable whose name ==
 		// symbName
 
-		for (Enumeration<ExploreNode> Enum = semNodesTable.elements(); Enum.hasMoreElements();) {
-
-			ExploreNode semNode = Enum.nextElement();
-
+		for (ExploreNode semNode : semNodesTable.values()) {
 			if (semNode instanceof SymbolNode
 					&& ((SymbolNode) semNode).getName() == UniqueString.uniqueStringOf(symbName)) {
 
-				symbolVect.addElement((SymbolNode) semNode);
-
+				symbolVect.add((SymbolNode)semNode);
 			}
 		}
 
 		// Print them all
-		for (int i = 0; i < symbolVect.size(); i++) {
-			SymbolNode sym = (SymbolNode) (symbolVect.elementAt(i));
-			((SemanticNode) (sym)).getTreeNode().printST(0);
+		for (SemanticNode sym : symbolVect) {
+			sym.getTreeNode().printST(0);
 			System.out.println();
 		}
-
 	}
 
 	private void lookUpAndPrintDef(String symbName) {
 
-		Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
+		List<SymbolNode> symbolVect = new ArrayList<>(8); // Initial room for 8 symbols with same name
 
 		// Collect in Vector symbols all SymbolNodes in the semNodesTable whose name ==
 		// symbName
 
-		for (Enumeration<ExploreNode> Enum = semNodesTable.elements(); Enum.hasMoreElements();) {
-
-			ExploreNode semNode = Enum.nextElement();
-
+		for (ExploreNode semNode : semNodesTable.values()) {
 			if (semNode instanceof SymbolNode
 					&& ((SymbolNode) semNode).getName() == UniqueString.uniqueStringOf(symbName)) {
 
-				symbolVect.addElement((SymbolNode) semNode);
-
+				symbolVect.add((SymbolNode)semNode);
 			}
 		}
 
 		// Print them all
-		for (int i = 0; i < symbolVect.size(); i++) {
-			SymbolNode sym = (SymbolNode) (symbolVect.elementAt(i));
+		for (SymbolNode sym : symbolVect) {
 			if (sym instanceof OpDefOrDeclNode) {
 				if (((OpDefOrDeclNode) sym).getOriginallyDefinedInModuleNode() != null) {
 					System.out.print(
@@ -169,33 +157,27 @@ public class Explorer {
 			} else if (sym instanceof FormalParamNode) {
 				System.out.print("Module: " + ((FormalParamNode) sym).getModuleNode().getName());
 			}
-			System.out.println(((ExploreNode) (symbolVect.elementAt(i))).toString(100, errors) + "\n");
+			System.out.println(((ExploreNode)sym).toString(100, errors) + "\n");
 		}
-
 	}
 
 	private void levelDataPrint(String symbName) {
 
-		Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
+		List<SymbolNode> symbolVect = new ArrayList<>(8); // Initial room for 8 symbols with same name
 
 		// Collect in Vector symbols all SymbolNodes in the semNodesTable whose name ==
 		// symbName
 
-		for (Enumeration<ExploreNode> Enum = semNodesTable.elements(); Enum.hasMoreElements();) {
-
-			ExploreNode semNode = Enum.nextElement();
-
+		for (ExploreNode semNode : semNodesTable.values()) {
 			if (semNode instanceof SymbolNode
 					&& ((SymbolNode) semNode).getName() == UniqueString.uniqueStringOf(symbName)) {
 
-				symbolVect.addElement((SymbolNode) semNode);
-
+				symbolVect.add((SymbolNode)semNode);
 			}
 		}
 
 		// Print them all
-		for (int i = 0; i < symbolVect.size(); i++) {
-			SymbolNode sym = (SymbolNode) (symbolVect.elementAt(i));
+		for (SymbolNode sym : symbolVect) {
 			if (sym instanceof OpDefOrDeclNode) {
 				if (((OpDefOrDeclNode) sym).getOriginallyDefinedInModuleNode() != null) {
 					System.out.print(
@@ -206,10 +188,9 @@ public class Explorer {
 			} else if (sym instanceof FormalParamNode) {
 				System.out.print("Module: " + ((FormalParamNode) sym).getModuleNode().getName() + "\n");
 			}
-			System.out.println(((ExploreNode) (sym)).levelDataToString());
+			System.out.println(((ExploreNode)sym).levelDataToString());
 			System.out.println();
 		}
-
 	}
 
 	private void executeCommand() throws ExplorerQuitException {

@@ -2,6 +2,8 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.modanalyzer;
 
+import java.util.List;
+
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
 
@@ -79,7 +81,7 @@ public class ModulePointer {
 
 
   // Returns Vector of names of Module pointers for immediate inner modules
-  Vector getDirectInnerModules() { 
+  List<ModulePointer> getDirectInnerModules() { 
     return moduleRelatives.directInnerModules; 
   }
 

@@ -29,6 +29,7 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.List;
 
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.ErrorCode;
@@ -150,7 +151,7 @@ public class ParseUnit {
     return module.getRelatives().outerModule;
   }
 
-  final Vector getPeers(ModulePointer module) {
+  final List<ModulePointer> getPeers(ModulePointer module) {
     if ( module.getRelatives().outerModule != null ) {
       return module.getRelatives().outerModule.getRelatives().directInnerModules;
     }
@@ -409,9 +410,7 @@ public class ParseUnit {
       // recursively add to currentContext all of the inner modules in
       // modules extended by resolvant
       if ( extendeeResolvant != null ) {
-        Vector directInnerModules = extendeeResolvant.getDirectInnerModules();
-        for (int j = 0; j < directInnerModules.size(); j++) {
-          ModulePointer upperInnerMod = (ModulePointer)directInnerModules.elementAt(j);
+        for (ModulePointer upperInnerMod : extendeeResolvant.getDirectInnerModules()) {
           currentContext.bindIfNotBound(upperInnerMod.getName(), upperInnerMod);
           handleExtensions(currentModule,extendeeResolvant); // recursive call
 	}
@@ -459,10 +458,8 @@ public class ParseUnit {
       // etc. at point where it is defined
       currentContext.union(getParent(ancestorModule).getContext());
 
-      Vector peers = getPeers(ancestorModule);
       // All peers defined so far are in the currentContext
-      for (int i = 0; i < peers.size() - 1; i++) {
-        ModulePointer nextPeer = (ModulePointer)peers.elementAt(i);
+      for (ModulePointer nextPeer : getPeers(ancestorModule)) {
         currentContext.bindIfNotBound(nextPeer.getName(), nextPeer);
       }
       ancestorModule = getParent(ancestorModule);
@@ -555,7 +552,7 @@ public class ParseUnit {
         ModulePointer innerModule = new ModulePointer(spec, this,def);
 
         // Indicate that the inner module is inner to the current module
-        currentRelatives.directInnerModules.addElement( innerModule );
+        currentRelatives.directInnerModules.add(innerModule);
 
         // Recursive call to determine module relationships for the inner module
         determineModuleRelationships(innerModule, currentModule); 

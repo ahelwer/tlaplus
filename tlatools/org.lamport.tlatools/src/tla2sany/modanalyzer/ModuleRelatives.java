@@ -2,6 +2,9 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.modanalyzer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import tla2sany.utilities.Vector;
 
 /**
@@ -19,8 +22,10 @@ public class ModuleRelatives {
   ModulePointer outerModule                     = null; // TreeNode of the immediate outer (parent) module; 
                                                         //   null currentModule is the outermost in parseUnit
 
-  Vector        directInnerModules              = new Vector(); 
-                                                        // Vector of ModulePointers for immediate inner modules 
+  /**
+   * List of ModulePointers for immediate inner modules 
+   */
+  List<ModulePointer> directInnerModules        = new ArrayList<>(); 
 
   Vector        directlyExtendedModuleNames     = new Vector(); 
                                                         // Vector of String names for modules mentioned in EXTENDS decls by 
@@ -50,8 +55,8 @@ public class ModuleRelatives {
 				 : outerModule.getName() );
 
     ret += "\ndirectInnerModules: ";
-    for (int i = 0; i < directInnerModules.size(); i++) {
-      ret += ((ModulePointer)(directInnerModules.elementAt(i))).getName() + " ";
+    for (ModulePointer mp : this.directInnerModules) {
+      ret += mp.getName() + " ";
     }
 
     ret += "\ndirectlyExtendedModuleNames: ";
