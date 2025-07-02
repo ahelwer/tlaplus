@@ -225,18 +225,18 @@ public class ModuleNode extends SymbolNode {
     * MCParser though.                                                     *
     ***********************************************************************/
 
-  Vector recursiveDecls = new Vector(8);
     /***********************************************************************
     * Contains the list of OpDefNode objects created by processing         *
     * RECURSIVE statements, in the order in which they were created.       *
     ***********************************************************************/
+  Vector<OpDefNode> recursiveDecls = new Vector<>(8);
 
-  Vector<OpDefNode> opDefsInRecursiveSection = new Vector<>(16);
     /***********************************************************************
     * The list of all OpDefNode objects opd in this module, and in any     *
     * inner modules, with opd.recursiveSection >= 0.  (See the comments    *
     * for OpDefNode.recursiveSection to see what this field means.)        *
     ***********************************************************************/
+  Vector<OpDefNode> opDefsInRecursiveSection = new Vector<>(16);
 
   int nestingLevel ;
     /***********************************************************************
@@ -307,22 +307,22 @@ public class ModuleNode extends SymbolNode {
   * uniquestr in ModuleNode mn, one calls                                  *
   * mn.getContext().getSymbol(uniquestr).                                  *
   *************************************************************************/
-  private Vector assumptionVec = new Vector();  // Vector of AssumeNodes
-  private Vector theoremVec    = new Vector();  // Vector of TheoremNodes
-  private Vector instanceVec   = new Vector();  // Vector of InstanceNodes
+  private Vector<AssumeNode> assumptionVec = new Vector<>();
+  private Vector<TheoremNode> theoremVec = new Vector<>();
+  private Vector<InstanceNode> instanceVec = new Vector<>();
 
-  private Vector topLevelVec   = new Vector();
     /***********************************************************************
     * A vector containing all the entries in the preceding three vectors,  *
     * plus all top-level UseOrHideNode nodes, in the order in which they   *
     * appear in the module.                                                *
     ***********************************************************************/
+  private Vector<SemanticNode> topLevelVec   = new Vector<>();
 
-  Vector recursiveOpDefNodes = new Vector();
     /***********************************************************************
     * A vector of all OpDefNodes for operators declared in RECURSIVE       *
     * statements--even within LET expressions.                             *
     ***********************************************************************/
+  Vector<OpDefNode> recursiveOpDefNodes = new Vector<>();
 
   // Invoked only in Generator
   public ModuleNode(UniqueString us, Context ct, TreeNode stn) {
@@ -412,10 +412,10 @@ public class ModuleNode extends SymbolNode {
    */
   public final OpDefNode[] getOpDefs() {
     if (opDefs != null) return opDefs;
-    Vector contextVec = ctxt.getOpDefs();
+    Vector<OpDefNode> contextVec = ctxt.getOpDefs();
     opDefs = new OpDefNode[contextVec.size()];
     for (int i = 0, j = opDefs.length - 1; i < opDefs.length; i++) {
-        opDefs[j--] = (OpDefNode)contextVec.elementAt(i);
+        opDefs[j--] = contextVec.elementAt(i);
     }
     return opDefs;
   }
@@ -436,11 +436,11 @@ public class ModuleNode extends SymbolNode {
   *************************************************************************/
   public final ThmOrAssumpDefNode[] getThmOrAssDefs() {
     if (thmOrAssDefs != null) return thmOrAssDefs;
-    Vector contextVec = ctxt.getThmOrAssDefs();
+    Vector<ThmOrAssumpDefNode> contextVec = ctxt.getThmOrAssDefs();
     thmOrAssDefs = new ThmOrAssumpDefNode[contextVec.size()];
     for (int i = 0, j = thmOrAssDefs.length - 1;
                            i < thmOrAssDefs.length; i++) {
-        thmOrAssDefs[j--] = (ThmOrAssumpDefNode) contextVec.elementAt(i);
+        thmOrAssDefs[j--] = contextVec.elementAt(i);
     }
     return thmOrAssDefs;
   }
@@ -486,7 +486,7 @@ public class ModuleNode extends SymbolNode {
   public final ModuleNode[] getInnerModules() {
     if ( modDefs != null ) return modDefs;
 
-    Vector v = ctxt.getModDefs();
+    Vector<SemanticNode> v = ctxt.getModDefs();
     modDefs = new ModuleNode[v.size()];
     for (int i = 0; i < modDefs.length; i++) {
       modDefs[i] = (ModuleNode)v.elementAt(i);
@@ -833,8 +833,8 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       * using recursiveAllParams.                                          *
       *********************************************************************/
       int maxRecursiveLevel = ConstantLevel ;
-      HashSet recursiveLevelParams = new HashSet() ;
-      HashSet recursiveAllParams = new HashSet() ;
+      HashSet<SymbolNode> recursiveLevelParams = new HashSet<>() ;
+      HashSet<SymbolNode> recursiveAllParams = new HashSet<>() ;
       for (int i = firstInSectIdx ; i < curNodeIdx ; i++) {
         curNode = opDefsInRecursiveSection.elementAt(i) ;
         if (curNode.inRecursive) {curNode.levelChecked = 0 ;} ;
@@ -971,9 +971,9 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     for (int i = 0; i < opDefs.length; i++) {
       this.levelConstraints.putAll(opDefs[i].getLevelConstraints());
       this.argLevelConstraints.putAll(opDefs[i].getArgLevelConstraints());
-      Iterator iter = opDefs[i].getArgLevelParams().iterator();
+      Iterator<ArgLevelParam> iter = opDefs[i].getArgLevelParams().iterator();
       while (iter.hasNext()) {
-        ArgLevelParam alp = (ArgLevelParam)iter.next();
+        ArgLevelParam alp = iter.next();
         if (!alp.occur(opDefs[i].getParams())) {
           this.argLevelParams.add(alp);
         }
@@ -1167,7 +1167,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
                                  ? "none"
                                  : "" +errors.getNumErrors())));
 
-    Vector contextEntries = ctxt.getContextEntryStringVector(depth-1, b, errors);
+    Vector<String> contextEntries = ctxt.getContextEntryStringVector(depth-1, b, errors);
     for (int i = 0; i < contextEntries.size(); i++) {
       System.out.print(Strings.indent(2+indent, (String)contextEntries.elementAt(i)) );
     }
@@ -1186,7 +1186,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
                               ? "none"
                               : "" + errors.getNumErrors()));
 
-    Vector contextEntries = ctxt.getContextEntryStringVector(depth-1,false, errors);
+    Vector<String> contextEntries = ctxt.getContextEntryStringVector(depth-1,false, errors);
     if (contextEntries != null) {
       for (int i = 0; i < contextEntries.size(); i++) {
         if (contextEntries.elementAt(i) != null) {
