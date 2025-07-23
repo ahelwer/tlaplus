@@ -19,6 +19,7 @@ import tla2sany.parser.ParseException;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.Errors;
+import tla2sany.semantic.Errors.ErrorDetails;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.Generator;
 import tla2sany.semantic.ModuleNode;
@@ -204,39 +205,26 @@ public class SANY {
       try 
       {
           // Actual parsing method called from inside loadSpec()
-          if (!spec.loadSpec(spec.getFileName(), spec.parseErrors, validatePCalTranslation, out)) 
-          {
-              // dead code SZ 02. Aug 2009
-              /*
-        spec.parseErrors.addError(
-            Location.nullLoc,
-            "Parsing failed; semantic analysis not started");
-               */
-          }
-
+          spec.loadSpec(spec.getFileName(), spec.parseErrors, validatePCalTranslation, out);
+          printErrorLog(out, spec.parseErrors, "syntax parsing", spec.getFileName());
           if (!spec.parseErrors.isSuccess()) 
           {
-              out.log(LogLevel.ERROR, spec.parseErrors.toString());
               // indicate fatal error during parsing phase
               spec.errorLevel = 2;
               throw new ParseException(); 
           }
       }
-      // TODO
-      catch (ParseException e) 
+      catch (AbortException e)
       {
-          // get here if either the TLAPlusParser.parse() threw a ParseException or spec.ParseErrors was not empty
+          printErrorLog(out, spec.parseErrors, "syntax parsing", spec.getFileName());
           throw new ParseException();
       }
       catch (Exception e) 
       {
-          out.log(LogLevel.ERROR, "\nFatal errors while parsing TLA+ spec in file %s\n", spec.getFileName());
           out.log(LogLevel.ERROR, e.toString());
-          out.log(LogLevel.ERROR, spec.parseErrors.toString());
           throw new ParseException();
       }
-      return;
-  } //
+  }
 
   /**
    * Use {@link SANY#frontEndSemanticAnalysis(SpecObj, SanyOutput, boolean)}
@@ -278,21 +266,6 @@ public class SANY {
           // get reference to the syntax tree for the module
           syntaxTreeRoot = parseUnit.getParseTree();
 
-          /*
-          // Debugging
-          // Print the concrete syntax tree for this ExternalModuleTableEntry
-          // Printing is done without the user's request, because if 
-          // an abort occurs during semantic processing, we want to be able
-          // to look at the syntax tree for a clue.
-          if (syserr != null) {
-            syserr.println("\n*** Concrete Syntax Tree for Module " + moduleStringName);
-          }
-          syntaxTreeRoot.printST(0);   // Use zero indentation
-          if (syserr != null) {
-            syserr.println("\n*** End of concrete syntax tree for Module " + moduleStringName);
-          }
-          */
- 
           // Generate semantic graph for the entire external module
           out.log(LogLevel.INFO, "Semantic processing of module %s", moduleStringName);
           // create new Generator object
@@ -321,14 +294,11 @@ public class SANY {
             externalModuleTable.setRootModule( moduleNode ); 
           }
 
-          if (semanticErrors.getNumMessages() > 0) {
-            // TODO: split warnings & errors out into appropriate log level
-            out.log(LogLevel.ERROR, "Semantic errors:\n\n%s", semanticErrors);
+          printErrorLog(out, semanticErrors, "semantic analysis", spec.getFileName());
 
-            // indicate fatal error during semantic analysis or level-checking
-            if ( semanticErrors.getNumErrors() > 0 ) {
-              spec.errorLevel = 4;
-            } // end if
+          // indicate fatal error during semantic analysis or level-checking
+          if (semanticErrors.getNumErrors() > 0) {
+            spec.errorLevel = 4;
           } // end if
         } // end if
       } // end while
@@ -342,21 +312,43 @@ public class SANY {
       );
       e.printStackTrace(out.getStream(LogLevel.ERROR));
   
-      if (semanticErrors.getNumMessages() > 0) {
-        out.log(
-            LogLevel.ERROR,
-            "Semantic errors detected before the unexpected exception:\n\n%s",
-            semanticErrors
-        );
-        
-        // indicate fatal error during semantic analysis or level-checking
-        if ( semanticErrors.getNumErrors() > 0 ) { 
-          spec.errorLevel = 4;
-        }
-      }
+      out.log(
+          LogLevel.ERROR,
+          "Semantic errors detected before the unexpected exception:\n\n"
+      );
+      printErrorLog(out, semanticErrors, "semantic analysis", spec.getFileName());
+
+      spec.errorLevel = 4;
       throw new SemanticException(e);
     }
     return;
+  }
+
+  /**
+   * Prints the the given error log to the given output controller, mapping
+   * error level to appropriate output level.
+   *
+   * @param out The output control instance.
+   * @param errorLog The log of error messages.
+   * @param phase The parsing phase in which error messages were generated.
+   * @param filename The name of the file in which the errors occurred.
+   */
+  private static void printErrorLog(SanyOutput out, Errors errorLog, String phase, String filename) {
+    List<ErrorDetails> warnings = errorLog.getWarningDetails();
+    if (!warnings.isEmpty()) {
+      out.log(LogLevel.WARNING, "Warnings (%d) during %s of %s:\n\n", warnings.size(), phase, filename);
+      for (ErrorDetails warning : warnings) {
+        out.log(LogLevel.WARNING, warning.toString() + "\n\n\n");
+      }
+    }
+
+    List<ErrorDetails> errors = errorLog.getErrorDetails();
+    if (!errors.isEmpty()) {
+      out.log(LogLevel.ERROR, "Errors (%d) during %s of %s:\n\n", errors.size(), phase, filename);
+      for (ErrorDetails error : errors) {
+        out.log(LogLevel.ERROR, error.toString() + "\n\n\n");
+      }
+    }
   }
 
   private static void printUsage()
