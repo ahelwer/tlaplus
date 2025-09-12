@@ -1159,7 +1159,7 @@ TOKEN: {
   op_8 : "\\bigcirc" > | <
   op_9 : "\\bullet" > | <
   op_10 : "\\cap" > | <
-  op_11 : "\\cdot" > | <
+  op_11 : "\\cdot" | ";" > | <
   op_12 : "\\circ" > | <
   op_13 : "\\cong" > | <
   op_14 : "\\cup" > | <

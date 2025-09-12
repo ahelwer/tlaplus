@@ -431,7 +431,7 @@ public interface TLAplusParserConstants {
     "\"\\\\bigcirc\"",
     "\"\\\\bullet\"",
     "\"\\\\cap\"",
-    "\"\\\\cdot\"",
+    "<op_11>",
     "\"\\\\circ\"",
     "\"\\\\cong\"",
     "\"\\\\cup\"",

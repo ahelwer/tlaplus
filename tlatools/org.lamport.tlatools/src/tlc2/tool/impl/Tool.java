@@ -1429,7 +1429,14 @@ public abstract class Tool
 				nss.incrementStatesGenerated(sz);
 				for (int i = 0; i < sz; i++) {
 					final TLCState u = s1.copy();
+
 					t = iss.elementAt(i);
+
+					for (OpDeclNode unassignedVar : t.getUnassigned()) {
+					  UniqueString unassignedVarName = unassignedVar.getName();
+					  t.bind(unassignedVarName, s0.lookup(unassignedVarName));
+					}
+					assert this.isGoodState(t);
 
 					// iss2 does not call the unsatisfied next feature 
 					this.getNextStates(action, args[1], acts, c, t, u, new INextStateFunctor() {
@@ -2716,6 +2723,11 @@ public abstract class Tool
 					int sz = iss.size();
 					for (int i = 0; i < sz; i++) {
 						t = iss.elementAt(i);
+						for (OpDeclNode unassignedVar : t.getUnassigned()) {
+	            UniqueString unassignedVarName = unassignedVar.getName();
+	            t.bind(unassignedVarName, s0.lookup(unassignedVarName));
+	          }
+	          assert this.isGoodState(t);
 						
 						final Value res = this.eval(args[1], c, t, s1, control, cm);
 						if (((BoolValue) res).val) {
@@ -3302,6 +3314,11 @@ public abstract class Tool
 					final int sz = iss.size();
 					for (int i = 0; i < sz; i++) {
 						t = iss.elementAt(i);
+						for (OpDeclNode unassignedVar : t.getUnassigned()) {
+	            UniqueString unassignedVarName = unassignedVar.getName();
+	            t.bind(unassignedVarName, s0.lookup(unassignedVarName));
+	          }
+	          assert this.isGoodState(t);
 						final TLCState s2 = this.enabled(args[1], acts, c, t, s1, cm);
 						if (s2 != null) {
 							return s2;
