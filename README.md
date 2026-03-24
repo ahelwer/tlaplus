@@ -33,7 +33,7 @@ Developing & Contributing
 The TLA⁺ Tools and Toolbox IDE are both written in Java.
 The TLA⁺ Tools source code is in [tlatools/org.lamport.tlatools](./tlatools/org.lamport.tlatools).
 The Toolbox IDE is based on [Eclipse Platform](https://github.com/eclipse-platform) and is in the [toolbox](./toolbox) directory.
-For instructions on building & testing these as well as setting up a development environment, see [DEVELOPING.md](DEVELOPING.md).
+For the contributor hub covering repository structure, build/test workflows, generated sources, IDE/container options, and deeper subsystem references, see [DEVELOPING.md](DEVELOPING.md).
 
 We welcome your contributions to this open source project!
 TLA⁺ is used in safety-critical systems, so we have a contribution process in place to ensure quality is maintained; read [CONTRIBUTING.md](CONTRIBUTING.md) before beginning work.
@@ -45,4 +45,3 @@ Copyright © 2003 Microsoft Corporation
 Copyright © 2023 Linux Foundation
 
 Licensed under the [MIT License](LICENSE).
-

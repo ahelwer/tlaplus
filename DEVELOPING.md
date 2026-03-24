@@ -1,251 +1,394 @@
 Overview
 --------
-This file summarizes basic development knowledge & practices for this project.
-You will learn the repository structure, how to build & test the software it contains from your command line interface (CLI), how to set up your interactive development environment (IDE), and several other tidbits.
-This project is written entirely in Java.
+This is the main contributor guide for this repository.
+Use it to get oriented, choose the right build/test workflow, and find the deeper subsystem docs that already exist elsewhere in the tree.
 
-Repository Layout
------------------
-Here is a diagram of the repository layout.
-There are other files and directories beyond these, but these are the most important:
-```
-/
-├── LICENSE                     # The project license
-├── README.md                   # Basic info about the project
-├── CONTRIBUTING.md             # Info on contributing to the project
-├── DEVELOPING.md               # This document
-├── pom.xml                     # The Maven build system definition file
-├── toolbox/                    # All files related to the TLA⁺ Toolbox IDE
-├── tlatools/
-│   └── org.lamport.tlatools/   # All files related to the TLA⁺ Tools
-│       ├── .classpath          # The Eclipse IDE classpath file
-│       ├── .project            # The Eclipse IDE project file
-│       ├── customBuild.xml     # The Ant build system definition file
-│       ├── pom.xml             # A Maven build file wrapping the Ant file
-│       ├── src/                # The TLA⁺ Tools source code dir
-│       ├── test/               # Unit tests for the TLA⁺ Tools
-│       ├── test-model/         # TLA⁺ modules and models for use in tests
-│       ├── lib/                # Vendored dependencies; checked-in jar files
-│       └── javacc/             # Source files for the TLA⁺ parser generator
-└───.github/
-    ├── CODE_OF_CONDUCT.md      # The code of conduct
-    └── workflows/              # GitHub CI workflow definition files
-        ├── pr.yml              # The CI workflow that validates PRs
-        └── main.yml            # Build & publish master branch to pre-release
-```
+If you are looking for project policy, review expectations, or contribution etiquette, start with [CONTRIBUTING.md](CONTRIBUTING.md).
+If you are looking for a short project overview, start with [README.md](README.md).
 
-Build & Test TLA⁺ Tools
-----------------------
-Install the following dependencies to your path:
- * [Java Development Kit](https://adoptium.net/) version 11+
- * [Apache Ant](https://ant.apache.org/) version 1.9.8+
+Start Here
+----------
+The repository has two main development surfaces:
 
-Clone this repo & open a shell in its root, then run:
+* `tlatools/org.lamport.tlatools`: the command-line tools (`tla2tools.jar`), built and tested primarily with Ant.
+* `toolbox/`: the Eclipse-based Toolbox IDE, built primarily with Maven/Tycho from the repository root `pom.xml`.
+
+Local toolchain baseline:
+
+* Java Development Kit (JDK) 11
+* Apache Ant 1.9.8+ for `tlatools`
+* Apache Maven 3.9.7+ for Toolbox and top-level builds
+* Git 2.0+
+
+CI also validates this repository on JDK 17.
+If you develop locally on JDK 11 and see a version-specific issue, check the GitHub Actions workflow in `.github/workflows/pr.yml` before assuming your setup is wrong.
+
+### Fastest Successful Local Paths
+
+#### TLA+ Tools (`tlatools`)
+
 ```bash
 cd tlatools/org.lamport.tlatools
-ant -f customBuild.xml info compile compile-test dist # Builds tla2tools.jar
-java -cp dist/tla2tools.jar tlc2.TLC test-model/pcal/Bakery.tla # Runs an example
-ant -f customBuild.xml test # Runs unit tests
+ant -f customBuild.xml info compile compile-test dist
+java -cp dist/tla2tools.jar tlc2.TLC test-model/pcal/Bakery.tla
+ant -f customBuild.xml info test
 ```
 
-The unit tests should all succeed.
-The compiled `tla2tools.jar` will be output to `tlatools/org.lamport.tlatools/dist/tla2tools.jar`, and can be used the same as any `tla2tools.jar` you download from the releases.
+What this gives you:
 
-Use the `test-set` target to run a single test instead of the entire test suite:
+* `dist/tla2tools.jar`
+* a known-good TLC smoke run against `test-model/pcal/Bakery.tla`
+* the main Ant-driven unit test suite
+
+#### Toolbox (`toolbox/`)
+
+From the repository root:
+
 ```bash
-ant -f customBuild.xml test-set -Dtest.testcases="tla2sany/parser/TlaPlusSyntaxCorpusTests.java"
+mvn install -Dmaven.test.skip=true
+mvn verify
 ```
-The path is resolved relative to the `tlatools/org.lamport.tlatools/test` directory.
-Running multiple tests with a glob pattern is also supported, but be sure to put the glob pattern in quotes so it is passed into `ant` instead of being expanded by your shell:
+
+The Toolbox distributables are written under `toolbox/org.lamport.tla.toolbox.product.product/target/products`.
+
+If you are running the Toolbox build on Linux without a desktop session, note that CI uses `xvfb-run` for the Linux Maven/Tycho job.
+
+#### VS Code Dev Container
+
+This repository also ships an optional dev container in `.devcontainer/`.
+It installs Java 11, Maven, Git, Ant, and Xvfb, then runs `ant -version && mvn -version` after container creation.
+
+Use it if you want an isolated toolchain without configuring your host machine directly.
+
+Repository Mental Model
+-----------------------
+At a high level:
+
+* Ant is the source-of-truth build/test path for `tlatools/org.lamport.tlatools`.
+* Maven/Tycho drives the Toolbox and the top-level multi-module build.
+* The top-level `pom.xml` pulls together `tlatools`, Toolbox bundles, features, and packaging modules.
+* Some parser sources are generated from JavaCC grammar and are checked into the repository.
+
+Important top-level paths:
+
+```text
+/
+├── README.md
+├── CONTRIBUTING.md
+├── DEVELOPING.md
+├── pom.xml
+├── .devcontainer/
+├── .github/workflows/
+├── tlatools/
+│   ├── org.lamport.tlatools/
+│   ├── org.lamport.tlatools.api/
+│   ├── org.lamport.tlatools.consumer.distributed/
+│   └── org.lamport.tlatools.impl.distributed/
+└── toolbox/
+```
+
+Subsystem Map
+-------------
+
+### `tla2sany`: parser and semantic front end
+
+Purpose:
+parse TLA+ modules, build syntax/semantic structures, and surface parser/front-end behavior used by the rest of the tools.
+
+Main locations:
+
+* `tlatools/org.lamport.tlatools/src/tla2sany/`
+* `tlatools/org.lamport.tlatools/javacc/tla+.jj`
+* `tlatools/org.lamport.tlatools/src/tla2sany/parser/` generated parser output
+
+Typical entrypoints:
+
+* `tla2sany.SANY`
+* `tla2sany.drivers.SANY`
+
+Tests and fixtures:
+
+* `tlatools/org.lamport.tlatools/test/tla2sany/`
+* `tlatools/org.lamport.tlatools/test/tla2sany/corpus/`
+* `tlatools/org.lamport.tlatools/test-model/sany/`
+
+What usually lands here:
+
+* grammar changes
+* parse tree / semantic analysis changes
+* front-end error reporting changes
+* XML/export/front-end utility changes
+
+### `tlc2`: model checker, REPL, and runtime support
+
+Purpose:
+the executable model checker, REPL, debugging support, built-in operators, state handling, liveness checking, and runtime value machinery.
+
+Main locations:
+
+* `tlatools/org.lamport.tlatools/src/tlc2/`
+* `tlatools/org.lamport.tlatools/src/tlc2/tool/`
+* `tlatools/org.lamport.tlatools/src/tlc2/module/`
+* `tlatools/org.lamport.tlatools/src/tlc2/value/`
+
+Typical entrypoints:
+
+* `tlc2.TLC`
+* `tlc2.REPL`
+
+Tests and fixtures:
+
+* `tlatools/org.lamport.tlatools/test/tlc2/`
+* `tlatools/org.lamport.tlatools/test-model/tlc2/`
+* `tlatools/org.lamport.tlatools/test-model/`
+
+What usually lands here:
+
+* state exploration and fingerprinting changes
+* error trace behavior
+* TLC modules and overrides
+* simulator / liveness / debugger behavior
+
+### `pcal`: PlusCal translator
+
+Purpose:
+the PlusCal-to-TLA+ translator and its parser/translation pipeline.
+
+Main locations:
+
+* `tlatools/org.lamport.tlatools/src/pcal/`
+
+Typical entrypoints:
+
+* `pcal.trans`
+
+Tests and fixtures:
+
+* `tlatools/org.lamport.tlatools/test/pcal/`
+* `tlatools/org.lamport.tlatools/test-model/pcal/`
+
+What usually lands here:
+
+* translator changes
+* parser/tokenizer changes specific to PlusCal
+* translation output and mapping changes
+
+### `tla2tex`: pretty-printing and LaTeX output
+
+Purpose:
+formatting and typesetting support for TLA+ specifications.
+
+Main locations:
+
+* `tlatools/org.lamport.tlatools/src/tla2tex/`
+
+Typical entrypoints:
+
+* `tla2tex.TLA`
+* `tla2tex.TeX`
+
+Tests and fixtures:
+
+* tests live under `tlatools/org.lamport.tlatools/test/` alongside the rest of the tools test tree
+
+What usually lands here:
+
+* formatting and pretty-print changes
+* LaTeX generation changes
+
+### Toolbox modules
+
+Purpose:
+the Eclipse-based IDE, editor integrations, TLC UI integration, product packaging, and plugin-based test bundles.
+
+Common modules:
+
+* `toolbox/org.lamport.tla.toolbox/`: core Toolbox plugin
+* `toolbox/org.lamport.tla.toolbox.editor.basic/`: editor integration
+* `toolbox/org.lamport.tla.toolbox.tool.tlc/`: TLC Toolbox-side integration
+* `toolbox/org.lamport.tla.toolbox.tool.tlc.ui/`: TLC UI
+* `toolbox/org.lamport.tla.toolbox.product.standalone/`: standalone application wiring
+* `toolbox/org.lamport.tla.toolbox.product.product/`: product packaging
+* `toolbox/org.lamport.tla.toolbox.test/`, `toolbox/org.lamport.tla.toolbox.tool.tlc.test/`, `toolbox/org.lamport.tla.toolbox.tool.tlc.ui.test/`: plugin test bundles
+
+What usually lands here:
+
+* editor behavior
+* model editor / run UI behavior
+* Toolbox launch, packaging, and product integration
+
+Generated Sources and Build Boundaries
+--------------------------------------
+
+### JavaCC-generated parser sources
+
+The JavaCC grammar lives at:
+
+* `tlatools/org.lamport.tlatools/javacc/tla+.jj`
+
+Running:
+
 ```bash
+cd tlatools/org.lamport.tlatools
+ant -f customBuild.xml generate
+```
+
+regenerates parser output in:
+
+* `tlatools/org.lamport.tlatools/src/tla2sany/parser/`
+
+CI explicitly checks that grammar changes and generated parser output stay in sync.
+If you change `javacc/tla+.jj`, regenerate the parser files and commit the generated changes as part of the same diff.
+
+### Ant vs Maven/Tycho
+
+Use Ant for:
+
+* compiling `tlatools`
+* building `dist/tla2tools.jar`
+* running focused or full `tlatools` unit tests
+
+Use Maven/Tycho for:
+
+* building Toolbox bundles, features, and packaged products
+* running the top-level multi-module build from the repository root
+
+Do not assume the top-level Maven build is a drop-in replacement for the Ant workflow when you are iterating on `tlatools`.
+For command-line tools work, start with the Ant workflow first.
+
+Change Guide: If You Changed X, Run Y
+-------------------------------------
+
+| You changed... | Primary build system | Minimum local validation | Before opening a PR | CI-specific gotcha |
+| --- | --- | --- | --- | --- |
+| `javacc/tla+.jj` or parser generation code | Ant | `ant -f customBuild.xml generate compile compile-test` then `ant -f customBuild.xml test-set -Dtest.testcases="tla2sany/parser/*"` | Run the broader SANY front-end tests with `ant -f customBuild.xml test-set -Dtest.testcases="tla2sany/**/*"` | CI fails if generated parser files are out of sync with the grammar |
+| SANY / parser / semantic front-end code under `src/tla2sany/` | Ant | `ant -f customBuild.xml compile compile-test` then focused tests such as `ant -f customBuild.xml test-set -Dtest.testcases="tla2sany/**/*"` | Run `ant -f customBuild.xml info test` if the change crosses parser, semantic, or output packages | The PR workflow also runs a grammar/code sync check before the main tools test job |
+| TLC runtime code under `src/tlc2/` | Ant | `ant -f customBuild.xml compile compile-test dist` then a focused package run such as `ant -f customBuild.xml test-set -Dtest.testcases="tlc2/tool/*"` or another package-level glob closer to your change | Run `ant -f customBuild.xml info test`; for packaging-sensitive changes also run `ant -f customBuild.xml test-dist` | CI also builds CommunityModules against the produced `tla2tools.jar` and runs examples integration tests in a separate workflow job |
+| PlusCal translator code under `src/pcal/` | Ant | `ant -f customBuild.xml compile compile-test dist`; smoke-test the translator with `java -cp dist/tla2tools.jar pcal.trans -help`; run `ant -f customBuild.xml test-set -Dtest.testcases="pcal/*"` | Re-run a representative PlusCal-backed spec such as `java -cp dist/tla2tools.jar tlc2.TLC test-model/pcal/Bakery.tla` | PlusCal behavior is exercised indirectly by the tools test suite and examples jobs |
+| Toolbox code under `toolbox/` | Maven/Tycho | From the repo root run `mvn install -Dmaven.test.skip=true` | Run `mvn verify` from the repo root; on headless Linux machines use `xvfb-run` as CI does | The Linux Toolbox CI job uses `xvfb-run`; macOS signs packaged artifacts only in non-fork contexts |
+| Documentation only | none required | Manually verify commands, paths, and links against the repo | Re-read affected docs together to remove contradictions | There is no separate docs CI gate, so stale commands and broken links must be caught in review |
+
+Focused `test-set` runs are relative to `tlatools/org.lamport.tlatools/test`.
+For example:
+
+```bash
+cd tlatools/org.lamport.tlatools
+ant -f customBuild.xml test-set -Dtest.testcases="tla2sany/parser/*"
 ant -f customBuild.xml test-set -Dtest.testcases="tlc2/util/*Vec*"
 ```
 
-Build & Test Toolbox IDE
-------------------------
-Install the following dependencies to your path:
- * [Java Development Kit](https://adoptium.net/) version 11 (newer versions will [likely cause build failures](https://github.com/tlaplus/tlaplus/issues/1162#issuecomment-2737943830))
- * [Apache Ant](https://ant.apache.org/) version 1.9.8+
- * [Apache Maven](https://maven.apache.org/) version 3.9.7+
- * [Git](https://git-scm.com/) version 2.0+
+The `test-set` target runs tests in forked JVMs and exposes debug port `1044`, which is useful for debugging but means focused runs are best done one at a time.
 
-Clone this repo & open a shell in its root, then run:
-```bash
-mvn install -Dmaven.test.skip=true # Builds Toolbox
-mvn verify # Runs tests
-```
+Common Local Workflows
+----------------------
 
-The Toolbox distributables will be output in the `toolbox/org.lamport.tla.toolbox.product.product/target/products` directory.
-
-Developing with the Eclipse IDE
--------------------------------
-You are free to use your own editor, but this project is largely developed in the [Eclipse](https://www.eclipse.org/) integrated development environment (IDE).
-
-### Developing the TLA⁺ Tools in Eclipse
-
-Developing the TLA⁺ Tools in Eclipse requires the [Eclipse IDE for RCP and RAP Developers](https://www.eclipse.org/downloads/packages/release/2024-06/r/eclipse-ide-rcp-and-rap-developers) edition, or any other edition that comes with the OSGi Plugin Development Extension.
-After you have installed Eclipse, use it open the `tlatools/org.lamport.tlatools` project directory.
-You should then be able to build, run, test, and debug the TLA⁺ Tools.
-
-Note that running build or test operations with Ant can occasionally interfere with Eclipse's build system and cause Eclipse to report nonexistent compilation errors in the UI.
-For this reason you should run Ant from within Eclipse by opening Window > Show View > Other > Ant > Ant, then adding the `customBuild.xml` file and running selected targets.
-This will also add the `RunAllTLCTests` target to the external tools runner menu.
-
-If you ran Ant from your CLI for whatever reason and are encountering issues with nonexistent compilation errors in Eclipse, you can resolve them by right-clicking the project in the Workspace pane then selecting "Refresh".
-This can also be set to refresh automatically in the Eclipse settings; open them by clicking Eclipse > Settings on macOS or Window > Preferences on Linux, then check the box at General > Workspace > "Refresh using native hooks or polling".
-Note, however, that enabling this setting may cause compilation failures when running Ant from your CLI while Eclipse is open; you should only enable it if you are running Ant solely from within Eclipse.
-The setting also helps Eclipse pick up changes as you switch between git branches.
-
-### Developing the Toolbox in Eclipse
-
-For instructions on how to set up Eclipse to develop the Toolbox IDE, read [this](general/ide/README.md).
-
-Developing with VS Code Dev Containers
---------------------------------------
-This repository includes a VS Code [Dev Container](https://code.visualstudio.com/docs/devcontainers/containers) configuration in `.devcontainer/` for contributors who prefer an isolated, preconfigured toolchain.
-
-Install the following locally:
- * [Docker](https://www.docker.com/products/docker-desktop/) or another compatible container runtime
- * [Visual Studio Code](https://code.visualstudio.com/) with the "Dev Containers" extension
-
-To use it:
- * Open this repository in VS Code and select "Reopen in Container" when prompted (or run "Dev Containers: Reopen in Container" from the Command Palette).
- * VS Code will build the image from `.devcontainer/Dockerfile`, which layers Java 11, Maven, Git, Ant, and Xvfb onto the `mcr.microsoft.com/devcontainers/base:ubuntu` base image. The build also installs the recommended Java and Maven extensions listed in `.devcontainer/devcontainer.json`.
- * After the container starts, the `postCreateCommand` runs `ant -version && mvn -version` so you can confirm the toolchain is available inside the container.
- * Run project commands (e.g., `ant -f customBuild.xml compile` or `mvn verify`) from an integrated terminal in VS Code; they execute inside the container with the workspace mounted.
-
-The Dev Container is a convenience for contributors who do not want to install the Java/Maven/Ant toolchain directly on their host system. It is optional; you may continue using your existing local setup or Eclipse as described above.
-
-Using Git Effectively
----------------------
-
-Git was designed to shine in a federated open source development model.
-You are likely to require use of more of its features than you would in a corporate development environment.
-Here is a brief primer on often-used git functionality when developing for this project.
-It assumes a basic familiarity with common git operations like clone, commit, push, and pull.
-There are countless free and paid git guides available online; [here](https://www.git-scm.com/doc) are the docs from the git project itself, and [here](https://wizardzines.com/git-cheat-sheet.pdf) is a useful cheat-sheet from Julia Evans.
-
-### Dealing with multiple remotes
-
-Your first step when developing for this project will be to fork it so you have your own copy to work with under your own GitHub account.
-Then, you will clone that fork to your local development machine.
-However, you will also want to occasionally synchronize your fork with the original (which we might call *upstream*).
-For this you will need to define multiple *remotes* that you can push to and pull from.
-To list all the remotes defined for your local cloned repo, run:
-```bash
-git remote
-```
-If you have a remote named `origin`, you can see the repository it is pointing to with:
-```bash
-git remote get-url origin
-```
-You want to have at least two remotes, one pointing to upstream and another pointing to your user fork.
-Add an `upstream` remote with this command:
-```bash
-git remote add upstream git@github.com:tlaplus/tlaplus.git
-```
-If you cloned your repo from your user fork, you can also rename `origin` to `user` or something similarly descriptive as follows:
-```bash
-git remote rename origin user
-```
-If you want to get the latest changes from upstream, you can then run:
-```bash
-git checkout master
-git pull upstream master
-```
-Then, either merge or rebase on those changes to get them into your local development branches.
-
-### Modifying past commits
-
-When you're working with others, you don't want to subject them to your raw git commit history.
-Often you accumulate commits that are only periodic check-ins to avoid losing work instead of logically-contained sets of changes.
-Git's `rebase` command is much-feared but powerful, and you should become very familiar with it.
-If you are developing a feature in a branch, you can enter rebase mode by running:
-```bash
-git rebase -i master
-```
-This will take you to a text editor where you can command git to do all kinds of things with your commits!
-You can:
- * Reorder them
- * Squash several of them into a single commit
- * Select them to be manually edited/amended
-
-Then, git will run through all your commits sequentially and execute whatever manipulations you indicated.
-Squashing is very useful for combining those periodic check-in commits into something meaningful.
-Editing is useful for responding to PR review comments; most people know about using `git --amend` to apply changes to the latest commit, but using the `rebase` edit option lets you apply changes to commits in the past!
-
-### Splitting up commits and PRs
-
-While rebasing, you can also use editing to split a single commit up into multiple commits.
-This is fairly straightforward when the changes are in different files, but if you want some changes within a single file to go in one commit and some to go in another commit, you can accomplish this interactively with:
-```bash
-git add --patch <filename>
-```
-Sometimes you might want to split your commits across multiple branches so they can be in separate PRs.
-For this, switch to a new branch then use:
-```bash
-git cherry-pick <commit hash>
-```
-This will add the specified commit to the head of your new branch.
-You can then rebase your original feature branch to remove that commit.
-
-### Developer Certificate of Origin (DCO) sign-off
-
-Due to legal disputes in the mid-2000s, all commits to projects under the Linux Foundation are required to contain a [Developer Certificate of Origin (DCO)](https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin) sign-off (note this is different from signing commits with a GPG key).
-This basically says that you (the developer) were entirely responsible for writing the code in the commit and that you are legally permitted to contribute it under a permissive license (it isn't copied from proprietary code, for example).
-In git this is easily done by adding an extra `-s` flag as you commit:
-```bash
-git commit -s -am "Commit message here"
-```
-Don't worry too much about forgetting this; the CI will catch it and GitHub provides a page with simple instructions to retroactively add DCO sign-off to past commits.
-Eventually adding the `-s` flag will become muscle memory.
-
-Release Channels
-----------------
-
-Nightly builds of the [Toolbox](https://nightly.tlapl.us/products/) and [tla2tools](https://nightly.tlapl.us/dist/) are found at https://nightly.tlapl.us/products/ and https://nightly.tlapl.us/dist/.
-The Toolbox contains the latest version of tla2tools.jar for command-line usage in its root directory.
-
-It is also possible to configure the Toolbox to [automatically update to nightly (experimental) builds](https://nightly.tlapl.us/doc/update/update-preferences.html).  
-
-Note that it is called nightly for historical reasons, but builds are actually triggered by commits.
-
-### Linux
-
-For dpkg-based Linux derivates such as Debian and Ubuntu, you can add the Toolbox's nightly package repository to your source list:
-
-```
-$ cat /etc/apt/sources.list.d/tlaplus.list
-deb https://nightly.tlapl.us/toolboxUpdate/ ./
-$ curl -fsSL https://tla.msr-inria.inria.fr/jenkins.pub | sudo apt-key add -
-```
-
-### macOS
-
-The Homebrew community makes the Toolbox's nightly builds available as a [cask](https://github.com/Homebrew/homebrew-cask-versions/blob/master/Casks/tla-plus-toolbox-nightly.rb) through [homebrew versions](https://github.com/Homebrew/homebrew-cask-versions#usage):
+### Build only the tools jar
 
 ```bash
-$ brew tap homebrew/cask-versions
-$ brew install tla-plus-toolbox-nightly
+cd tlatools/org.lamport.tlatools
+ant -f customBuild.xml info compile compile-test dist
 ```
 
-Code Formatting and Style
+### Run all `tlatools` unit tests
+
+```bash
+cd tlatools/org.lamport.tlatools
+ant -f customBuild.xml info test
+```
+
+### Run tests against the packaged jar
+
+```bash
+cd tlatools/org.lamport.tlatools
+ant -f customBuild.xml compile compile-test dist test-dist
+```
+
+### Generate the parser after grammar changes
+
+```bash
+cd tlatools/org.lamport.tlatools
+ant -f customBuild.xml generate
+```
+
+### Build and test the Toolbox
+
+```bash
+cd /path/to/repo
+mvn install -Dmaven.test.skip=true
+mvn verify
+```
+
+### What CI runs that you may not run locally every time
+
+The PR workflow does more than the common local fast path:
+
+* checks JavaCC grammar/generated-source sync
+* runs the `tlatools` build and unit tests on Ubuntu and macOS
+* builds CommunityModules against the produced `tla2tools.jar`
+* builds and tests the Toolbox on Ubuntu and macOS
+* clones `tlaplus/examples` and runs parser/model-check integration tests against it
+
+For small changes you do not need to reproduce every CI job locally, but you should know those gates exist.
+
+IDE and Container Options
 -------------------------
 
-TLA⁺ has no strict formatting requirements; focus on substance over style.
-The source code contains a wide variety of styles, and although that can sometimes be distracting, standardizing on one is not a priority for the project.
+### Eclipse for `tlatools`
 
-That said, it is worth following a few guiding principles:
+If you prefer Eclipse, import `tlatools/org.lamport.tlatools` as a project and use the Ant view to run `customBuild.xml` targets from inside Eclipse.
 
- 1. Modifications should copy the style of nearby code rather than change it.  This helps keep modifications focused so they are easy to review and [bisect](https://git-scm.com/docs/git-bisect).
- 2. New source files should have a consistent style.
+This matters because running Ant externally can occasionally leave Eclipse showing stale compile errors until the project is refreshed.
+If that happens, refresh the project manually.
 
-For new Java code we recommend (but do not require):
+### Eclipse for the Toolbox
 
- - Each `public` class and method should have a javadoc description of its purpose and behavior.
- - Do not mix tabs and spaces.
- - Put opening curly braces (`{`) on the same line as the corresponding declaration or statement.
- - Include braces for single-statement bodies of statements like `if` and `while`, even though they are optional.
- - Avoid lines longer than 120 characters.
+For Eclipse-specific Toolbox setup, including the optional Oomph-based workspace setup, see [general/ide/README.md](general/ide/README.md).
 
-Note that all of the project's Java source files are encoded in UTF-8 and may therefore contain mathematical characters.
+Treat that document as Eclipse-specific setup guidance, not as the main contributor entrypoint.
+This file (`DEVELOPING.md`) remains the primary hub.
+
+### VS Code Dev Container
+
+The dev container in `.devcontainer/` is the best option if you want:
+
+* Java 11, Maven, Git, Ant, and Xvfb preinstalled
+* a disposable local environment
+* a setup path that does not depend on Eclipse
+
+Contribution Reminders
+----------------------
+
+Keep these rules in mind while iterating:
+
+* Read [CONTRIBUTING.md](CONTRIBUTING.md) before starting substantial work.
+* Keep changes surgical and avoid unrelated cleanup in touched files.
+* Prefer adding or improving tests before changing tricky behavior.
+* Sign commits with DCO using `git commit -s`.
+
+Further Reading by Subsystem
+----------------------------
+
+Start with the hub above, then use these narrower documents when you need more depth:
+
+* Toolbox Eclipse setup: [general/ide/README.md](general/ide/README.md)
+* `tlatools` test commands and notes: [tlatools/org.lamport.tlatools/README.md](tlatools/org.lamport.tlatools/README.md)
+* SANY command-line notes and explorer mode: [tlatools/org.lamport.tlatools/src/tla2sany/README](tlatools/org.lamport.tlatools/src/tla2sany/README)
+* Unified syntax corpus notes: [tlatools/org.lamport.tlatools/test/tla2sany/corpus/README.md](tlatools/org.lamport.tlatools/test/tla2sany/corpus/README.md)
+* TLC trace-expression design doc: [tlatools/org.lamport.tlatools/spec/generate-te-spec-by-default.md](tlatools/org.lamport.tlatools/spec/generate-te-spec-by-default.md)
+* TLC profiling with Java Flight Recorder: [tlatools/org.lamport.tlatools/jfr/README.md](tlatools/org.lamport.tlatools/jfr/README.md)
+
+Code Style
+----------
+
+There is no single enforced formatting style across the entire codebase.
+Follow the style of the surrounding code rather than mixing refactors with behavioral changes.
+
+For new Java code we recommend:
+
+* add Javadoc to public classes and methods when the behavior is not obvious
+* do not mix tabs and spaces
+* keep opening braces on the same line as the declaration or statement
+* use braces for single-statement `if` and `while` bodies
+* prefer lines under 120 characters
+
+The project's Java source files are UTF-8 encoded and may contain mathematical characters.
